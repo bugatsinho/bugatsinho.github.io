@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.module.unshortenit" name="Unshortenit Module" version="0.3.0" provider-name="Jeff Kehler, Twilight0">
+	<requires>
+		<import addon="xbmc.python" version="2.1.0"/>
+		<import addon="script.module.requests" version="2.12.4"/>
+	</requires>
+	<extension point="xbmc.python.module" library="lib" />
+	<extension point="xbmc.addon.metadata">
+		<summary lang="en">Unshortenit Module</summary>
+		<description lang="en">Unshortenit Module to reveal links from popular url shortener services</description>
+		<platform>all</platform>
+		<license>MIT</license>
+		<source>https://pypi.python.org/pypi/unshortenit/0.3.0</source>
+	</extension>
+</addon>
