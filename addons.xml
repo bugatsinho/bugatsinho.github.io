@@ -1,0 +1,178 @@
+<addons>
+	<addon id="service.subtitles.greeksubs" name="Greek Subs" version="1.1.1" provider-name="Bugatsinho">
+		<requires>
+			<import addon="xbmc.python" version="2.24.0"/>
+			<import addon="script.module.requests" version="2.8.1" />
+		</requires>
+		<extension point="xbmc.subtitle.module" library="service.py">
+		</extension>
+		<extension point="xbmc.addon.metadata">
+			<reuselanguageinvoker>false</reuselanguageinvoker>
+			<summary lang="en_GB">Greek Subs addon for subtitles</summary>
+			<summary lang="en_GB">Πρόσθετο υποτίτλων Greek Subs</summary>
+	        <description lang="en_GB">Search and download subtitles from yifisubs, subs4free/subs4series and subztv.club</description>
+			<description lang="el_GR">Εύρεση και λήψη υποτίτλων από τα yifisubs, subs4free/subs4series και subztv.club</description>
+			<disclaimer lang="en_GB">This service is only for Greek subtitles and not published nor endorsed by subs4free/subs4series and subztv.club</disclaimer>
+			<disclaimer lang="el_GR">Υπηρεσία μόνο ελληνικών υποτίτλων που δεν έχει δημοσιευθεί ούτε εγκριθεί από τα subs4free/subs4series και subztv.club</disclaimer>
+			<license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
+			<website>https://subztv.club/</website>
+			<platform>all</platform>
+			<language>el</language>
+			<news>[B]1.1.1[/B] 30-6-2018
+	- Υποστήριξη για kodi 18</news>
+		</extension>
+	</addon>
+
+	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.3.3" provider-name="Bugatsinho">
+	  <requires>
+	    <import addon="xbmc.python" version="2.1.0"/>
+	    <import addon="script.module.resolveurl" version="5.0.00"/>
+	    <import addon="script.module.unshortenit"  version="0.3.1"/>
+	  </requires>
+	  <extension point="xbmc.python.pluginsource" library="default.py">
+			<provides>video</provides>
+	  </extension>
+	  <extension point="xbmc.addon.metadata">
+	    <reuselanguageinvoker>false</reuselanguageinvoker>
+	    <platform>all</platform>
+	    <summary lang="el">ΠΑΙΔΙΚΑ</summary>
+	    <description lang="el">ΤΑΙΝΙΕΣ κ ΣΕΙΡΕΣ για τα παιδιά ΜΕΤΑΓΛΩΤΙΣΜΕΝΑ ή με ΥΠΟΤΙΤΛΟΥΣ</description>
+	    <disclaimer lang="el">Ο δημιουργός δεν φιλοξενεί ή διανέμει οποιαδήποτε από το περιεχόμενο που εμφανίζεται από αυτό το πρόσθετο και δεν έχει οποιαδήποτε σχέση με την ιστοσελίδα και τους ιδιοκτήτες αυτής.
+	    </disclaimer>
+	    <summary lang="en">Cartoons</summary>
+	    <description lang="en">Movies and Series dubbed or with Greek subtitles for the kids.</description>
+	    <disclaimer lang="en">The CartoonsGR's author  does not host, stream or distribute any of the content displayed inside this plugin and does not
+	    have any relation with the website or the website's author.
+	    </disclaimer>
+	    <language>en el</language>
+	    <license>GNU GPL, version 2</license>
+	    <twitter>https://twitter.com/Bugatsinho</twitter>
+	    <forum>https://www.facebook.com/groups/GRecoTM/</forum>
+	    <source>http://grecotm.com/repo/</source>
+	    <website>http://grecotm.com</website>
+	    <news>[B]v0.3.3[/B] (28/8/2018)
+	  - Διόρθωση Resolver.
+	    </news>
+	  </extension>
+	</addon>
+
+	
+	<addon id="plugin.video.pelisplus" name="PelisPlus TV" version="0.1.1" provider-name="Bugatsinho">
+	  <requires>
+	    <import addon="xbmc.python" version="2.1.0"/>
+	    <import addon="script.module.resolveurl" version="5.0.00"/>
+	  </requires>
+	  <extension point="xbmc.python.pluginsource" library="default.py">
+			<provides>video</provides>
+	  </extension>
+	  <extension point="xbmc.addon.metadata">
+	    <reuselanguageinvoker>false</reuselanguageinvoker>
+	    <platform>all</platform>
+	    <summary lang="es">PelisPlus TV Contenido desde pelisplus tv(Español-Latino) pagina web</summary>
+	    <description lang="es">Contenido desde pelisplus tv(Español-Latino) pagina web</description>
+	    <disclaimer lang="es">El autor de Pelisplus TV no aloja, transmite ni distribuye el contenido que se muestra dentro de este complemento y no
+	    tener alguna relación con el sitio web o el autor del sitio web.
+	    </disclaimer>
+	    <summary lang="en">PelisPlus TV Content from peliplus tv (Spanish-Latino) website</summary>
+	    <description lang="en">Content from peliplus tv (Spanish-Latino) website</description>
+	    <disclaimer lang="en">The Pelisplus TV's author  does not host, stream or distribute any of the content displayed inside this plugin and does not
+	    have any relation with the website or the website's author.
+	    </disclaimer>
+	    <language>en es</language>
+	    <license>GNU GPL, version 2</license>
+	    <twitter>https://twitter.com/Bugatsinho</twitter>
+	    <news>[0.1.1] 21/09/2018
+	- rewrite code for the new domain
+	    </news>
+	  </extension>
+	</addon>
+	
+	<addon id="plugin.video.iNovelas" name="iNovelas" version="0.1.5" provider-name="Bugatsinho">
+	  <requires>
+	    <import addon="xbmc.python" version="2.1.0"/>
+	    <import addon="script.module.resolveurl" version="5.0.00"/>
+	  </requires>
+	  <extension point="xbmc.python.pluginsource" library="default.py">
+	    <provides>video</provides>
+	  </extension>
+	  <extension point="xbmc.addon.metadata">
+	    <reuselanguageinvoker>false</reuselanguageinvoker>
+	    <summary lang="en">iNovelas es un add-on con telenovelas latinas.</summary>
+	    <description lang="en">Enlaces gratis desde web para ver sus Telenovelas favoritas!</description>
+		<disclaimer lang="en">El autor no aloja ni distribuye ninguno de los contenidos mostrados por este complemento o tiene alguna afiliación con los propietarios del sitio web</disclaimer>
+		<language>en es</language>
+	    <license>GNU GPL, version 2</license>
+	    <twitter>https://twitter.com/Bugatsinho</twitter>
+	    <news>version 0.1.5 4-8-2018
+	 - Reparar Ultimos Capitulos error
+	    </news>
+	  </extension>
+	</addon>
+	
+	<addon id="plugin.audio.mp3streams" name="MP3 Streams" version="2018.08.28" provider-name="Bugatsinho">
+	    <requires>
+	        <import addon="xbmc.python" version="2.1.0"/>
+	        <import addon="script.module.t0mm0.common" version="1.1.0"/>
+	        <import addon="script.module.mutagen"/>
+	        <import addon="script.module.requests" version="1.1.0"/>
+	    </requires>
+	    <extension point="xbmc.python.pluginsource" library="default.py">
+	        <provides>audio</provides>
+	    </extension>
+	    <extension point="xbmc.service" library="playerMP3.py" start="startup" />
+	    <extension point="xbmc.addon.metadata">
+	        <platform>all</platform>
+	        <summary>A music streaming collection</summary>
+	        <description>Browse, stream or download your favourite songs and albums</description>
+	        <news>Small fixes/fix artwork/next page. Credits to qahanik, kinkin, art by Marquerite for original code</news>
+	        <assets>
+	            <icon>icon.png</icon>
+	            <fanart>fanart.jpg</fanart>
+	        </assets>
+	    </extension>
+	</addon>
+	
+	<addon id="script.module.unshortenit" name="Unshortenit Module" version="0.3.1.a" provider-name="Jeff Kehler, Twilight0">
+		<requires>
+			<import addon="xbmc.python" version="2.1.0"/>
+			<import addon="script.module.requests" version="2.12.4"/>
+		</requires>
+		<extension point="xbmc.python.module" library="lib" />
+		<extension point="xbmc.addon.metadata">
+			<summary lang="en">Unshortenit Module</summary>
+			<description lang="en">Unshortenit Module to reveal links from popular url shortener services</description>
+			<platform>all</platform>
+			<license>MIT</license>
+			<source>https://pypi.python.org/pypi/unshortenit/0.3.0</source>
+		</extension>
+	</addon>
+
+	<addon id="script.module.mutagen"
+       name="mutagen"
+       version="1.22.0"
+       provider-name="Joe Wreschnig">
+	  <requires>
+	    <import addon="xbmc.python" version="2.1.0"/>
+	  </requires>
+	  <extension point="xbmc.python.module"
+	             library="lib" />
+	  <extension point="xbmc.addon.metadata">
+	    <platform>all</platform>
+	    <language></language>
+	    <summary lang="en">Mutagen is a Python module to handle audio metadata.</summary>
+	    <description lang="en">Mutagen is a Python module to handle audio metadata. It supports ASF, FLAC, 
+	M4A, Monkey's Audio, MP3, Musepack, Ogg Opus, Ogg FLAC, Ogg Speex, Ogg 
+	Theora, Ogg Vorbis, True Audio, WavPack and OptimFROG audio files. All 
+	versions of ID3v2 are supported, and all standard ID3v2.4 frames are 
+	parsed. It can read Xing headers to accurately calculate the bitrate and 
+	length of MP3s. ID3 and APEv2 tags can be edited regardless of audio 
+	format. It can also manipulate Ogg streams on an individual packet/page 
+	level.</description>
+	    <disclaimer lang="en">Code taken from http://code.google.com/p/mutagen/</disclaimer>
+	    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+	    <website>http://code.google.com/p/mutagen/</website>
+	    <source>https://bitbucket.org/lazka/mutagen/overview</source>
+	  </extension>
+	</addon>
+
+</addons>
