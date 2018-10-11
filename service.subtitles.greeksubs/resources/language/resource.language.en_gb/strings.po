@@ -1,0 +1,22 @@
+# Kodi Media Center language file
+# Addon Name: Greek Subs
+# Addon id: service.subtitles.greeksubs
+# Addon version: 1.0.0
+# Addon Provider: Bugatsinho
+
+msgid ""
+msgstr ""
+
+
+msgctxt "#32001"
+msgid "Error searching for subtitles"
+msgstr ""
+
+msgctxt "#32002"
+msgid "This service is only for Greek subtitles"
+msgstr ""
+
+msgctxt "#32211"
+msgid "Providers"
+msgstr ""
+

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.iNovelas" name="iNovelas" version="0.1.5" provider-name="Bugatsinho">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.resolveurl" version="5.0.00"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <reuselanguageinvoker>false</reuselanguageinvoker>
+    <summary lang="en">iNovelas es un add-on con telenovelas latinas.</summary>
+    <description lang="en">Enlaces gratis desde web para ver sus Telenovelas favoritas!</description>
+	<disclaimer lang="en">El autor no aloja ni distribuye ninguno de los contenidos mostrados por este complemento o tiene alguna afiliación con los propietarios del sitio web</disclaimer>
+	<language>en es</language>
+    <license>GNU GPL, version 2</license>
+    <twitter>https://twitter.com/Bugatsinho</twitter>
+    <news>version 0.1.5 4-8-2018
+ - Reparar Ultimos Capitulos error
+    </news>
+  </extension>
+</addon>

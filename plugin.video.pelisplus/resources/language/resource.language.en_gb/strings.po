@@ -1,0 +1,131 @@
+# Kodi Media Center language file
+# Addon Name: Pelisplus TV
+# Addon id: plugin.video.pelisplus
+# Addon Provider: Bugatsinho
+
+#This is a comment
+
+msgid ""
+msgstr ""
+
+msgctxt "#32000"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#32001"
+msgid "TV Shows"
+msgstr ""
+
+msgctxt "#32002"
+msgid "Documentaries"
+msgstr ""
+
+msgctxt "#32003"
+msgid "Kids"
+msgstr ""
+
+msgctxt "#32004"
+msgid "Anime"
+msgstr ""
+
+msgctxt "#32005"
+msgid "Search"
+msgstr ""
+
+msgctxt "#32006"
+msgid "Genre"
+msgstr ""
+
+msgctxt "#32007"
+msgid "Year"
+msgstr ""
+
+msgctxt "#32008"
+msgid "New Releases"
+msgstr ""
+
+msgctxt "#32009"
+msgid "All Movies"
+msgstr ""
+
+msgctxt "#33009"
+msgid "All TV Shows"
+msgstr ""
+
+msgctxt "#32010"
+msgid "Popular"
+msgstr ""
+
+msgctxt "#32011"
+msgid "Next Page"
+msgstr ""
+
+########ANIMEHD#########
+
+msgctxt "#32040"
+msgid "Languages"
+msgstr ""
+
+msgctxt "#32041"
+msgid "Latest Episodes"
+msgstr ""
+
+msgctxt "#32042"
+msgid "Recents"
+msgstr ""
+
+msgctxt "#32043"
+msgid "All Animes"
+msgstr ""
+########################
+msgctxt "#32013"
+msgid "[COLOR red]Done![/COLOR] [COLOR white]Cache has been cleared[/COLOR]"
+msgstr ""
+
+msgctxt "#32014"
+msgid "Season"
+msgstr ""
+
+msgctxt "#32015"
+msgid "Episode"
+msgstr ""
+
+msgctxt "#32016"
+msgid "SUB"
+msgstr ""
+
+msgctxt "#32017"
+msgid "Upcoming"
+msgstr ""
+
+msgctxt "#32018"
+msgid "Unknown"
+msgstr ""
+
+msgctxt "#32019"
+msgid "Version"
+msgstr ""
+
+msgctxt "#32020"
+msgid "Settings"
+msgstr ""
+
+msgctxt "#32021"
+msgid "Clear Cache"
+msgstr ""
+
+msgctxt "#32030"
+msgid "Auto-View  Settings"
+msgstr ""
+
+msgctxt "#32031"
+msgid "Enable Automatic View"
+msgstr ""
+
+msgctxt "#32032"
+msgid "Menu View"
+msgstr ""
+
+msgctxt "#32033"
+msgid "Movies View"
+msgstr ""

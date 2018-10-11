@@ -1,0 +1,133 @@
+# Kodi Media Center language file
+# Addon Name: Pelisplus TV
+# Addon id: plugin.video.pelisplus
+# Addon Provider: Bugatsinho
+
+#This is a comment
+
+msgid ""
+msgstr ""
+
+msgctxt "#32000"
+msgid "Movies"
+msgstr "Peliculas"
+
+msgctxt "#32001"
+msgid "TV Shows"
+msgstr "Series de TV"
+
+msgctxt "#32002"
+msgid "Documentaries"
+msgstr "Documentales"
+
+msgctxt "#32003"
+msgid "Kids"
+msgstr "Infantil"
+
+msgctxt "#32004"
+msgid "Anime"
+msgstr "Anime"
+
+msgctxt "#32005"
+msgid "Search"
+msgstr "Busqueda"
+
+msgctxt "#32006"
+msgid "Genre"
+msgstr "Género"
+
+msgctxt "#32007"
+msgid "Year"
+msgstr "Año"
+
+msgctxt "#32008"
+msgid "New Releases"
+msgstr "Estrenos"
+
+msgctxt "#32009"
+msgid "All Movies"
+msgstr "Todas las Peliculas"
+
+msgctxt "#33009"
+msgid "All TV Shows"
+msgstr "Todas las Series"
+
+msgctxt "#32010"
+msgid "Popular"
+msgstr "Populares"
+
+msgctxt "#32011"
+msgid "Next Page"
+msgstr "Siguiente"
+
+########ANIMEHD#########
+
+msgctxt "#32040"
+msgid "Languages"
+msgstr "Idiomas"
+
+msgctxt "#32041"
+msgid "Latest Episodes"
+msgstr "Ultimos Episodios"
+
+msgctxt "#32042"
+msgid "Recents"
+msgstr "Ultimos Agregados"
+
+msgctxt "#32043"
+msgid "All Animes"
+msgstr "Todos los Animes"
+
+########################
+
+msgctxt "#32013"
+msgid "[COLOR red]Done![/COLOR] [COLOR white]Cache has been cleared[/COLOR]"
+msgstr "[COLOR lime]Listo![/COLOR] [COLOR white]Borrada la caché[/COLOR]"
+
+msgctxt "#32014"
+msgid "Season"
+msgstr "Temporada"
+
+msgctxt "#32015"
+msgid "Episode"
+msgstr "Capitulo"
+
+msgctxt "#32016"
+msgid "SUB"
+msgstr ""
+
+msgctxt "#32017"
+msgid "Upcoming"
+msgstr ""
+
+msgctxt "#32018"
+msgid "Unknown"
+msgstr ""
+
+msgctxt "#32019"
+msgid "Version"
+msgstr "Versión"
+
+msgctxt "#32020"
+msgid "Settings"
+msgstr "Herramientas"
+
+msgctxt "#32021"
+msgid "Clear Cache"
+msgstr "Limpiar Cache"
+
+msgctxt "#32030"
+msgid "Auto-View  Settings"
+msgstr ""
+
+msgctxt "#32031"
+msgid "Enable Automatic View"
+msgstr ""
+
+msgctxt "#32032"
+msgid "Menu View"
+msgstr ""
+
+msgctxt "#32033"
+msgid "Movies View"
+msgstr ""

@@ -1,0 +1,128 @@
+# Kodi Media Center language file
+# Addon Name: CartoonsGR
+# Addon id: plugin.video.cartoonsgr
+# Addon Provider: Bugatsinho
+
+#This is a comment
+msgid ""
+msgstr ""
+
+msgctxt "#32000"
+msgid "MOVIES"
+msgstr "ΤΑΙΝΙΕΣ"
+
+msgctxt "#32001"
+msgid "SERIES"
+msgstr "ΣΕΙΡΕΣ"
+
+msgctxt "#32002"
+msgid "Search"
+msgstr "Αναζήτηση"
+
+msgctxt "#32003"
+msgid "With Subtitles"
+msgstr "Με Υπότιτλους"
+
+msgctxt "#32004"
+msgid "Dubbed Cartoons"
+msgstr "Μεταγλωτισμένα"
+
+msgctxt "#32005"
+msgid "Random Cartoons"
+msgstr "Τυχαία Παιδικά"
+
+msgctxt "#32006"
+msgid "Genre"
+msgstr "Είδος"
+
+msgctxt "#32007"
+msgid "Year"
+msgstr "Έτος"
+
+msgctxt "#32008"
+msgid "Latest Added"
+msgstr "Προστέθηκαν Πρόσφατα"
+
+msgctxt "#32009"
+msgid "All TV Shows"
+msgstr "Όλες οι Σειρές"
+
+msgctxt "#32010"
+msgid "Animations"
+msgstr "Κινούμενα Σχέδια"
+
+msgctxt "#32011"
+msgid "Next Page"
+msgstr "Επ.Σελίδα"
+
+msgctxt "#32012"
+msgid "[COLOR red]Please[/COLOR],[COLOR white]Try other link![/COLOR]"
+msgstr "[COLOR red]ΔΕΝ ΛΕΙΤΟΥΡΓΕΙ[/COLOR] [COLOR white]Δοκιμάστε άλλο λινκ![/COLOR]"
+
+msgctxt "#32013"
+msgid "[COLOR red]Done![COLOR white]Cache has been cleared[/COLOR]"
+msgstr "[COLOR red]ETOIMO![COLOR white]Το καθαρίσαμε![/COLOR]"
+
+msgctxt "#32014"
+msgid "DUB/SUB"
+msgstr "Μετ/Υποτ"
+
+msgctxt "#32015"
+msgid "DUB"
+msgstr "Μετ"
+
+msgctxt "#32016"
+msgid "SUB"
+msgstr "Υποτ"
+
+msgctxt "#32017"
+msgid "Upcoming"
+msgstr "Προσεχώς"
+
+msgctxt "#32018"
+msgid "Unknown"
+msgstr "Αγνωστο"
+
+msgctxt "#32019"
+msgid "Version"
+msgstr "Έκδοση"
+
+msgctxt "#32020"
+msgid "Settings"
+msgstr "Ρυθμίσεις"
+
+msgctxt "#32021"
+msgid "Clear Cache"
+msgstr "Εκκαθάριση Cache"
+
+msgctxt "#32030"
+msgid "Auto-View  Settings"
+msgstr "Ρυθμίσεις Προβολής"
+
+msgctxt "#32031"
+msgid "Enable Automatic View"
+msgstr "Αυτόματη Προβολή"
+
+msgctxt "#32032"
+msgid "Menu View"
+msgstr "Προβολή Μενού"
+
+msgctxt "#32033"
+msgid "Movies View"
+msgstr "Προβολή Ταινιών"
+
+msgctxt "#32034"
+msgid "Login Details"
+msgstr "Στοιχεία Σύνδεσης"
+
+msgctxt "#32035"
+msgid "Username"
+msgstr "Όνομα χρήστη"
+
+msgctxt "#32036"
+msgid "Password"
+msgstr "Κωδικός πρόσβασης"
+
+msgctxt "#32037"
+msgid "Register at http://paidikestainies.online/"
+msgstr "Εγγραφή στο http://paidikestainies.online/"

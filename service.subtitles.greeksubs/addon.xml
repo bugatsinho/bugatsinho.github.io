@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="service.subtitles.greeksubs" name="Greek Subs" version="1.1.1" provider-name="Bugatsinho">
+	<requires>
+		<import addon="xbmc.python" version="2.24.0"/>
+		<import addon="script.module.requests" version="2.8.1" />
+	</requires>
+	<extension point="xbmc.subtitle.module" library="service.py">
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<reuselanguageinvoker>false</reuselanguageinvoker>
+		<summary lang="en_GB">Greek Subs addon for subtitles</summary>
+		<summary lang="en_GB">Πρόσθετο υποτίτλων Greek Subs</summary>
+        <description lang="en_GB">Search and download subtitles from yifisubs, subs4free/subs4series and subztv.club</description>
+		<description lang="el_GR">Εύρεση και λήψη υποτίτλων από τα yifisubs, subs4free/subs4series και subztv.club</description>
+		<disclaimer lang="en_GB">This service is only for Greek subtitles and not published nor endorsed by subs4free/subs4series and subztv.club</disclaimer>
+		<disclaimer lang="el_GR">Υπηρεσία μόνο ελληνικών υποτίτλων που δεν έχει δημοσιευθεί ούτε εγκριθεί από τα subs4free/subs4series και subztv.club</disclaimer>
+		<license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
+		<website>https://subztv.club/</website>
+		<platform>all</platform>
+		<language>el</language>
+		<news>[B]1.1.1[/B] 30-6-2018
+- Υποστήριξη για kodi 18</news>
+	</extension>
+</addon>
