@@ -1,13 +1,14 @@
-Welcome to Bugatsinho Repository
+**Welcome to Bugatsinho Repository**
+
 Here you can find my 3rd party add-ons and repository for Kodi!
 
 Feel free to open an issue if something wrong with them!
 
-[Repository v2.1](https://raw.githubusercontent.com/bugatsinho/bugatsinho.github.io/master/_zips/repository.bugatsinho-2.1.zip)
+[Repository v2.1](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.1.zip?raw=true)
 
-ADD-ONS:
+**ADD-ONS:**
 
-[CartoonGR](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.cartoonsgr) 
+[CartoonsGR](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.cartoonsgr) 
 
 [iNovelas](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.iNovelas)
 
