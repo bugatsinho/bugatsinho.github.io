@@ -1,0 +1,100 @@
+2018.08.28
+- fix compilation artwork
+- fix next page
+- remove myfreemp3 functions
+- minor cosmetic cleanups
+
+2017.09.09
+- fixed by qahanik (thank you very much!)
+- changed versioning to date-format
+- fixed album downloading
+- minor cosmetic cleanups
+
+1.2.4
+Different play method for 17.0. Older Kodi versions use pre-cache function.
+
+1.2.1
+Fixed playback
+
+1.2.0
+Fixed playback
+Fixed downloads
+
+1.1.9
+Fixed compilations
+
+1.1.8
+Fixed billboard charts
+
+1.1.7
+Added "golden" path
+
+1.1.6
+Fixed charts
+
+1.1.2
+Fixed album search results for 'Various Artist' compilations
+
+1.1.1
+Fixed addon.xml
+Fixed pre-cache default setting
+Fixed track number error
+
+1.1.0
+Playback function re-written by ****** to pre-cache songs!
+Added option to always keep cached songs and automatically set ID3 tags (******) - Disabled by default
+Added option to set preferred artist/album folder structure for downloads
+Added new Compilations menu
+
+1.0.8b 
+Fixed charts
+
+1.0.8a 
+Code fixes for alternate source
+
+1.0.8
+Added option to use alternate mp3 source for users running Gotham
+
+1.0.7a
+Added artist search mode for Super Search
+
+1.0.7
+Added context option to albumb/song lists to clear Download Lock
+
+1.0.6
+Added setting to use DVDPlayer or PAPlayer
+
+1.0.5a
+Added icon for "Add ID3 tags"
+
+1.0.5
+Fixed script error when adding song to queue
+Adding settings option to queue songs on selection
+Added context on song to play song if Queue Songs setting is enabled
+
+1.0.4
+Fixed incorrect icons for Instant Mix
+
+1.0.3
+Fixed issue where some titles were not saving to favourites
+Added Groups function to favourite songs & albums: create & instant_play separate playlists
+
+1.0.2
+Added downloads
+
+1.0.0
+Added art by Marquerite!
+
+0.9.9a
+Fixed searches with '&' in artist/album/song name
+Added Instant Mix Albums function
+Added UK Official Top 100 Single list
+
+0.9.9
+Fixed playback errors on non-Windows devices
+
+0.8.5
+Attempted fix for non-Windows devices
+
+0.8.0
+First release!

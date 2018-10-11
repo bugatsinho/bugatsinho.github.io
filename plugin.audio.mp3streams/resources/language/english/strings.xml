@@ -1,0 +1,16 @@
+<strings>
+	<!-- Settings -->
+    <string id="10011">Choose the Golden path</string>
+    <string id="10007">Use alternative Gotham playing method (pre-cache)</string>
+    <string id="10008">Amount to pre-cache</string>
+    <string id="10010">Keep all downloaded tracks</string>
+    <string id="10000">Custom Music Directory</string>
+    <string id="10001">Music Directory</string>
+    <string id="10009">Artist/Album Folder Structure</string>
+    <string id="10002">Queue songs on selection</string>
+    <string id="10003">Queue albums on selection</string>
+    <string id="10004">Select XBMC Player</string>
+    <string id="10005">Use alternate source (disabled if pre-cache enabled)</string>
+    <string id="10006">Hide fanart when playing</string>
+    
+</strings>

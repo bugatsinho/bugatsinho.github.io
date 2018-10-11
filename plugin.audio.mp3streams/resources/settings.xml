@@ -1,0 +1,15 @@
+<settings>
+	<category label="Settings">
+        <!-- <setting id="golden_path" type="bool" label="10011" default="true"/> -->
+        <setting id="gotham_fix_2" type="bool" label="10007" default="true"/>
+        <setting id="pre-cache" type="labelenum" label="10008" default="250K" values="250K|500K|750K|1000K" enable="eq(-1,true)"/>
+        <setting id="keep_downloads" type="bool" label="10010" default="false" enable="eq(-2,true)"/>
+        <setting id="custom_directory" type="bool" label="10000" default="false" />
+        <setting id="music_dir" type="folder" label="10001" default="set" enable="!eq(-1,false)"/>
+        <setting id="folder_structure" type="enum" values="Artist/Album/Song|Artist - Album/Song" label="10009" default="0" />
+        <setting id="default_queue" type="bool" label="10002" default="false" />
+        <setting id="default_queue_album" type="bool" label="10003" default="false" />
+        <!-- <setting id="gotham_fix" type="bool" label="10005" default="false"/> -->
+        <setting id="hide_fanart" type="bool" label="10006" default="false" />
+	</category>
+</settings>
