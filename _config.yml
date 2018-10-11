@@ -6,6 +6,6 @@ description: > # this means to ignore newlines until "baseurl:"
 # social links
 twitter_username: https://twitter.com/bugatsinho
 
-show_excerpts: true # set to false to remove excerpts on the homepage
+show_excerpts: false # set to false to remove excerpts on the homepage
 
 theme: jekyll-theme-cayman
