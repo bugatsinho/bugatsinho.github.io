@@ -1,37 +1,17 @@
-## Welcome to GitHub Pages
+**Welcome to Bugatsinho Repository**
 
-You can use the [editor on GitHub](https://github.com/bugatsinho/bugatsinho.github.io/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+Here you can find my 3rd party add-ons and repository for Kodi!
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Feel free to open an issue if something wrong with them!
 
-### Markdown
+[Repository v2.1](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.1.zip?raw=true)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+**ADD-ONS:**
 
-```markdown
-Syntax highlighted code block
+[CartoonsGR](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.cartoonsgr) 
 
-# Header 1
-## Header 2
-### Header 3
+[iNovelas](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.iNovelas)
 
-- Bulleted
-- List
+[Pelisplus TV](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.pelisplus)
 
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/bugatsinho/bugatsinho.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+[GreekSubs](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/service.subtitles.greeksubs)
