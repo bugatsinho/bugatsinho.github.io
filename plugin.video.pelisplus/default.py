@@ -535,8 +535,8 @@ def addDir(name,url,mode,iconimage,fanart,description):
 def resolve(name, url, iconimage, description):
     stream_url = evaluate(url)
     name = name.split(' [B]|')[0]
-    stream_url, headers = stream_url.split('|') if 'User-Agent' in stream_url else stream_url
-    if stream_url.endswith('.mpd'):
+    if '.mpd|' in stream_url:
+        stream_url, headers = stream_url.split('|')
         listitem = xbmcgui.ListItem(path=stream_url)
         listitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
         listitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
