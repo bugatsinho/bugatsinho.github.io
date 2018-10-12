@@ -81,35 +81,36 @@
 	</addon>
 
 	
-	<addon id="plugin.video.pelisplus" name="PelisPlus TV" version="0.1.1" provider-name="Bugatsinho">
-	  <requires>
-	    <import addon="xbmc.python" version="2.1.0"/>
-	    <import addon="script.module.resolveurl" version="5.0.00"/>
-	  </requires>
-	  <extension point="xbmc.python.pluginsource" library="default.py">
-			<provides>video</provides>
-	  </extension>
-	  <extension point="xbmc.addon.metadata">
-	    <reuselanguageinvoker>false</reuselanguageinvoker>
-	    <platform>all</platform>
-	    <summary lang="es">PelisPlus TV Contenido desde pelisplus tv(Español-Latino) pagina web</summary>
-	    <description lang="es">Contenido desde pelisplus tv(Español-Latino) pagina web</description>
-	    <disclaimer lang="es">El autor de Pelisplus TV no aloja, transmite ni distribuye el contenido que se muestra dentro de este complemento y no
-	    tener alguna relación con el sitio web o el autor del sitio web.
-	    </disclaimer>
-	    <summary lang="en">PelisPlus TV Content from peliplus tv (Spanish-Latino) website</summary>
-	    <description lang="en">Content from peliplus tv (Spanish-Latino) website</description>
-	    <disclaimer lang="en">The Pelisplus TV's author  does not host, stream or distribute any of the content displayed inside this plugin and does not
-	    have any relation with the website or the website's author.
-	    </disclaimer>
-	    <language>en es</language>
-	    <license>GNU GPL, version 2</license>
-	    <twitter>https://twitter.com/Bugatsinho</twitter>
-	    <news>[0.1.1] 21/09/2018
-	- rewrite code for the new domain
-	    </news>
-	  </extension>
-	</addon>
+	<addon id="plugin.video.pelisplus" name="PelisPlus TV" version="0.1.2" provider-name="Bugatsinho">
+      <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="script.module.resolveurl" version="5.0.00"/>
+      </requires>
+      <extension point="xbmc.python.pluginsource" library="default.py">
+            <provides>video</provides>
+      </extension>
+      <extension point="xbmc.addon.metadata">
+        <reuselanguageinvoker>false</reuselanguageinvoker>
+        <platform>all</platform>
+        <summary lang="es">PelisPlus TV Contenido desde pelisplus tv(Español-Latino) pagina web</summary>
+        <description lang="es">Contenido desde pelisplus tv(Español-Latino) pagina web</description>
+        <disclaimer lang="es">El autor de Pelisplus TV no aloja, transmite ni distribuye el contenido que se muestra dentro de este complemento y no
+        tener alguna relación con el sitio web o el autor del sitio web.
+        </disclaimer>
+        <summary lang="en">PelisPlus TV Content from peliplus tv (Spanish-Latino) website</summary>
+        <description lang="en">Content from peliplus tv (Spanish-Latino) website</description>
+        <disclaimer lang="en">The Pelisplus TV's author  does not host, stream or distribute any of the content displayed inside this plugin and does not
+        have any relation with the website or the website's author.
+        </disclaimer>
+        <language>en es</language>
+        <license>GNU GPL, version 2</license>
+        <twitter>https://twitter.com/Bugatsinho</twitter>
+        <news>[0.1.2] 11/10/2018
+    - fixed error not showing link
+    - add support for mpd files
+        </news>
+      </extension>
+    </addon>
 	
 	<addon id="plugin.video.iNovelas" name="iNovelas" version="0.1.5" provider-name="Bugatsinho">
 	  <requires>

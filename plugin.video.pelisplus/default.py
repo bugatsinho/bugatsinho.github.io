@@ -184,9 +184,12 @@ def Get_links(name, url):#10
     links = []
     try:
         frame = client.parseDOM(data, 'iframe', ret='src')[0]
+        frame = frame.replace(' ', '%20')
+        #xbmc.log('@#@FRAME:%s' % frame, xbmc.LOGNOTICE)
         headers = {'User-Agent': client.agent(),
                    'Referer': url}
         data = client.request(frame, headers=headers)
+        #xbmc.log('@#@DATA:%s' % data, xbmc.LOGNOTICE)
         frames = client.parseDOM(data, 'div', attrs={'class': 'tabs_header'})[0]
         frames = zip(client.parseDOM(frames, 'a', ret='href'),
                      client.parseDOM(frames, 'img', ret='src'))
@@ -346,7 +349,7 @@ def An_ul_agre(url):#24
         title = title.encode('utf-8')
         title = '[B][COLOR white]%s[/COLOR][/B]' % title
 
-        addDir(title, link, 26, poster, ART + 'fanimet.jpg', '')
+        addDir(title, link, 20, poster, ART + 'fanimet.jpg', '')
     setView('movies', 'movie-view')
 
 
@@ -369,11 +372,12 @@ def An_popul(url):#25
         title = client.replaceHTMLCodes(title)
         title = title.encode('utf-8')
         title = '[B][COLOR white]%s[/COLOR][/B]' % title
-        addDir(title, link, 26, poster, ART + 'fanimet.jpg', '')
+        addDir(title, link, 20, poster, ART + 'fanimet.jpg', '')
     setView('movies', 'movie-view')
 
 
 def An_Todo(url):#26
+    #xbmc.log('@#@URL:%s' % url, xbmc.LOGNOTICE)
     r = client.request(url)
     data = client.parseDOM(r, 'div', attrs={'class': 'anime'})
 
@@ -401,7 +405,7 @@ def An_Todo(url):#26
         url = client.replaceHTMLCodes(url)
         url = url.encode('utf-8')
 
-        addDir(page, url, 26,ART + 'next.jpg', ART + 'fanimet.jpg', '')
+        addDir(page, url, 26, ART + 'next.jpg', ART + 'fanimet.jpg', '')
     except:
         pass
     setView('movies', 'movie-view')
@@ -531,13 +535,14 @@ def addDir(name,url,mode,iconimage,fanart,description):
 def resolve(name, url, iconimage, description):
     stream_url = evaluate(url)
     name = name.split(' [B]|')[0]
+    stream_url, headers = stream_url.split('|') if 'User-Agent' in stream_url else stream_url
     if stream_url.endswith('.mpd'):
-        listitem = xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
+        listitem = xbmcgui.ListItem(path=stream_url)
         listitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
-        listitem.setProperty('inputstream.adaptive.manifest_type', 'ism')
-        listitem.setMimeType('application/vnd.ms-sstr+xml')
+        listitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+        listitem.setMimeType('application/dash+xml')
+        listitem.setProperty('inputstream.adaptive.stream_headers', headers)
         listitem.setContentLookup(False)
-        listitem.setPath(str(stream_url))
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, listitem)
     else:
         try:
@@ -581,6 +586,7 @@ def evaluate(host):
                 link = re.compile('''\{file:['"]([^'"]+)''', re.DOTALL).findall(data)[0]
                 xbmc.log('@#@HDPRO:%s' % link, xbmc.LOGNOTICE)
             else:
+                #link = re.compile('''video\/mp4.+?src:['"](.+?)['"]''', re.DOTALL).findall(data)[0]
                 link = re.compile('''dash\+xml.+?src:['"](.+?)['"]''', re.DOTALL).findall(data)[0]
                 xbmc.log('@#@HDPRO:%s' % link, xbmc.LOGNOTICE)
             return link + '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), host)

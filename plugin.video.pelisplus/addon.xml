@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.pelisplus" name="PelisPlus TV" version="0.1.1" provider-name="Bugatsinho">
+<addon id="plugin.video.pelisplus" name="PelisPlus TV" version="0.1.2" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
@@ -23,8 +23,9 @@
     <language>en es</language>
     <license>GNU GPL, version 2</license>
     <twitter>https://twitter.com/Bugatsinho</twitter>
-    <news>[0.1.1] 03/10/2018
-- rewrite code for the new domain
+    <news>[0.1.2] 11/10/2018
+- fixed error not showing link
+- add support for mpd files
     </news>
   </extension>
 </addon>
