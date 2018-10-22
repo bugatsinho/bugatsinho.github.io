@@ -183,7 +183,7 @@ def Get_links(name, url):#10
     poster = client.parseDOM(data, 'img', ret='src')[0]
     links = []
     try:
-        frame = client.parseDOM(data, 'iframe', ret='src')[0]
+        frame = client.parseDOM(data, 'iframe', ret='src')[0].encode('utf-8')
         frame = frame.replace(' ', '%20')
         #xbmc.log('@#@FRAME:%s' % frame, xbmc.LOGNOTICE)
         headers = {'User-Agent': client.agent(),
@@ -207,12 +207,12 @@ def Get_links(name, url):#10
     except:
         desc = 'N/A'
 
-    #try:
-    #    trailer = client.parseDOM(r, 'iframe', ret='src')[-1]
-    #    if 'youtube' in trailer:
-    #        addDir('[B][COLORlime]Trailer[/B][/COLOR]', trailer, 100, poster, fanart, str(desc))
-    #except:
-    #    pass
+    try:
+        trailer = Trailer(r)
+        if re.search('/emded/\w+', trailer):
+            addDir('[B][COLORlime]Trailer[/B][/COLOR]', trailer, 100, poster, fanart, str(desc))
+    except:
+        pass
 
     for link, host in links:
         link = client.replaceHTMLCodes(link)
@@ -228,10 +228,11 @@ def Get_links(name, url):#10
 
 
 def Trailer(html):
-    r = client.parseDOM(html, 'div', attrs={'class':'trailer'})[0]
-    trailer = client.parseDOM(r, 'iframe', ret='src')[0]
+    trailer = client.parseDOM(html, 'iframe', ret='src')[-1].encode('utf-8')
+    xbmc.log('@#@tr-links:%s' % trailer, xbmc.LOGNOTICE)
     #.replace('ú', u'\xbf')
     trailer = urllib.quote(trailer.encode('latin1'), ':/')
+    xbmc.log('@#@TRAILER:%s' % trailer, xbmc.LOGNOTICE)
     return trailer
 
 
@@ -535,7 +536,9 @@ def addDir(name,url,mode,iconimage,fanart,description):
 def resolve(name, url, iconimage, description):
     stream_url = evaluate(url)
     name = name.split(' [B]|')[0]
-    if '.mpd|' in stream_url:
+    if stream_url is None:
+        control.infoDialog('Prueba otro enlace', NAME, ICON, 4000)
+    elif '.mpd|' in stream_url:
         stream_url, headers = stream_url.split('|')
         listitem = xbmcgui.ListItem(path=stream_url)
         listitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
@@ -552,17 +555,22 @@ def resolve(name, url, iconimage, description):
             liz.setPath(str(stream_url))
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
         except:
-            xbmc.executebuiltin("XBMC.Notification("+Lang(32012)+" ,2000)")
+            control.infoDialog('Prueba otro enlace', NAME, ICON, 4000)
 
 
 def evaluate(host):
     try:
+        xbmc.log('@#@HOST:%s' % host, xbmc.LOGNOTICE)
         if 'animeshd' in host:
             host = client.request(host, output='geturl')
 
+        elif 'server.pelisplus' in host:
+            host = client.request(host)
+            host = client.parseDOM(host, 'iframe', ret='src')[0]
+
         else:
             host = host
-        xbmc.log('@#@HOST:%s' % host, xbmc.LOGNOTICE)
+        xbmc.log('@#@HOST-FINAL:%s' % host, xbmc.LOGNOTICE)
         if 'openload' in host:
             from resources.lib.modules import openload
             if openload.test_video(host):
@@ -591,6 +599,35 @@ def evaluate(host):
                 xbmc.log('@#@HDPRO:%s' % link, xbmc.LOGNOTICE)
             return link + '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), host)
 
+        elif 'pelishd.tv' in host:
+            res_quality = []
+            stream_url = []
+            from resources.lib.modules import unjuice
+            import json
+            data = client.request(host)
+            if unjuice.test(data):
+                juice = unjuice.run(data)
+                links = json.loads(re.findall('sources:(\[.+?\])', juice)[0])
+                for stream in links:
+                    url = stream['file']
+                    qual = '[COLORlime][B]%s Calidad[/B][/COLOR]' % stream['label']
+                    res_quality.append(qual)
+                    stream_url.append(url)
+                if len(res_quality) > 1:
+                    dialog = xbmcgui.Dialog()
+                    ret = dialog.select('[COLORgold][B]Ver en[/B][/COLOR]', res_quality)
+                    if ret == -1:
+                        return
+                    elif ret > -1:
+                        host = stream_url[ret]
+                        xbmc.log('@#@HDPRO:%s' % host, xbmc.LOGNOTICE)
+                        return host + '|User-Agent=%s' % urllib.quote(client.agent())
+                    else:
+                        return
+                else:
+                    host = stream_url[0]
+                    return host + '|User-Agent=%s' % urllib.quote(client.agent())
+
         elif 'www.pelisplus.net' in host:
             res_quality = []
             stream_url = []
@@ -605,18 +642,24 @@ def evaluate(host):
             streams = data['data']
             for stream in streams:
                 url = stream['file']
-                qual = stream['label']
+                qual = '[COLORlime][B]%s Calidad[/B][/COLOR]' % stream['label']
                 res_quality.append(qual)
                 stream_url.append(url)
             if len(res_quality) > 1:
                 dialog = xbmcgui.Dialog()
-                ret = dialog.select('Ver en', res_quality)
+                ret = dialog.select('[COLORgold][B]Ver en[/B][/COLOR]', res_quality)
                 if ret == -1:
                     return
                 elif ret > -1:
                     host = stream_url[ret]
                     xbmc.log('@#@HDPRO:%s' % host, xbmc.LOGNOTICE)
                     return host + '|User-Agent=%s' % urllib.quote(client.agent())
+                else:
+                    return
+
+            else:
+                host = stream_url[0]
+                return host + '|User-Agent=%s' % urllib.quote(client.agent())
 
         else:
             host = resolveurl.resolve(host)

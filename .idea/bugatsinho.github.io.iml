@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
+    <content url="file://$USER_HOME$/Library/Application Support/Kodi/addons/plugin.video.atlas" />
+    <content url="file://$USER_HOME$/Library/Application Support/Kodi/addons/plugin.video.cartoonsgr" />
+    <content url="file://$USER_HOME$/Library/Application Support/Kodi/addons/plugin.video.iNovelas" />
+    <content url="file://$USER_HOME$/Library/Application Support/Kodi/addons/plugin.video.pelisplus">
+      <sourceFolder url="file://$USER_HOME$/Library/Application Support/Kodi/addons/plugin.video.pelisplus/resources/lib/modules" isTestSource="false" />
+    </content>
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="inheritedJdk" />
+    <content url="file://$MODULE_DIR$/../magico" />
+    <orderEntry type="jdk" jdkName="Python 2.7 (FILM-NET)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">
