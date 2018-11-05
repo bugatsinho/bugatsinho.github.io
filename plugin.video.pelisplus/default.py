@@ -9,6 +9,9 @@ from resources.lib.modules import client
 from resources.lib.modules import cache
 from resources.lib.modules import control
 
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 BASEURL = 'https://www.pelisplus.to/'
 
 ADDON       = xbmcaddon.Addon()
@@ -79,15 +82,17 @@ def Get_Genres(url): #3
 
 
 def Get_Seasons(url, name):#4
-    r = client.request(url)
+    r = client.request(url).decode('latin-1').encode('utf-8')
     episodes = client.parseDOM(r, 'div', attrs={'class': 'tab-content'})[0]
-    data = client.parseDOM(r, 'ul', attrs={'class': 'nav nav-pills'})[0]
+    data = client.parseDOM(r, 'div', attrs={'class': 'VideoPlayer'})[0]
     poster = client.parseDOM(r, 'img', ret='src')[0]
     ss = zip(client.parseDOM(data, 'a', ret='href'),
              client.parseDOM(data, 'a'))
-    desc = client.parseDOM(r, 'p', attrs={'class': 'text-dark'})[0].encode('utf-8')
+    xbmc.log('@#@SEASONS:%s' % ss, xbmc.LOGNOTICE)
+    desc = client.parseDOM(r, 'p', attrs={'class': 'read-more-wrap'})[0].encode('latin-1')
+    desc = clear_Title(desc)
     for i in ss:
-        season = i[1]
+        season = re.sub('\n', '', i[1])
         surl = url + '|' + episodes.encode('utf-8') + '|' + i[0][1:].encode('utf-8') + '|' + str(poster)
         title = '[B][COLOR white]%s [B]| [COLOR lime]%s[/COLOR][/B]' % (name, season)
         addDir(title, surl, 7, poster, FANART, str(desc))
@@ -105,7 +110,7 @@ def Get_epis(url):#7
 
         title = i[1]
         title = client.replaceHTMLCodes(title)
-        title = title.encode('utf-8')
+        title = title.encode('latin-1')
         title = '[B][COLOR white]%s[/COLOR][/B]' % title
 
         addDir(title, link, 10, poster, FANART, '')
@@ -178,32 +183,20 @@ def Get_content(url): #5
 
 
 def Get_links(name, url):#10
-    r = client.request(url)
-    data = client.parseDOM(r, 'div', attrs={'class': 'main-content'})[0]
-    poster = client.parseDOM(data, 'img', ret='src')[0]
+    r = client.request(url).decode('latin-1').encode('utf-8')
+    poster = client.parseDOM(r, 'div', attrs={'class': 'col-sm-3'})[0]
+    poster = client.parseDOM(poster, 'img', ret='src')[0]
     links = []
     try:
-        frame = client.parseDOM(data, 'iframe', ret='src')[0].encode('utf-8')
-        frame = frame.replace(' ', '%20')
-        #xbmc.log('@#@FRAME:%s' % frame, xbmc.LOGNOTICE)
-        headers = {'User-Agent': client.agent(),
-                   'Referer': url}
-        data = client.request(frame, headers=headers)
-        #xbmc.log('@#@DATA:%s' % data, xbmc.LOGNOTICE)
-        frames = client.parseDOM(data, 'div', attrs={'class': 'tabs_header'})[0]
-        frames = zip(client.parseDOM(frames, 'a', ret='href'),
-                     client.parseDOM(frames, 'img', ret='src'))
-        for frame, host in frames:
-            data = client.request(frame)
-            link = client.parseDOM(data, 'iframe', ret='src')[0]
-            host = host.split('/')[-1][:-4].capitalize()
-            links.append((link, host))
-        links = sorted(links, key=lambda x: x[1])
+        frames = zip(client.parseDOM(r, 'a', attrs={'href': '#option\d+'}),
+                     re.findall('''video\[\d+\]\s*=\s*['"](.+?)['"]''', r, re.DOTALL))
+        links = sorted(frames, key=lambda x: x[0])
     except:
         if len(links) == 0: addDir('[B][COLOR white]No Hay Enlace[/COLOR][/B]', url, 'BUG', poster, FANART, '')
 
     try:
-        desc = client.parseDOM(r, 'p', attrs={'class': 'text-dark'})[0].encode('utf-8')
+        desc = client.parseDOM(r, 'p', attrs={'class': 'read-more-wrap'})[0].encode('utf-8')
+        desc = clear_Title(desc).encode('latin-1')
     except:
         desc = 'N/A'
 
@@ -214,9 +207,9 @@ def Get_links(name, url):#10
     except:
         pass
 
-    for link, host in links:
-        link = client.replaceHTMLCodes(link)
-        link = link.encode('utf-8')
+    for host, link in links:
+        link = client.replaceHTMLCodes(link).encode('utf-8')
+        link = link.replace(' ', '%20')
 
         host = clear_Title(host)
         host = host.encode('utf-8')
@@ -229,10 +222,10 @@ def Get_links(name, url):#10
 
 def Trailer(html):
     trailer = client.parseDOM(html, 'iframe', ret='src')[-1].encode('utf-8')
-    xbmc.log('@#@tr-links:%s' % trailer, xbmc.LOGNOTICE)
+    #xbmc.log('@#@tr-links:%s' % trailer, xbmc.LOGNOTICE)
     #.replace('ú', u'\xbf')
-    trailer = urllib.quote(trailer.encode('latin1'), ':/')
-    xbmc.log('@#@TRAILER:%s' % trailer, xbmc.LOGNOTICE)
+    trailer = urllib.quote(trailer.encode('latin-1'), ':/')
+    #xbmc.log('@#@TRAILER:%s' % trailer, xbmc.LOGNOTICE)
     return trailer
 
 
