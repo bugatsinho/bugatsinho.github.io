@@ -39,13 +39,13 @@ class subztv:
             if len(match) > 0:
     
                 title, year, imdb = match[0][0], match[0][1], match[0][2]
-                cj = requests.get('https://subztv.club/rainbow/master-js', headers=self.hdr).cookies
+                cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
                 
                 if imdb.startswith('tt'):
-                    r = requests.get('https://subztv.club/view/%s' % imdb, headers=self.hdr, cookies=cj).content
+                    r = requests.get('https://subztv.online/view/%s' % imdb, headers=self.hdr, cookies=cj).content
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 else:
-                    url = 'https://subztv.club/search/%s/movies' % urllib.quote(title)
+                    url = 'https://subztv.online/search/%s/movies' % urllib.quote(title)
                     
                     data = requests.get(url, headers=self.hdr).content
                     data = client.parseDOM(data, 'span', attrs={'class': 'h5'})
@@ -54,7 +54,7 @@ class subztv:
     
                     link = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
     
-                    cj = requests.get('https://subztv.club/rainbow/master-js', headers=self.hdr).cookies
+                    cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
                     
                     r = requests.get(link, headers=self.hdr, cookies=cj).content
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
@@ -68,7 +68,7 @@ class subztv:
     
                 season, episode = '%01d' % int(season), '%01d' % int(episode)
                 hdlr = 'season-%s-episode-%s' % (season, episode)
-                url = 'https://subztv.club/search/%s/tv' % urllib.quote(title)
+                url = 'https://subztv.online/search/%s/tv' % urllib.quote(title)
                 data = requests.get(url, headers=self.hdr).content
                 data = client.parseDOM(data, 'span', attrs={'class':'h5'})
                 data = [(client.parseDOM(i, 'a')[0],
@@ -78,7 +78,7 @@ class subztv:
                 except:
                         link = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
     
-                        cj = requests.get('https://subztv.club/rainbow/master-js', headers=self.hdr).cookies
+                        cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
                         r = requests.get(link, headers=self.hdr, cookies=cj).content
                         r = re.sub(r'[^\x00-\x7F]+', ' ', r)
     
@@ -87,7 +87,7 @@ class subztv:
                         url = client.parseDOM(url, 'a', ret='href')
                         url = [i for i in url if hdlr in i][0]
                 imdb = re.findall('(tt\d+)', url)[0]
-                cj = requests.get('https://subztv.club/rainbow/master-js', headers=self.hdr).cookies
+                cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
     
                 r = requests.get(url, headers=self.hdr, cookies=cj).content
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
@@ -107,7 +107,7 @@ class subztv:
                 name = client.replaceHTMLCodes(name)
                 name = name.encode('utf-8')
 
-                url = 'https://subztv.club/' + 'dll/' + data[0] + '/0/' + secCode
+                url = 'https://subztv.online/' + 'dll/' + data[0] + '/0/' + secCode
                 url = client.replaceHTMLCodes(url)
                 url = url.encode('utf-8')
 

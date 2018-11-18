@@ -7,6 +7,8 @@
     <content url="file://$USER_HOME$/Library/Application Support/Kodi/addons/plugin.video.pelisplus">
       <sourceFolder url="file://$USER_HOME$/Library/Application Support/Kodi/addons/plugin.video.pelisplus/resources/lib/modules" isTestSource="false" />
     </content>
+    <content url="file://$USER_HOME$/Library/Application Support/Kodi/addons/service.subtitles.greeksubs" />
+    <content url="file://$USER_HOME$/Library/Application Support/Kodi/addons/service.subtitles.subtitles.gr" />
     <content url="file://$MODULE_DIR$" />
     <content url="file://$MODULE_DIR$/../magico" />
     <orderEntry type="jdk" jdkName="Python 2.7 (FILM-NET)" jdkType="Python SDK" />
