@@ -13,6 +13,9 @@ Feel free to open an issue if something wrong with them!
 
 **ADD-ONS:**
 
+![](images/rlsBB.png)       
+[**ReleaseBB source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.releaseBB) 
+
 
 ![](images/cgr.png)       
 [**CartoonsGR source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.cartoonsgr) 

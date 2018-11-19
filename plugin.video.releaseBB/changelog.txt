@@ -1,0 +1,14 @@
++ [B][COLOR gold]1.1.0[/B] [COLOR gold](19-11-2018)[/COLOR]
+- Add Cache function(Menus open faster-reduce website traffic)
+- New artwork (icon/fanart)
+- Add Version on main menu(ForceUpdate)
+- Code cosmetics
+
++ [B][COLOR gold]1.0.1[/B] [COLOR gold](13-11-2018)[/COLOR]
+- Fix title's icons error
+- Add Real-Debrid authorization
+
++ [B][COLOR gold]1.0.0[/B] [COLOR gold](13-11-2018)[/COLOR]
+- Change domain to rlsbb.to
+- Fix search function
+- Code cosmetics
