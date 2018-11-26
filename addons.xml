@@ -199,7 +199,7 @@
 	  </extension>
 	</addon>
 
-	<addon id="plugin.video.releaseBB" version="1.1.0" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
+	<addon id="plugin.video.releaseBB" version="1.1.1" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.t0mm0.common" version="2.1.1"/>
@@ -217,10 +217,8 @@
 		<website>https://bugatsinho.github.io/</website>
 		<twitter>https://twitter.com/bugatsinho</twitter>
 		<repo>https://bugatsinho.github.io/repo/</repo>
-		<news>+ [B][COLOR gold]1.1.0[/B] [COLOR gold](19-11-2018)[/COLOR]
-	- Add Cache function(Menus open faster-reduce website traffic)
-	- New artwork (icon/fanart)
-	- Add Version on main menu(ForceUpdate)
+		<news>+ [B][COLOR lime]1.1.1[/B] [COLOR gold](26-11-2018)[/COLOR]
+	- Fix unicode errors(PLOT)
 	- Code cosmetics</news>
 		<assets>
 			<icon>icon.png</icon>

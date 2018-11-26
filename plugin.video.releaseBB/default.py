@@ -33,6 +33,8 @@ BASE_URL = 'http://rlsbb.to'
 net = Net()
 addon = Addon('plugin.video.releaseBB', sys.argv)
 
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 ##### Queries ##########
 mode = addon.queries['mode']
@@ -52,6 +54,7 @@ plot = addon.queries.get('plot', None)
 ADDON = control.addon()
 FANART = ADDON.getAddonInfo('fanart')
 ICON = ADDON.getAddonInfo('icon')
+NAME = ADDON.getAddonInfo('name')
 version = ADDON.getAddonInfo('version')
 IconPath = control.addonPath + "/icons/"
 
@@ -63,7 +66,8 @@ def MainMenu():    #homescreen
     addon.add_directory({'mode': 'Categories', 'section': 'tv-shows'},
                         {'title':  '[COLOR orange][B]Release BB [COLOR blue]Tv Shows [/COLOR][/B]'},
                         img=IconPath + 'tv.png', fanart=FANART)
-    addon.add_directory({'mode': 'GetSearchQuery9'},  {'title':  '[COLOR orange][B]ReleaseBB [COLOR yellow]Search[/COLOR][/B]'},
+    addon.add_directory({'mode': 'GetSearchQuery9'},
+                        {'title':  '[COLOR orange][B]ReleaseBB [COLOR yellow]Search[/COLOR][/B]'},
                         img=IconPath + 'search.png', fanart=FANART)
     addon.add_directory({'mode': 'RealDebrid'},  {'title':  '[COLOR gold][B]Real Debrid Auth[/B][/COLOR]'},
                         img=IconPath + 'rd.png', fanart=FANART, is_folder=False)
@@ -73,7 +77,8 @@ def MainMenu():    #homescreen
                         img=ICON, fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'help'}, {'title':  '[COLOR gold][B][I]https://bugatsinho.github.io[/B][/I][/COLOR]'},
                         img='https://bugatsinho.github.io/images/bug.png', fanart=FANART, is_folder=False)
-    addon.add_directory({'mode': 'forceupdate'}, {'title': '[COLOR gold][B]Version:' + ' [COLOR lime]%s[/COLOR][/B]' % version},
+    addon.add_directory({'mode': 'forceupdate'},
+                        {'title': '[COLOR gold][B]Version:' + ' [COLOR lime]%s[/COLOR][/B]' % version},
                         img=ICON, fanart=FANART, is_folder=False)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
@@ -129,7 +134,8 @@ def GetTitles(section, url, startPage= '1', numOfPages= '1'): # Get Movie Titles
                                     {'title': '[COLOR orange][B][I]Older Entries...[/B][/I][/COLOR]'},
                                     img=IconPath + 'nextpage.png', fanart=FANART)
     except BaseException:
-        control.infoDialog('[COLOR red][B]Ooops![/B][/COLOR],[COLOR lime][B]Something wrong!![/B][/COLOR]', 7000, '')
+        control.infoDialog(
+            '[COLOR red][B]Ooops![/B][/COLOR]\n[COLOR lime][B]Something wrong!![/B][/COLOR]', NAME, ICON, 3000)
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
@@ -148,7 +154,6 @@ def GetLinks(section, url, img, plot): # Get Links
                 host = GetDomain(url)
                 if 'Unknown' in host:
                     continue
-
                 # ignore .rar files
                 if any(x in url.lower() for x in ['.rar.', '.zip.', '.iso.'])\
                         or any(url.lower().endswith(x) for x in ['.rar', '.zip', '.iso']):
@@ -176,12 +181,15 @@ def GetLinks(section, url, img, plot): # Get Links
                     title = title.replace('avi', '[COLOR pink][B][I]AVI[/B][/I][/COLOR] ')
                     title = title.replace('mp4', '[COLOR purple][B][I]MP4[/B][/I][/COLOR] ')
                     host = host.replace('youtube.com', '[COLOR red][B][I]Movie Trailer[/B][/I][/COLOR]')
-                    addon.add_directory({'mode': 'PlayVideo', 'url': url, 'listitem': listitem, 'img': img, 'title': name, 'plot': plot},
-                                        {'title':  host + ' : ' + title, 'plot': plot}, img=img, fanart=FANART, is_folder=False)
+                    addon.add_directory(
+                        {'mode': 'PlayVideo', 'url': url, 'listitem': listitem, 'img': img, 'title': name, 'plot':plot},
+                        {'title':  host + ' : ' + title, 'plot': plot}, img=img, fanart=FANART, is_folder=False)
 
 
     except BaseException:
-        control.infoDialog("[COLOR red][B]Sorry there was a problem ![/B][/COLOR],[COLOR lime][B]Please try again !![/B][/COLOR]", 7000, "")
+        control.infoDialog(
+            "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
+            NAME, ICON, 3000)
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
@@ -194,7 +202,9 @@ def PlayVideo(url, title, img, plot):
         liz.setPath(str(stream_url))
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
     except BaseException:
-        control.infoDialog('[COLOR red][B]Sorry Link may have been removed ![/B][/COLOR],[COLOR lime][B]Please try a different link/host !![/B][/COLOR]', 7000, '')
+        control.infoDialog(
+            '[COLOR red][B]Sorry Link may have been removed![/B][/COLOR]\n'
+            '[COLOR lime][B]Please try a different link!![/B][/COLOR]', NAME, ICON, 3000)
 
 
 def GetDomain(url):
@@ -221,21 +231,26 @@ def GetMediaInfo(html):
 
 
 def Sinopsis(txt):
-    OPEN = txt.encode('utf8') #re.findall('''((Plot:.+?)</p>|</p>\n<p>(.+?)</p><p>)''', desc, re.DOTALL | re.I)[0]
+    OPEN = txt.encode('utf8')
     try:
-        Sinopsis = re.findall('(Plot:.+?)</p>', OPEN, flags=re.DOTALL)[0]
-        if not Sinopsis:
-            Sinopsis = re.findall('</p>\n<p>(.+?)</p><p>', OPEN, flags=re.DOTALL)[0]
+        try:
+            if 'Plot:' in OPEN:
+                Sinopsis = re.findall('(Plot:.+?)</p>', OPEN, re.DOTALL)[0]
+            else:
+                Sinopsis = re.findall('</p>\n<p>(.+?)</p><p>', OPEN, re.DOTALL)[0]
+
+        except:
+            Sinopsis = re.findall('</p>\n<p>(.+?)</p>\n<p style', OPEN, re.DOTALL)[0]
         part = re.sub('<.*?>', '', Sinopsis)
         part = re.sub('\.\s+', '.', part)
         desc = clear_Title(part)
         desc = desc.decode('ascii', errors='ignore')
         return desc
     except BaseException:
-        pass
+        return 'N/A'
 
 
-def GetSearchQuery9():                 #search a
+def GetSearchQuery9():
     last_search = addon.load_data('search')
     if not last_search:
         last_search = ''
@@ -255,10 +270,11 @@ def Search9(query):
     try:
         from resources.lib.modules import cfscrape
         scraper = cfscrape.create_scraper()
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+        headers = {'User-Agent': client.randomagent(),
                    'Referer': 'http://rlsbb.ru'}
         query = urllib.quote_plus(query).replace('+', '%2B')
-        url = 'http://search.rlsbb.ru/lib/search6515260491260.php?phrase=%s&pindex=1&&radit=0.%s' % (query, random.randint(00000000000000001, 99999999999999999))
+        url = 'http://search.rlsbb.ru/lib/search6515260491260.php?phrase=%s&pindex=1&radit=0.%s'
+        url = url % (query, random.randint(00000000000000001, 99999999999999999))
         html = scraper.get(url, headers=headers).content
         posts = json.loads(html)['results']
         posts = [(i['post_name'], i['post_title']) for i in posts if i]
@@ -267,6 +283,9 @@ def Search9(query):
             title = title.encode('utf-8')
             addon.add_directory({'mode': 'GetLinks', 'url': movieUrl}, {'title':  title}, img=IconPath + 'search.png', fanart=FANART)
     except BaseException:
+        control.infoDialog(
+            "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
+            NAME, ICON, 3000)
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def clear_Title(txt):
