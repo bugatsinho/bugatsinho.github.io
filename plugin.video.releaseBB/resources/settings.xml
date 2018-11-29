@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings>
+    <category label="GENERAL">
+        <setting type="lsep" label="LINKS/SIZE" />
+        <setting id="test.links" label="Remove 'DEAD' Links|Show File Size" type="bool" default="false"/>
+    </category>
+    <category label="RESOLVER">
+        <setting type="lsep" label="ResolveUrl-Settings" />
+        <setting id="open_smu_settings" type="action" label="ResolveUrl Settings" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=ResolverSettings)" />
+        <setting type="lsep" label="PREMIUM SERVICES AUTHORIZATION" />
+        <setting id="real-debrid" type="action" label="Real-Debrid Auth" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_rd)" />
+        <setting id="rd_reset" type="action" label="Real-Debrid Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_rd)" />
+        <setting id="all-debrid" type="action" label="All-Debrid Auth" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_ad)" />
+        <setting id="ad_reset" type="action" label="All-Debrid Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_ad)" />
+    </category>
+    <category label="CACHE">
+        <setting id="clearcache" type="action" label="CLEAR CACHE" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)" />
+    </category>
+</settings>

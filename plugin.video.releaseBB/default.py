@@ -11,6 +11,7 @@ import os
 import resolveurl
 import random
 import json
+import threading
 from resources.lib.modules import client
 from resources.lib.modules import control
 from resources.lib.modules import cache
@@ -56,7 +57,7 @@ FANART = ADDON.getAddonInfo('fanart')
 ICON = ADDON.getAddonInfo('icon')
 NAME = ADDON.getAddonInfo('name')
 version = ADDON.getAddonInfo('version')
-IconPath = control.addonPath + "/icons/"
+IconPath = control.addonPath + "/resources/icons/"
 
 
 def MainMenu():    #homescreen
@@ -66,15 +67,17 @@ def MainMenu():    #homescreen
     addon.add_directory({'mode': 'Categories', 'section': 'tv-shows'},
                         {'title':  '[COLOR orange][B]Release BB [COLOR blue]Tv Shows [/COLOR][/B]'},
                         img=IconPath + 'tv.png', fanart=FANART)
-    addon.add_directory({'mode': 'GetSearchQuery9'},
-                        {'title':  '[COLOR orange][B]ReleaseBB [COLOR yellow]Search[/COLOR][/B]'},
+    addon.add_directory({'mode': 'search_bb'},
+                        {'title':  '[COLOR orange][B]Release BB [COLOR yellow]Search[/COLOR][/B]'},
                         img=IconPath + 'search.png', fanart=FANART)
-    addon.add_directory({'mode': 'RealDebrid'},  {'title':  '[COLOR gold][B]Real Debrid Auth[/B][/COLOR]'},
-                        img=IconPath + 'rd.png', fanart=FANART, is_folder=False)
-    addon.add_directory({'mode': 'ResolverSettings'}, {'title':  '[COLOR cyan][B]Resolver Settings[/B][/COLOR]'}, 
-                        img=IconPath + 'resolver.png', fanart=FANART, is_folder=False)
-    addon.add_directory({'mode': 'ClearCache'}, {'title': '[COLOR red][B]Clear Cache[/B][/COLOR]'},
+    addon.add_directory({'mode': 'settings'}, {'title': '[COLOR cyan][B]Settings-Tools[/B][/COLOR]'},
                         img=ICON, fanart=FANART, is_folder=False)
+    #addon.add_directory({'mode': 'RealDebrid'},  {'title':  '[COLOR gold][B]Real Debrid Auth[/B][/COLOR]'},
+    #                    img=IconPath + 'rd.png', fanart=FANART, is_folder=False)
+    #addon.add_directory({'mode': 'ResolverSettings'}, {'title':  '[COLOR cyan][B]Resolver Settings[/B][/COLOR]'},
+    #                    img=IconPath + 'resolver.png', fanart=FANART, is_folder=False)
+    #addon.add_directory({'mode': 'ClearCache'}, {'title': '[COLOR red][B]Clear Cache[/B][/COLOR]'},
+    #                    img=ICON, fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'help'}, {'title':  '[COLOR gold][B][I]https://bugatsinho.github.io[/B][/I][/COLOR]'},
                         img='https://bugatsinho.github.io/images/bug.png', fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'forceupdate'},
@@ -93,8 +96,10 @@ def Categories(section):  # categories
     for title, link in items:
         title = title.encode('utf-8')
         link = client.replaceHTMLCodes(link)
-        addon.add_directory({'mode': 'GetTitles', 'section': section, 'url': link,
-                             'startPage': '1', 'numOfPages': '2'}, {'title': title},
+        addon.add_directory({'mode': 'GetTitles', 'section': section, 'url': link,'startPage': '1', 'numOfPages': '2'},
+                            {'title': title},
+                            [('Release BB Settings', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                             ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',)],
                             img='https://pbs.twimg.com/profile_images/834058861669654528/p7gDr9C6_400x400.jpg',
                             fanart=FANART)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
@@ -125,7 +130,11 @@ def GetTitles(section, url, startPage= '1', numOfPages= '1'): # Get Movie Titles
                 desc = Sinopsis(desc)
 
                 addon.add_directory({'mode': 'GetLinks', 'section': section, 'url': movieUrl, 'img': img, 'plot': desc},
-                                    {'title':  name, 'plot': desc}, img=img, fanart=FANART)
+                                    {'title':  name, 'plot': desc},
+                                    [('Release BB Settings',
+                                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                                     ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',)],
+                                    img=img, fanart=FANART)
             if 'Older Entries' not in html:
                     break
         # keep iterating until the laast page is reached
@@ -148,6 +157,7 @@ def GetLinks(section, url, img, plot): # Get Links
         main = [i for i in main if i]
         comments = dom.parse_dom(html, 'div', {'class': re.compile('content')})
         main += [i.content for i in comments if i]
+        links = []
         for item in main:
             frames = client.parseDOM(item, 'a', ret='href')
             for url in frames:
@@ -181,9 +191,30 @@ def GetLinks(section, url, img, plot): # Get Links
                     title = title.replace('avi', '[COLOR pink][B][I]AVI[/B][/I][/COLOR] ')
                     title = title.replace('mp4', '[COLOR purple][B][I]MP4[/B][/I][/COLOR] ')
                     host = host.replace('youtube.com', '[COLOR red][B][I]Movie Trailer[/B][/I][/COLOR]')
-                    addon.add_directory(
-                        {'mode': 'PlayVideo', 'url': url, 'listitem': listitem, 'img': img, 'title': name, 'plot':plot},
-                        {'title':  host + ' : ' + title, 'plot': plot}, img=img, fanart=FANART, is_folder=False)
+                    if 'railer' in host:
+                        title = host + ' : ' + title
+                        addon.add_directory(
+                            {'mode': 'PlayVideo', 'url': url, 'listitem': listitem, 'img': img, 'title': name,
+                             'plot': plot},
+                            {'title': title, 'plot': plot}, img=img, fanart=FANART, is_folder=False)
+                    else:
+                        links.append((host, title, url, name))
+
+        if control.setting('test.links') == 'true':
+            threads = []
+            for i in links:
+                threads.append(Thread(link_tester, i))
+            [i.start() for i in threads]
+            [i.join() for i in threads]
+        else:
+            for item in links:
+                host, title, link, name = item[0], item[1], item[2], item[3]
+                title = '%s - %s' % (host, title)
+                addon.add_directory(
+                    {'mode': 'PlayVideo', 'url': url, 'listitem': listitem, 'img': img, 'title': name,
+                     'plot': plot},
+                    {'title': title, 'plot': plot}, img=img, fanart=FANART, is_folder=False)
+
 
 
     except BaseException:
@@ -192,6 +223,54 @@ def GetLinks(section, url, img, plot): # Get Links
             NAME, ICON, 3000)
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
+
+def link_tester(item):
+    try:
+        host, title, link, name = item[0], item[1], item[2], item[3]
+        na = ['has been deleted', 'file not found', 'file removed', 'sorry', 'step 1: select your plan']
+        r = client.request(link)
+        if r is None:
+            addon.log('NO result: [%s]: URL: %s ' % (host.upper(), link))
+            return False, 'N/A'
+        else:
+            if any(i in r.lower() for i in na):
+                addon.log('URL Removed: [%s]: URL: %s ' % (host.upper(), link))
+                valid, size = False, 'N/A'
+            else:
+                if 'nitroflare' in host:
+                    r = client.parseDOM(r, 'legend')[0]
+                    #addon.log('@#@RESULT:%s' % r)
+                elif 'rapidgator' in host:
+                    r = re.findall('''(File size:.+?)MD5''', r, re.I | re.DOTALL)[0]
+                    #addon.log('@#@RESULT:%s' % r)
+                elif 'turbobit' in host:
+                    r = client.parseDOM(r, 'title')[0]
+                    r = r.replace('Мб', 'MB')
+                    #addon.log('@#@RESULT:%s' % r)
+                elif any(i in host.lower() for i in ['rockfile', 'clicknupload']):
+                    r = 'N/A'
+                elif 'openload' in host or 'oload' in host:
+                    r = re.findall('''(File size:.+?)</div>''', r, re.I | re.DOTALL)[0]
+                    #addon.log('@#@RESULT:%s' % r)
+                else:
+                    r = r
+                try:
+                    size = get_size(r)
+                except:
+                    size = 'N/A'
+                addon.log('URL PASSED: [%s]: URL: %s : SIZE: %s' % (host.upper(), link, size))
+                valid, size = True, str(size)
+
+            if valid:
+                title = '%s|[COLORlime][B]%s[/COLOR][/B]| - %s' % (host, size, title)
+                addon.add_directory(
+                    {'mode': 'PlayVideo', 'url': url, 'listitem': listitem, 'img': img, 'title': name,
+                     'plot': plot},
+                    {'title': title, 'plot': plot}, img=img, fanart=FANART, is_folder=False)
+
+    except BaseException:
+            addon.log('URL ERROR: [%s]: URL: %s ' % (host.upper(), link))
+        
 
 def PlayVideo(url, title, img, plot):
     try:
@@ -207,6 +286,18 @@ def PlayVideo(url, title, img, plot):
             '[COLOR lime][B]Please try a different link!![/B][/COLOR]', NAME, ICON, 3000)
 
 
+def get_size(text):
+    try:
+        text = text.upper()
+        size = re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+) (?:GB|GiB|MB|MiB))', text)[-1]
+        div = 1 if size.endswith(('GB', 'GiB')) else 1024
+        size = float(re.sub('[^0-9|/.|/,]', '', size.replace(',', '.'))) / div
+        size = '%.2f GB' % size
+        return size
+    except BaseException:
+        return 'N/A'
+    
+
 def GetDomain(url):
     elements = urlparse.urlparse(url)
     domain = elements.netloc or elements.path
@@ -217,7 +308,6 @@ def GetDomain(url):
         domain = res.group(1)
     domain = domain.lower()
     return domain
-
 
 
 def GetMediaInfo(html):
@@ -250,7 +340,7 @@ def Sinopsis(txt):
         return 'N/A'
 
 
-def GetSearchQuery9():
+def Search_bb():
     last_search = addon.load_data('search')
     if not last_search:
         last_search = ''
@@ -261,40 +351,49 @@ def GetSearchQuery9():
     if keyboard.isConfirmed():
         _query = keyboard.getText()
         addon.save_data('search', _query)
-        Search9(_query.encode('utf-8'))
+        query = _query.encode('utf-8')
+        try:
+            from resources.lib.modules import cfscrape
+            scraper = cfscrape.create_scraper()
+            headers = {'User-Agent': client.randomagent(),
+                       'Referer': 'http://rlsbb.ru'}
+            query = urllib.quote_plus(query).replace('+', '%2B')
+            url = 'http://search.rlsbb.ru/lib/search6515260491260.php?phrase=%s&pindex=1&radit=0.%s'
+            url = url % (query, random.randint(00000000000000001, 99999999999999999))
+            html = scraper.get(url, headers=headers).content
+            posts = json.loads(html)['results']
+            posts = [(i['post_name'], i['post_title']) for i in posts if i]
+            for movieUrl, title in posts:
+                movieUrl = urlparse.urljoin('http://rlsbb.to/', movieUrl)
+                title = title.encode('utf-8')
+                addon.add_directory({'mode': 'GetLinks', 'url': movieUrl},
+                                    {'title': title}, img=IconPath + 'search.png', fanart=FANART)
+        except BaseException:
+            control.infoDialog(
+                "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
+                NAME, ICON, 3000)
     else:
         return
 
 
-def Search9(query):
-    try:
-        from resources.lib.modules import cfscrape
-        scraper = cfscrape.create_scraper()
-        headers = {'User-Agent': client.randomagent(),
-                   'Referer': 'http://rlsbb.ru'}
-        query = urllib.quote_plus(query).replace('+', '%2B')
-        url = 'http://search.rlsbb.ru/lib/search6515260491260.php?phrase=%s&pindex=1&radit=0.%s'
-        url = url % (query, random.randint(00000000000000001, 99999999999999999))
-        html = scraper.get(url, headers=headers).content
-        posts = json.loads(html)['results']
-        posts = [(i['post_name'], i['post_title']) for i in posts if i]
-        for movieUrl, title in posts:
-            movieUrl = urlparse.urljoin('http://rlsbb.to/', movieUrl)
-            title = title.encode('utf-8')
-            addon.add_directory({'mode': 'GetLinks', 'url': movieUrl}, {'title':  title}, img=IconPath + 'search.png', fanart=FANART)
-    except BaseException:
-        control.infoDialog(
-            "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
-            NAME, ICON, 3000)
-        xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
 def clear_Title(txt):
     txt = re.sub('<.+?>', '', txt)
-    txt = txt.replace("&quot;", "\"").replace('()', '').replace("&#038;", "&").replace('&#8211;', ':').replace('\n', ' ')
+    txt = txt.replace("&quot;", "\"").replace('()', '').replace("&#038;", "&").replace('&#8211;', ':')
     txt = txt.replace("&amp;", "&").replace('&#8217;', "'").replace('&#039;', ':').replace('&#;', '\'')
-    txt = txt.replace("&#38;", "&").replace('&#8221;', '"').replace('&#8216;', '"').replace('&amp;#038;', '&').replace('&#160;', '')
-    txt = txt.replace("&nbsp;", "").replace('&#8220;', '"').replace('&#8216;', '"').replace('\t', ' ')
+    txt = txt.replace("&#38;", "&").replace('&#8221;', '"').replace('&#8216;', '"').replace('&#160;', '')
+    txt = txt.replace("&nbsp;", "").replace('&#8220;', '"').replace('\t', ' ').replace('\n', ' ')
     return txt
+
+
+class Thread(threading.Thread):
+
+    def __init__(self, target, *args):
+        self._target = target
+        self._args = args
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self._target(*self._args)
 
 
 if mode == 'main': 
@@ -305,16 +404,16 @@ elif mode == 'GetTitles':
     GetTitles(section, url, startPage, numOfPages)
 elif mode == 'GetLinks':
     GetLinks(section, url, img, plot)
-elif mode == 'GetSearchQuery9':
-    GetSearchQuery9()
-elif mode == 'Search9':
-    Search9(query)
+elif mode == 'search_bb':
+    Search_bb()
 elif mode == 'PlayVideo':
     PlayVideo(url, title, img, plot)
+elif mode == 'settings':
+    control.openSettings()
 elif mode == 'ResolverSettings':
     resolveurl.display_settings()
-elif mode == 'RealDebrid':
-    xbmc.executebuiltin('XBMC.RunPlugin(plugin://script.module.resolveurl/?mode=auth_rd)')
+#elif mode == 'RealDebrid':
+#    xbmc.executebuiltin('XBMC.RunPlugin(plugin://script.module.resolveurl/?mode=auth_rd)')
 elif mode == 'ClearCache':
     cache.delete(control.cacheFile, False)
 elif mode == 'forceupdate':

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.releaseBB" version="1.1.1" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
+<addon id="plugin.video.releaseBB" version="1.2.0" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.t0mm0.common" version="2.1.1"/>
     <import addon="script.module.resolveurl" version="5.0.1"/>
     <import addon="script.module.simplejson" version="3.3.0"/>
+    <import addon="script.module.requests" version="2.19.1"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
@@ -17,8 +18,13 @@
     <website>https://bugatsinho.github.io/</website>
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
-    <news>+ [B][COLOR lime]1.1.1[/B] [COLOR gold](26-11-2018)[/COLOR]
-- Fix unicode errors(PLOT)
+    <news>+ [B][COLOR lime]1.2.0[/B] [COLOR gold](28-11-2018)[/COLOR]
+- Fix Search Error
+- Add Settings
+  Enable/Disable View Size|'Dead' Links function
+  (If this enabled, addon first checks
+   if the links are alive and then
+   shows them in a list with the file size)
 - Code cosmetics</news>
     <assets>
         <icon>icon.png</icon>
