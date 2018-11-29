@@ -211,7 +211,7 @@ def GetLinks(section, url, img, plot): # Get Links
                 host, title, link, name = item[0], item[1], item[2], item[3]
                 title = '%s - %s' % (host, title)
                 addon.add_directory(
-                    {'mode': 'PlayVideo', 'url': url, 'listitem': listitem, 'img': img, 'title': name,
+                    {'mode': 'PlayVideo', 'url': link, 'listitem': listitem, 'img': img, 'title': name,
                      'plot': plot},
                     {'title': title, 'plot': plot}, img=img, fanart=FANART, is_folder=False)
 
@@ -258,13 +258,13 @@ def link_tester(item):
                     size = get_size(r)
                 except:
                     size = 'N/A'
-                addon.log('URL PASSED: [%s]: URL: %s : SIZE: %s' % (host.upper(), link, size))
                 valid, size = True, str(size)
 
             if valid:
+                addon.log('URL PASSED: [%s]: URL: %s : SIZE: %s' % (host.upper(), link, size))
                 title = '%s|[COLORlime][B]%s[/COLOR][/B]| - %s' % (host, size, title)
                 addon.add_directory(
-                    {'mode': 'PlayVideo', 'url': url, 'listitem': listitem, 'img': img, 'title': name,
+                    {'mode': 'PlayVideo', 'url': link, 'listitem': listitem, 'img': img, 'title': name,
                      'plot': plot},
                     {'title': title, 'plot': plot}, img=img, fanart=FANART, is_folder=False)
 
@@ -275,6 +275,7 @@ def link_tester(item):
 def PlayVideo(url, title, img, plot):
     try:
         stream_url = resolveurl.resolve(url)
+        addon.log('URL-RESOLVED: %s ' % stream_url)
         liz = xbmcgui.ListItem(title, iconImage="DefaultVideo.png", thumbnailImage=img)
         liz.setInfo(type="Video", infoLabels={"Title": title, "Plot": plot})
         liz.setProperty("IsPlayable", "true")
