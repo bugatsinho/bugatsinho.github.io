@@ -111,13 +111,13 @@ def GetTitles(section, url, startPage= '1', numOfPages= '1'): # Get Movie Titles
             pageUrl = urlparse.urljoin(url, 'page/%d' % int(startPage))
         else:
             pageUrl = url
-        html = response_html(url, '3')
+        html = response_html(pageUrl, '3')
         start = int(startPage)
         end = start + int(numOfPages)
         for page in range(start, end):
             if page != start:
                 pageUrl = urlparse.urljoin(url, 'page/%s' % page)
-                html = response_html(url, '3')
+                html = response_html(pageUrl, '3')
             match = client.parseDOM(html, 'div', attrs={'class': 'post'})
             match = [(client.parseDOM(i, 'a', ret='href')[0],
                       client.parseDOM(i, 'a')[0],
