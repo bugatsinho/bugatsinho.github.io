@@ -30,7 +30,7 @@ except BaseException:
 addon_id = 'plugin.video.releaseBB'
 plugin = xbmcaddon.Addon(id=addon_id)
 DB = os.path.join(xbmc.translatePath("special://database"), 'cache.db')
-BASE_URL = 'http://rlsbb.to'
+BASE_URL = 'http://rlsbb.ru'
 net = Net()
 addon = Addon('plugin.video.releaseBB', sys.argv)
 
@@ -88,7 +88,7 @@ def MainMenu():    #homescreen
 
 def Categories(section):  # categories
     sec = '/category/%s' % section
-    html = cache.get(client.request, 96, BASE_URL)
+    html = response_html(BASE_URL, '96')
     match = client.parseDOM(html, 'li', attrs={'id': 'categories-2'})[0]
     items = zip(client.parseDOM(match, 'a'),
                 client.parseDOM(match, 'a', ret='href'))
@@ -96,7 +96,7 @@ def Categories(section):  # categories
     for title, link in items:
         title = title.encode('utf-8')
         link = client.replaceHTMLCodes(link)
-        addon.add_directory({'mode': 'GetTitles', 'section': section, 'url': link,'startPage': '1', 'numOfPages': '2'},
+        addon.add_directory({'mode': 'GetTitles', 'section': section, 'url': link, 'startPage': '1', 'numOfPages': '2'},
                             {'title': title},
                             [('Release BB Settings', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
                              ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',)],
@@ -111,14 +111,13 @@ def GetTitles(section, url, startPage= '1', numOfPages= '1'): # Get Movie Titles
             pageUrl = urlparse.urljoin(url, 'page/%d' % int(startPage))
         else:
             pageUrl = url
-
-        html = cache.get(client.request, 3, pageUrl)
+        html = response_html(url, '3')
         start = int(startPage)
         end = start + int(numOfPages)
         for page in range(start, end):
             if page != start:
                 pageUrl = urlparse.urljoin(url, 'page/%s' % page)
-                html = cache.get(client.request, 3, pageUrl)
+                html = response_html(url, '3')
             match = client.parseDOM(html, 'div', attrs={'class': 'post'})
             match = [(client.parseDOM(i, 'a', ret='href')[0],
                       client.parseDOM(i, 'a')[0],
@@ -126,9 +125,8 @@ def GetTitles(section, url, startPage= '1', numOfPages= '1'): # Get Movie Titles
                       client.parseDOM(i, 'div', attrs={'class': 'postContent'})[0]) for i in match if i]
             #match = re.compile('postHeader.+?href="(.+?)".+?>(.+?)<.+?src=.+? src="(.+?).+?(Plot:.+?)</p>"', re.DOTALL).findall(html)
             for movieUrl, name, img, desc in match:
-                img = img.replace('rlsbb.ru/', 'rlsbb.to/')
                 desc = Sinopsis(desc)
-
+                img += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), movieUrl)
                 addon.add_directory({'mode': 'GetLinks', 'section': section, 'url': movieUrl, 'img': img, 'plot': desc},
                                     {'title':  name, 'plot': desc},
                                     [('Release BB Settings',
@@ -137,7 +135,7 @@ def GetTitles(section, url, startPage= '1', numOfPages= '1'): # Get Movie Titles
                                     img=img, fanart=FANART)
             if 'Older Entries' not in html:
                     break
-        # keep iterating until the laast page is reached
+        # keep iterating until the last page is reached
         if 'Older Entries' in html:
                 addon.add_directory({'mode': 'GetTitles', 'url': url, 'startPage': str(end), 'numOfPages': numOfPages},
                                     {'title': '[COLOR orange][B][I]Older Entries...[/B][/I][/COLOR]'},
@@ -150,7 +148,7 @@ def GetTitles(section, url, startPage= '1', numOfPages= '1'): # Get Movie Titles
 
 def GetLinks(section, url, img, plot): # Get Links
     try:
-        html = cache.get(client.request, 3, url)
+        html = response_html(url, '3')
         listitem = GetMediaInfo(html)
         name = '%s (%s)' % (listitem[0], listitem[1])
         main = client.parseDOM(html, 'div', {'class': 'postContent'})
@@ -224,6 +222,29 @@ def GetLinks(section, url, img, plot): # Get Links
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
+def cloudflare_mode(url):
+    from resources.lib.modules import cfscrape
+    scraper = cfscrape.create_scraper()
+    headers = {'User-Agent': client.agent(),
+               'Referer': BASE_URL}
+    result = scraper.get(url, headers=headers).content
+    return result
+
+
+def response_html(url, cachetime):
+    try:
+        resulto = client.request(url)
+        if resulto is None:
+            html = cache.get(cloudflare_mode, int(cachetime), url)
+        else:
+            html = cache.get(client.request, int(cachetime), url)
+        return html
+    except BaseException:
+        control.infoDialog(
+            "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
+            NAME, ICON, 3000)
+
+
 def link_tester(item):
     try:
         host, title, link, name = item[0], item[1], item[2], item[3]
@@ -283,7 +304,7 @@ def PlayVideo(url, title, img, plot):
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
     except BaseException:
         control.infoDialog(
-            '[COLOR red][B]Sorry Link may have been removed![/B][/COLOR]\n'
+            '[COLOR red][B]Probably your service doesn\'t support this provider![/B][/COLOR]\n'
             '[COLOR lime][B]Please try a different link!![/B][/COLOR]', NAME, ICON, 3000)
 
 
@@ -365,7 +386,7 @@ def Search_bb():
             posts = json.loads(html)['results']
             posts = [(i['post_name'], i['post_title']) for i in posts if i]
             for movieUrl, title in posts:
-                movieUrl = urlparse.urljoin('http://rlsbb.to/', movieUrl)
+                movieUrl = urlparse.urljoin(BASE_URL, movieUrl)
                 title = title.encode('utf-8')
                 addon.add_directory({'mode': 'GetLinks', 'url': movieUrl},
                                     {'title': title}, img=IconPath + 'search.png', fanart=FANART)
