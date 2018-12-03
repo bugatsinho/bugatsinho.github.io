@@ -290,7 +290,7 @@ def download_media(url, path, file_name, progress=None):
                 headers = dict([item.split('=') for item in (url.split('|')[1]).split('&')])
                 for key in headers:
                     headers[key] = unquote(headers[key])
-            except:
+            except BaseException:
                 headers = {}
 
             if 'User-Agent' not in headers:

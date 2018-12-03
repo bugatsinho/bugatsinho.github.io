@@ -142,7 +142,7 @@ class WorkingDialog(object):
             self.wd = xbmcgui.DialogBusy()
             self.wd.create()
             self.update(0)
-        except:
+        except BaseException:
             execute('ActivateWindow(busydialog)')
 
     def __enter__(self):

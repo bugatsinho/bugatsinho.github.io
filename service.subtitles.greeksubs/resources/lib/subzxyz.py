@@ -52,7 +52,7 @@ class subzxyz:
                         if cleantitle.get(c[0]) == cleantitle.get(title) and c[1] == year:
                             try:
                                 item = self.r
-                            except:
+                            except BaseException:
                                 item = client.request(i)
                             break
 
@@ -89,7 +89,7 @@ class subzxyz:
 
             item = re.sub(r'[^\x00-\x7F]+', ' ', item)
             items = client.parseDOM(item, 'tr', attrs={'data-id': '.+?'})
-        except:
+        except BaseException:
             return
 
         for item in items:
@@ -108,7 +108,7 @@ class subzxyz:
                 name = name.encode('utf-8')
 
                 self.list.append({'name': name, 'url': url, 'source': 'subzxyz', 'rating': 5})
-            except:
+            except BaseException:
                 pass
 
         return self.list
@@ -121,7 +121,7 @@ class subzxyz:
             t = re.findall('(?:\"|\')original_title(?:\"|\')\s*:\s*(?:\"|\')(.+?)(?:\"|\')', self.r)[0]
             y = re.findall('(?:\"|\')year(?:\"|\')\s*:\s*(?:\"|\'|)(\d{4})', self.r)[0]
             return (t, y)
-        except:
+        except BaseException:
             pass
 
     def download(self, path, url):
@@ -165,7 +165,7 @@ class subzxyz:
                         if control.aborted is True:
                             break
                         control.wait(1)
-                    except:
+                    except BaseException:
                         pass
 
             filename = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])][0].decode('utf-8')
@@ -188,6 +188,6 @@ class subzxyz:
 
                 return subtitle
 
-        except:
+        except BaseException:
 
             pass

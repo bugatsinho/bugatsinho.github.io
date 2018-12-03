@@ -25,8 +25,8 @@ from resources.modules import control
 class s4f:
     def __init__(self):
         self.list = []
-        self.base_link = 'http://www.medium-industry.com/'
-        self.base_TVlink = 'http://www.subs4series.com/'
+        self.base_link = 'https://www.sf4-industry.com/'
+        self.base_TVlink = 'https://www.subs4series.com/'
         self.search = 'search_report.php?search=%s&searchType=1'
 
 
@@ -34,14 +34,16 @@ class s4f:
 
         try:
 
-            match = re.findall('(.+?) \((\d{4})\)/imdb=', query)
+            match = re.findall('(.+?) \((\d{4})\)\/imdb=', query)
+            #xbmc.log('$#$MATCH: %s' % match, xbmc.LOGNOTICE)
 
             if len(match) > 0:
-                hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
+                hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+                       'Referer': 'https://www.subs4free.info/'}
 
                 title, year = match[0][0], match[0][1]
 
-                query =  urllib.quote_plus(title+' '+year)
+                query = urllib.quote_plus('%s %s' % (title, year))
 
                 url = urlparse.urljoin(self.base_link, self.search % query)
 
@@ -52,23 +54,25 @@ class s4f:
 
                 urls = client.parseDOM(r, 'div', attrs={'class': ' seeDark'})
                 urls += client.parseDOM(r, 'div', attrs={'class': ' seeMedium'})
-                urls = [i for i in urls if 'com/el.gif' in i]
+                #xbmc.log('$#$URLS-start: %s' % urls, xbmc.LOGNOTICE)
+                urls = [i for i in urls if '/el.gif' in i]
                 urls = [(client.parseDOM(i, 'tr')[0], re.findall('<B>(\d+)</B>DLs', i, re.I)[0]) for i in urls if i]
                 urls = [(client.parseDOM(i[0], 'a', ret='href')[0],
                          client.parseDOM(i[0], 'a', ret='title')[0], i[1]) for i in urls if i]
                 urls = [(urlparse.urljoin(self.base_link, i[0]), i[1].split('for ', 1)[1],
                          i[2]) for i in urls if i]
                 urls = [(i[0], i[1], i[2]) for i in urls if i]
+                #xbmc.log('$#$URLS: %s' % urls, xbmc.LOGNOTICE)
 
 
             else:
                 hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
-                       'Referer':'http://www.subs4series.com/'}
+                       'Referer':'https://www.subs4series.com/'}
                 title, season, episode = re.findall('(.+?) S(\d+)E(\d+)/imdb=', query)[0]
 
-                hdlr = 'S%02dE%02d' % (int(season),int(episode))
+                hdlr = 'S%02dE%02d' % (int(season), int(episode))
 
-                query = urllib.quote(title+' '+hdlr)
+                query = urllib.quote('%s %s' % (title, hdlr))
 
                 url = urlparse.urljoin(self.base_TVlink, self.search % query)
 
@@ -77,11 +81,11 @@ class s4f:
                 cj = req.cookies
                 r = req.content
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-                xbmc.log('@@URL:%s' % r)
+                #xbmc.log('@@URL:%s' % r)
 
                 urls = client.parseDOM(r, 'div', attrs={'class': ' seeDark'})
                 urls += client.parseDOM(r, 'div', attrs={'class': ' seeMedium'})
-                urls = [i for i in urls if not 'com/en.gif' in i]
+                urls = [i for i in urls if not '/en.gif' in i]
                 urls = [(client.parseDOM(i, 'tr')[0], re.findall('<B>(\d+)</B>DLs', i, re.I)[0]) for i in urls if i]
                 urls = [(client.parseDOM(i[0], 'a', ret='href')[0],
                          client.parseDOM(i[0], 'a', ret='title')[0], i[1]) for i in urls if i]
@@ -89,7 +93,7 @@ class s4f:
                          i[2]) for i in urls if i]
                 urls = [(i[0], i[1], i[2]) for i in urls if i]
 
-        except:
+        except BaseException:
             return
 
         for i in urls:
@@ -103,10 +107,10 @@ class s4f:
                 url = client.replaceHTMLCodes(url)
                 url = url.encode('utf-8')
 
-                self.list.append({'name': name, 'url': '%s|%s|%s'%(url, cj['PHPSESSID'], cj['__cfduid']), 'source': 's4f', 'rating': rating})
-            except:
+                self.list.append({'name': name, 'url': '%s|%s|%s' % (url, cj['PHPSESSID'], cj['__cfduid']),
+                                  'source': 's4f', 'rating': rating})
+            except BaseException:
                 pass
-
 
         return self.list
 
@@ -115,7 +119,7 @@ class s4f:
 
         try:
             rating = int(downloads)
-        except:
+        except BaseException:
             rating = 0
 
         if rating < 100:
@@ -138,43 +142,38 @@ class s4f:
             if 'subs4series' in url:
                 headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
                            'Referer': url,
-                           'Origin': 'http://www.subs4series.com/'}
+                           'Origin': 'https://www.subs4series.com/'}
                 cj = {'PHPSESSID': php,
-                  '__cfduid': cfd}
+                      '__cfduid': cfd}
 
                 r = requests.get(url, headers=headers, cookies=cj).content
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-                xbmc.log('@#@DATA:%s'%r)
 
                 pos = re.findall('\/(getSub-\w+\.html)', r, re.I|re.DOTALL)[0]
-                post_url = urlparse.urljoin('http://www.subs4series.com',pos)
+                post_url = urlparse.urljoin(self.base_TVlink, pos)
                 r = requests.get(post_url, headers=headers, cookies=cj)
                 result = r.content
                 surl = r.url
 
-
             else:
                 headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
                            'Referer': url,
-                           'Origin': 'http://www.medium-industry.com'}
+                           'Origin': 'https://www.sf4-industry.com'}
                 cj = {'PHPSESSID': php,
-                  '__cfduid': cfd}
-                post_url = 'http://www.medium-industry.com/getSub.html'
+                      '__cfduid': cfd}
+                post_url = 'https://www.sf4-industry.com/getSub.html'
 
                 r = requests.get(url, headers=headers, cookies=cj).content
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 #pos = client.parseDOM(r, 'tr', attrs={'class':'stylepps'})[0]
-                pos = re.findall('getSub-(\w+)\.html', r, re.I|re.DOTALL)[0]
-                post = {'id':pos,
-                        'x':'107',
-                        'y':'35'}
+                pos = re.findall('getSub-(\w+)\.html', r, re.I | re.DOTALL)[0]
+                post = {'id': pos,
+                        'x': '107',
+                        'y': '35'}
 
                 r = requests.post(post_url, headers=headers, data=post, cookies=cj)
                 result = r.content
                 surl = r.url
-
-
-
 
             f = os.path.join(path, surl.rpartition('/')[2])
 
@@ -210,7 +209,7 @@ class s4f:
                         if control.aborted is True:
                             break
                         control.wait(1)
-                    except:
+                    except BaseException:
                         pass
 
             filename = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])][0].decode('utf-8')
@@ -229,5 +228,5 @@ class s4f:
 
                 return subtitle
 
-        except:
+        except BaseException:
             pass

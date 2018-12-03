@@ -58,7 +58,6 @@ class Search:
 
             if re.search(r'[^\x00-\x7F]+', title) is not None:
                 title = control.infoLabel('VideoPlayer.OriginalTitle')
-
             year = control.infoLabel('VideoPlayer.Year')
 
             tvshowtitle = control.infoLabel('VideoPlayer.TVshowtitle')
@@ -68,22 +67,33 @@ class Search:
             episode = control.infoLabel('VideoPlayer.Episode')
             try:
                 imdb = control.infoLabel('VideoPlayer.IMDBNumber')
-            except:
+                if not imdb:
+                    imdb = '0'
+            except BaseException:
                 imdb = '0'
 
             if 's' in episode.lower():
                 season, episode = '0', episode[-1:]
 
             if not tvshowtitle == '':  # episode
-                query = '%s S%02dE%02d/imdb=%s' % (tvshowtitle, int(season), int(episode), imdb)
+                query = '%s S%02dE%02d/imdb=%s' % (tvshowtitle, int(season), int(episode), str(imdb))
+
             elif not year == '':  # movie
-                query = '%s (%s)/imdb=%s' % (title, year, imdb)
+                query = '%s (%s)/imdb=%s' % (title, year, str(imdb))
+
+            elif '(S' in title:
+                query = '%s/imdb=%s' % (title, str(imdb))
+
             else:  # file
                 query, year = getCleanMovieTitle(title)
                 if not year == '':
-                    query = '%s (%s)' % (query, year)
+                    query = '%s (%s)/imdb=%s' % (query, year, str(imdb))
+
+        else:
+            query = '%s/imdb=0' % re.sub('[\(|\)]', '', query)
 
         self.query = query
+        #xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
 
         threads = []
 
@@ -102,7 +112,7 @@ class Search:
                 if control.aborted is True:
                     break
                 control.sleep(500)
-            except:
+            except BaseException:
                 pass
 
         if len(self.list) == 0:
@@ -129,7 +139,7 @@ class Search:
 
                 elif i['source'] == 'yifi':
                     i['name'] = '[yifi] %s' % i['name']
-            except:
+            except BaseException:
                 pass
 
         for i in self.list:
@@ -145,7 +155,7 @@ class Search:
                 item.setProperty('hearing_imp', 'false')
 
                 control.addItem(handle=syshandle, url=u, listitem=item, isFolder=False)
-            except:
+            except BaseException:
                 pass
 
         control.directory(syshandle)

@@ -34,7 +34,7 @@ class subztv:
 
     def get(self, query):
         try:
-            match = re.findall('(.+?) \((\d{4})\)/imdb=(.+?)$', query)
+            match = re.findall('(.+?) \((\d{4})\)\/imdb=(.+?)$', query)
 
             if len(match) > 0:
     
@@ -75,7 +75,7 @@ class subztv:
                          client.parseDOM(i, 'a', ret='href')[0])for i in data if i]
                 try:
                     url = [i[1] for i in data if hdlr in i[1]][0]
-                except:
+                except BaseException:
                         link = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
     
                         cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
@@ -95,7 +95,7 @@ class subztv:
                 items = client.parseDOM(r, 'tbody')[0]
                 items = client.parseDOM(items, 'tr')
 
-        except:
+        except BaseException:
             return
 
         for item in items:
@@ -116,7 +116,7 @@ class subztv:
 
                 self.list.append({'name': name, 'url': '%s|%s|%s|%s' % (url, name, cj['PHPSESSID'], imdb), 'source': 'subztv', 'rating': rating})
                 
-            except:
+            except BaseException:
                 pass
 
         return self.list
@@ -124,7 +124,7 @@ class subztv:
     def _rating(self, downloads):
         try:
             rating = int(downloads)
-        except:
+        except BaseException:
             rating = 0
 
         if rating < 10:
@@ -194,7 +194,7 @@ class subztv:
                         if control.aborted is True:
                             break
                         control.wait(1)
-                    except:
+                    except BaseException:
                         pass
 
             filename = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])][0].decode('utf-8')
@@ -213,5 +213,5 @@ class subztv:
                 
                 return subtitle
 
-        except:
+        except BaseException:
             pass

@@ -32,7 +32,7 @@ class yifi:
     def get(self, query):
 
         try:
-            match = re.findall('(.+?) \((\d{4})\)/imdb=(.+?)$', query)
+            match = re.findall('(.+?) \((\d{4})\)\/imdb=(.+?)$', query)
             if len(match) > 0:
                 title, year, imdb = match[0][0], match[0][1], match[0][1]
                 if imdb.startswith('tt'):
@@ -54,7 +54,7 @@ class yifi:
                             url = url.encode('utf-8')
                             url = urlparse.urljoin(self.base_link, url)
                             r = client.request(url)
-                        except:
+                        except BaseException:
                             pass
 
                 data = client.parseDOM(r, 'li', attrs={'data-id': '\d+'})
@@ -72,12 +72,12 @@ class yifi:
                         url = url.encode('utf-8')
                         urls += [(name, url, rating)]
 
-                    except:
+                    except BaseException:
                         pass
             else:
-                return
+                return self.list
 
-        except:
+        except BaseException:
             return
 
         for i in urls:
@@ -85,7 +85,7 @@ class yifi:
                 r = client.request(urlparse.urljoin(self.base_link, i[1]))
                 url = client.parseDOM(r, 'a', ret='href', attrs={'class': 'dl-button blue download-subtitle'})[0]
                 self.list.append({'name': i[0], 'url': url, 'source': 'yifi', 'rating': '5'})
-            except:
+            except BaseException:
                 pass
 
         return self.list
@@ -129,7 +129,7 @@ class yifi:
                         if control.aborted is True:
                             break
                         control.wait(1)
-                    except:
+                    except BaseException:
                         pass
 
             filename = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])][0].decode('utf-8')
@@ -152,6 +152,6 @@ class yifi:
 
                 return subtitle
 
-        except:
+        except BaseException:
 
             pass
