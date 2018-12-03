@@ -23,7 +23,7 @@
 		</extension>
 	</addon>
 
-	<addon id="service.subtitles.greeksubs" name="Greek Subs" version="1.1.2" provider-name="Bugatsinho">
+	<addon id="service.subtitles.greeksubs" name="Greek Subs" version="1.1.3.1" provider-name="Bugatsinho">
 		<requires>
 			<import addon="xbmc.python" version="2.24.0"/>
 			<import addon="script.module.requests" version="2.8.1" />
@@ -42,8 +42,10 @@
 			<website>https://subztv.club/</website>
 			<platform>all</platform>
 			<language>el</language>
-			<news>[B]1.1.2[/B] 18-11-2018
-	- Αλλαγή domain για subztv</news>
+			<news>[B]1.1.3.1[/B] 03-12-2018
+	- Αλλαγή domain για sub4free
+	- Διόρθωση για καλύτερη χειροκίνητη αναζήτηση
+	- Διορθώσεις Regex</news>
 		</extension>
 	</addon>
 
