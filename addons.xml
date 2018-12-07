@@ -49,36 +49,41 @@
 		</extension>
 	</addon>
 
-	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.3.3" provider-name="Bugatsinho">
+	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.4.0" provider-name="Bugatsinho">
 	  <requires>
-	    <import addon="xbmc.python" version="2.1.0"/>
-	    <import addon="script.module.resolveurl" version="5.0.00"/>
-	    <import addon="script.module.unshortenit"  version="0.3.1"/>
+		<import addon="xbmc.python" version="2.1.0"/>
+		<import addon="script.module.resolveurl" version="5.0.00"/>
+		<import addon="script.module.unshortenit"  version="0.3.1"/>
 	  </requires>
 	  <extension point="xbmc.python.pluginsource" library="default.py">
 			<provides>video</provides>
 	  </extension>
 	  <extension point="xbmc.addon.metadata">
-	    <reuselanguageinvoker>false</reuselanguageinvoker>
-	    <platform>all</platform>
-	    <summary lang="el">ΠΑΙΔΙΚΑ</summary>
-	    <description lang="el">ΤΑΙΝΙΕΣ κ ΣΕΙΡΕΣ για τα παιδιά ΜΕΤΑΓΛΩΤΙΣΜΕΝΑ ή με ΥΠΟΤΙΤΛΟΥΣ</description>
-	    <disclaimer lang="el">Ο δημιουργός δεν φιλοξενεί ή διανέμει οποιαδήποτε από το περιεχόμενο που εμφανίζεται από αυτό το πρόσθετο και δεν έχει οποιαδήποτε σχέση με την ιστοσελίδα και τους ιδιοκτήτες αυτής.
-	    </disclaimer>
-	    <summary lang="en">Cartoons</summary>
-	    <description lang="en">Movies and Series dubbed or with Greek subtitles for the kids.</description>
-	    <disclaimer lang="en">The CartoonsGR's author  does not host, stream or distribute any of the content displayed inside this plugin and does not
-	    have any relation with the website or the website's author.
-	    </disclaimer>
-	    <language>en el</language>
-	    <license>GNU GPL, version 2</license>
-	    <twitter>https://twitter.com/Bugatsinho</twitter>
-	    <forum>https://www.facebook.com/groups/GRecoTM/</forum>
-	    <source>http://grecotm.com/repo/</source>
-	    <website>http://grecotm.com</website>
-	    <news>[B]v0.3.3[/B] (28/8/2018)
-	  - Διόρθωση Resolver.
-	    </news>
+		<reuselanguageinvoker>false</reuselanguageinvoker>
+		<platform>all</platform>
+		<summary lang="el">ΠΑΙΔΙΚΑ</summary>
+		<description lang="el">ΤΑΙΝΙΕΣ κ ΣΕΙΡΕΣ για τα παιδιά ΜΕΤΑΓΛΩΤΙΣΜΕΝΑ ή με ΥΠΟΤΙΤΛΟΥΣ</description>
+		<disclaimer lang="el">Ο δημιουργός δεν φιλοξενεί ή διανέμει οποιαδήποτε από το περιεχόμενο που εμφανίζεται από αυτό το πρόσθετο και δεν έχει οποιαδήποτε σχέση με την ιστοσελίδα και τους ιδιοκτήτες αυτής.
+		</disclaimer>
+		<summary lang="en">Cartoons</summary>
+		<description lang="en">Movies and Series dubbed or with Greek subtitles for the kids.</description>
+		<disclaimer lang="en">The CartoonsGR's author  does not host, stream or distribute any of the content displayed inside this plugin and does not
+		have any relation with the website or the website's author.
+		</disclaimer>
+		<language>en el</language>
+		<license>GNU GPL, version 2</license>
+		<twitter>https://twitter.com/Bugatsinho</twitter>
+		<forum>https://www.facebook.com/groups/GRecoTM/</forum>
+		<source>http://grecotm.com/repo/</source>
+		<website>http://grecotm.com</website>
+		<news>[B]v0.4.0[/B] (07/12/2018)
+	  - Χρήση cache για γρήγορη πλοήγηση και μείωση κίνησης στην σελίδα
+	  - Προσθήκη Κατηγορία Γιορτινές(Χριστουγενιάτικα ή Πασχαλινά)
+	  - Προσθήκη Τοπ 100 στις ταινιές GAMATO-KIDS
+	  - Αποθήκευση, Διαγραφή και προβολή παλιότερων αναζητήσεων
+	  - Προσθήκη Διαγραφή αναζήτησης στο context menu
+	  - Προσθήκη Ρυθμίσεων στο context menu
+	  - Προσθήκη Καθαρισμού cache στο context menu</news>
 	  </extension>
 	</addon>
 

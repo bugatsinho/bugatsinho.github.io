@@ -57,6 +57,7 @@ skinPath = xbmc.translatePath('special://skin/')
 addonPath = xbmc.translatePath(addonInfo('path'))
 dataPath = xbmc.translatePath(addonInfo('profile')).decode('utf-8')
 
+
 window = xbmcgui.Window(10000)
 dialog = xbmcgui.Dialog()
 progressDialog = xbmcgui.DialogProgress()
@@ -78,9 +79,11 @@ exists = xbmcvfs.exists
 copy = xbmcvfs.copy
 
 join = os.path.join
-settingsFile = os.path.join(dataPath, 'settings.xml')
-bookmarksFile = os.path.join(dataPath, 'bookmarks.db')
-cacheFile = os.path.join(dataPath, 'cache.db')
+settingsFile = join(dataPath, 'settings.xml')
+bookmarksFile = join(dataPath, 'bookmarks.db')
+viewsFile = join(dataPath, 'views.db')
+searchFile = join(dataPath, 'search.db')
+cacheFile = join(dataPath, 'cache.db')
 
 
 def infoDialog(message, heading=addonInfo('name'), icon='', time=3000):
@@ -146,11 +149,32 @@ def refresh():
 
 
 def idle():
-    return execute('Dialog.Close(busydialog)')
+
+    if float(addon('xbmc.addon').getAddonInfo('version')[:4]) > 17.6:
+        execute('Dialog.Close(busydialognocancel)')
+    else:
+        execute('Dialog.Close(busydialog)')
+
+
+def busy():
+
+    if float(addon('xbmc.addon').getAddonInfo('version')[:4]) > 17.6:
+        execute('ActivateWindow(busydialognocancel)')
+    else:
+        execute('ActivateWindow(busydialog)')
 
 
 def set_view_mode(vmid):
     return execute('Container.SetViewMode({0})'.format(vmid))
+
+
+def getKodiVersion():
+    return xbmc.getInfoLabel("System.BuildVersion").split(".")[0]
+
+
+def getCurrentViewId():
+    win = xbmcgui.Window(xbmcgui.getCurrentWindowId())
+    return str(win.getFocusId())
 
 
 # for compartmentalized theme addons

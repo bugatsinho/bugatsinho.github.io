@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.3.3" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.4.0" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
@@ -26,7 +26,13 @@
     <forum>https://www.facebook.com/groups/GRecoTM/</forum>
     <source>http://grecotm.com/repo/</source>
     <website>http://grecotm.com</website>
-    <news>[B]v0.3.3[/B] (28/8/2018)
-  - Διόρθωση resolver</news>
+    <news>[B]v0.4.0[/B] (07/12/2018)
+  - Χρήση cache για γρήγορη πλοήγηση και μείωση κίνησης στην σελίδα
+  - Προσθήκη Κατηγορία Γιορτινές(Χριστουγενιάτικα ή Πασχαλινά)
+  - Προσθήκη Τοπ 100 στις ταινιές GAMATO-KIDS
+  - Αποθήκευση, Διαγραφή και προβολή παλιότερων αναζητήσεων
+  - Προσθήκη Διαγραφή αναζήτησης στο context menu
+  - Προσθήκη Ρυθμίσεων στο context menu
+  - Προσθήκη Καθαρισμού cache στο context menu</news>
   </extension>
 </addon>

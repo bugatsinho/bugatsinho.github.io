@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="32030">
+        <!--setting id="viewsettings" type="action" label="Set View" enable="true" option="close" action="RunPlugin(plugin://plugin.video.cartoonsgr/?mode=30)" />-->
         <setting id="auto-view" type="bool" label="32031" default="true"/>
-        <setting id="menu-view" type="labelenum" label="32032" values="Default Menu View|Info|Info2|Info3|Fanart|Big list|Low List|List|Poster Wrap" default="Info" enable="!eq(-1,false)"/>
-        <setting id="movie-view" type="labelenum" label="32033" values="Default Movies View|Info|Info2|Info3|Fanart|Big list|Low List|List|Poster Wrap" default="Info2" enable="!eq(-2,false)"/>
+        <setting id="menu-view" type="labelenum" label="32032" values="List|WideList|Info|Info2|Info3|Fanart|Big list|Low List|Poster Wrap" default="List" enable="!eq(-1,false)"/>
+        <setting id="movie-view" type="labelenum" label="32033" values="List|Info|Info2|Info3|Fanart|Big list|Low List|WideList|Poster Wrap" default="List" enable="!eq(-2,false)"/>
     </category>
 	<category label="32034">
         <setting type="lsep" label="32037" />

@@ -60,8 +60,8 @@ msgid "[COLOR red]Please[/COLOR],[COLOR white]Try other link![/COLOR]"
 msgstr "[COLOR red]ΔΕΝ ΛΕΙΤΟΥΡΓΕΙ[/COLOR] [COLOR white]Δοκιμάστε άλλο λινκ![/COLOR]"
 
 msgctxt "#32013"
-msgid "[COLOR red]Done![COLOR white]Cache has been cleared[/COLOR]"
-msgstr "[COLOR red]ETOIMO![COLOR white]Το καθαρίσαμε![/COLOR]"
+msgid "[COLOR red]Done!!!\n[COLOR white]Cache has been cleared[/COLOR]"
+msgstr "[COLOR red]ETOIMO!!!\n[COLOR white]Το καθαρίσαμε![/COLOR]"
 
 msgctxt "#32014"
 msgid "DUB/SUB"
@@ -95,6 +95,18 @@ msgctxt "#32021"
 msgid "Clear Cache"
 msgstr "Εκκαθάριση Cache"
 
+msgctxt "#32022"
+msgid "Festive"
+msgstr "Γιορτινές"
+
+msgctxt "#32023"
+msgid "[COLOR gold]Done!!!\n[COLOR white]Search queries deleted[/COLOR]"
+msgstr "[COLOR gold]ΕΤΟΙΜΟ!!!\n[COLOR white]Οι αναζητήσεις διαγράφηκαν[/COLOR]"
+
+msgctxt "#32024"
+msgid "[COLORgold][B]New Search[/COLOR][/B]"
+msgstr "[COLORgold][B]Νέα Αναζήτηση[/COLOR][/B]"
+
 msgctxt "#32030"
 msgid "Auto-View  Settings"
 msgstr "Ρυθμίσεις Προβολής"
@@ -126,3 +138,11 @@ msgstr "Κωδικός πρόσβασης"
 msgctxt "#32037"
 msgid "Register at http://paidikestainies.online/"
 msgstr "Εγγραφή στο http://paidikestainies.online/"
+
+msgctxt "#32038"
+msgid "CLICK HERE TO SAVE VIEW"
+msgstr "ΠΑΤΗΣΤΕ ΕΔΩ ΓΙΑ ΝΑ ΑΠΟΘΗΚΕΥΤΕΙ Η ΠΡΟΒΟΛΗ"
+
+msgctxt "#32039"
+msgid "Delete Search item"
+msgstr "Διαγραφή στοιχείου αναζήτησης"

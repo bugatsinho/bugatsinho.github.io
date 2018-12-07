@@ -61,7 +61,7 @@ msgid "[COLOR red]Please[/COLOR] [COLOR white]Try other link![/COLOR]"
 msgstr ""
 
 msgctxt "#32013"
-msgid "[COLOR red]Done![COLOR white]Cache has been cleared[/COLOR]"
+msgid "[COLOR red]Done!!!\n[COLOR white]Cache has been cleared[/COLOR]"
 msgstr ""
 
 msgctxt "#32014"
@@ -96,6 +96,19 @@ msgctxt "#32021"
 msgid "Clear Cache"
 msgstr ""
 
+msgctxt "#32022"
+msgid "Festive"
+msgstr ""
+
+msgctxt "#32023"
+msgid "[COLOR gold]Done!!!\n[COLOR white]Search queries deleted[/COLOR]"
+msgstr ""
+
+msgctxt "#32024"
+msgid "[COLORgold][B]New Search[/COLOR][/B]"
+msgstr ""
+
+
 msgctxt "#32030"
 msgid "Auto-View  Settings"
 msgstr ""
@@ -126,4 +139,12 @@ msgstr ""
 
 msgctxt "#32037"
 msgid "Register at http://paidikestainies.online/"
+msgstr ""
+
+msgctxt "#32038"
+msgid "CLICK HERE TO SAVE VIEW"
+msgstr ""
+
+msgctxt "#32039"
+msgid "Delete Search item"
 msgstr ""

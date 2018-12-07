@@ -152,7 +152,7 @@ def clear(table=None, withyes=True):
             except:
                 pass
 
-        control.infoDialog(control.lang(30402).encode('utf-8'))
+        control.infoDialog(control.lang(32013).encode('utf-8'))
     except:
         pass
 
@@ -172,6 +172,6 @@ def delete(dbfile=control.cacheFile, withyes=True):
 
     control.deleteFile(dbfile)
 
-    control.infoDialog(control.lang(30402).encode('utf-8'))
+    control.infoDialog(control.lang(32023).encode('utf-8'))
 
 
