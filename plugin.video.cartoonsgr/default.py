@@ -395,7 +395,7 @@ def Trailer(url):
 
 
 def search_menu():#6
-    addDir(Lang(320), 'new', 26, ICON, FANART, '')
+    addDir(Lang(32024), 'new', 26, ICON, FANART, '')
     try:
         from sqlite3 import dbapi2 as database
     except BaseException:
