@@ -49,7 +49,7 @@
 		</extension>
 	</addon>
 
-	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.4.0.a" provider-name="Bugatsinho">
+	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.4.0.b" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.resolveurl" version="5.0.00"/>

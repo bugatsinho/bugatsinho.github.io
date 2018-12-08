@@ -276,7 +276,7 @@ def Get_links(name, url):#10
     password = control.setting('password')
     lcookie = cache.get(_Login, 8, BASEURL, username, password)
     name = re.sub('\)\s*\[.+?]', ')', name)
-    r = cache.get(client.request, 2, url, True, True, False, None, None, None,False,None,None,lcookie)
+    r = cache.get(client.request, 2, url, True, True, False, None, None, None, False, None, None, lcookie)
     calidad = client.parseDOM(r, 'span', attrs={'class':'calidad2'})[0]
     calidad = client.replaceHTMLCodes(calidad)
     calidad = calidad.encode('utf-8')
@@ -290,7 +290,7 @@ def Get_links(name, url):#10
             back = client.parseDOM(r, 'img', ret='src', attrs={'itemprop': 'image'})[0]
 
         try:
-            data = client.parseDOM(r, 'div', attrs={'class': 'tabcontent'})[0]
+            data = client.parseDOM(r, 'div', attrs={'class': 'tabcontent'})
             links = zip(client.parseDOM(data, 'a', ret='href'),
                         client.parseDOM(data, 'a'))
             description = Sinopsis(url)
@@ -395,7 +395,7 @@ def Trailer(url):
 
 
 def search_menu():#6
-    addDir(Lang(32024), 'new', 26, ICON, FANART, '')
+    addDir(Lang(32024).encode('utf-8'), 'new', 26, ICON, FANART, '')
     try:
         from sqlite3 import dbapi2 as database
     except BaseException:
