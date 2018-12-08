@@ -217,7 +217,6 @@ def Get_epoxiakes(url):#19
 
 
 def Get_content(url): #5
-    control.busy()
     r = cache.get(client.request, 4, url)
     data = client.parseDOM(r, 'div', attrs={'id': 'mt-\d+'})
     for post in data:

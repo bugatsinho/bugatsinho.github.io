@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.4.0.b" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.4.0.c" provider-name="Bugatsinho">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="xbmc.python" version="2.19.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
     <import addon="script.module.unshortenit"  version="0.3.1"/>
   </requires>
