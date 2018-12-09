@@ -37,7 +37,7 @@ def Main_addDir():
     addDir('[B][COLOR gold]' + Lang(32020).encode('utf-8') + '[/COLOR][/B]', '', 17, ICON, FANART, '')
     addDir('[B][COLOR gold]' + Lang(32021).encode('utf-8') + '[/COLOR][/B]', '', 9, ICON, FANART, '')
     addDir('[B][COLOR gold]' + Lang(32019).encode('utf-8') + ': [COLOR lime]%s[/COLOR][/B]' % vers, '', 'BUG', ICON, FANART, '')
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 def Peliculas():#13
     addDir('[B][COLOR orangered]' + Lang(32008).encode('utf-8') + '[/COLOR][/B]', BASEURL + 'peliculas/estrenos', 5, ART + 'ultimas.jpg', FANART,'')
@@ -45,7 +45,7 @@ def Peliculas():#13
     addDir('[B][COLOR orangered]' + Lang(32009).encode('utf-8') + '[/COLOR][/B]', BASEURL + 'peliculas/', 5, ART + 'movies.jpg', FANART, '')
     addDir('[B][COLOR orangered]' + Lang(32006).encode('utf-8') + '[/COLOR][/B]', 'peliculas', 3, ART + 'genre.jpg',FANART,'')
     addDir('[B][COLOR gold]' + Lang(32005).encode('utf-8') + '[/COLOR][/B]', '', 6, ICON, FANART, '')
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 def Series():#14
     addDir('[B][COLOR orangered]' + Lang(32008).encode('utf-8') + '[/COLOR][/B]',BASEURL + 'series/estrenos/', 5,ART + 'ultimas.jpg', FANART, '')
@@ -53,7 +53,7 @@ def Series():#14
     addDir('[B][COLOR orangered]' + Lang(33009).encode('utf-8') + '[/COLOR][/B]', BASEURL + 'series', 5, ART + 'shows.jpg', FANART, '')
     addDir('[B][COLOR orangered]' + Lang(32006).encode('utf-8') + '[/COLOR][/B]', 'series', 3, ART + 'genre.jpg', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32005).encode('utf-8') + '[/COLOR][/B]', '', 6, ICON, FANART, '')
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 def Get_Genres(url): #3
     r = client.request(BASEURL)
@@ -78,7 +78,7 @@ def Get_Genres(url): #3
             name = ''
 
         addDir('[B][COLOR yellow]%s[/COLOR][/B]' % name, link, 5, ART + 'genre.jpg', FANART, '')
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 
 def Get_Seasons(url, name):#4
@@ -96,7 +96,7 @@ def Get_Seasons(url, name):#4
         surl = url + '|' + episodes.encode('utf-8') + '|' + i[0][1:].encode('utf-8') + '|' + str(poster)
         title = '[B][COLOR white]%s [B]| [COLOR lime]%s[/COLOR][/B]' % (name, season)
         addDir(title, surl, 7, poster, FANART, str(desc))
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 def Get_epis(url):#7
     base, links, season, poster = url.split('|')
@@ -114,7 +114,7 @@ def Get_epis(url):#7
         title = '[B][COLOR white]%s[/COLOR][/B]' % title
 
         addDir(title, link, 10, poster, FANART, '')
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 
 def Get_random(url):#8
@@ -216,7 +216,7 @@ def Get_links(name, url):#10
 
         title = '[B][COLOR white]%s [B]| [B][COLOR lime]%s[/COLOR][/B]' % (name, host)
         addDir(title, link, 100, poster, fanart, str(desc))
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 
 
@@ -256,7 +256,7 @@ def Anime():#15
     addDir('[B][COLOR orangered]' + Lang(32040).encode('utf-8') + '[/COLOR][/B]', ANIME, 22,ART + 'anicon.jpg',ART + 'fanimet.jpg','')
     addDir('[B][COLOR orangered]' + Lang(32043).encode('utf-8') + '[/COLOR][/B]', ANIME + 'buscar?t=todo&q=', 26, ART + 'anicon.jpg',ART + 'fanimet.jpg', '')
     addDir('[B][COLOR gold]' + Lang(32005).encode('utf-8') + '[/COLOR][/B]', '', 29, ART + 'anicon.jpg',ART + 'fanimet.jpg','')
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 def An_Genre(url):#21
     r = client.request(url)
@@ -275,7 +275,7 @@ def An_Genre(url):#21
         if not name: continue
 
         addDir('[B][COLOR lime]%s[/COLOR][/B]' % name, url, 26, ART + 'genre.jpg', ART + 'fanimet.jpg', '')
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 
 def An_idioma(url):#22
@@ -294,7 +294,7 @@ def An_idioma(url):#22
         name = name.encode('utf-8')
 
         addDir('[B][COLOR lime]%s[/COLOR][/B]' % name, url, 26, ART + 'genre.jpg', ART + 'fanimet.jpg', '')
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 
 def An_ul_epis(url):#23
@@ -320,7 +320,7 @@ def An_ul_epis(url):#23
         title = '[B][COLOR white]%s-[COLOR lime]%s[/COLOR][/B]' % (title, str(ep))
 
         addDir(title, link, 27, poster, ART + 'fanimet.jpg', '')
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 
 def An_ul_agre(url):#24
@@ -344,7 +344,7 @@ def An_ul_agre(url):#24
         title = '[B][COLOR white]%s[/COLOR][/B]' % title
 
         addDir(title, link, 20, poster, ART + 'fanimet.jpg', '')
-    setView('movies', 'movie-view')
+    setView('movies', 'menu-view')
 
 
 def An_popul(url):#25
@@ -474,6 +474,7 @@ def An_Ep_links(url):#27
 
     if not sep == '0': addDir(sepid, sep, 27, poster, ART + 'fanimet.jpg', '')
     if not nep == '0': addDir(nepid, nep, 27, poster, ART + 'fanimet.jpg', '')
+    setView('movies', 'menu-view')
 
 def Search_Anime():  # 29
     keyb = xbmc.Keyboard('', 'Search')
@@ -553,7 +554,7 @@ def resolve(name, url, iconimage, description):
 
 def evaluate(host):
     try:
-        xbmc.log('@#@HOST:%s' % host, xbmc.LOGNOTICE)
+        #xbmc.log('@#@HOST:%s' % host, xbmc.LOGNOTICE)
         if 'animeshd' in host:
             host = client.request(host, output='geturl')
 
@@ -563,7 +564,7 @@ def evaluate(host):
 
         else:
             host = host
-        xbmc.log('@#@HOST-FINAL:%s' % host, xbmc.LOGNOTICE)
+        #xbmc.log('@#@HOST-FINAL:%s' % host, xbmc.LOGNOTICE)
         if 'openload' in host:
             from resources.lib.modules import openload
             if openload.test_video(host):
@@ -576,7 +577,7 @@ def evaluate(host):
             data = client.request(host)
             host = re.compile('''file['"]:['"]([^'"]+)''', re.DOTALL).findall(data)[0]
             host = requests.get(host).headers['location']
-            xbmc.log('@#@HDPRO:%s' % host, xbmc.LOGNOTICE)
+            #xbmc.log('@#@ANIMEHDPRO:%s' % host, xbmc.LOGNOTICE)
             return host + '|User-Agent=%s' % urllib.quote(client.agent())
 
         elif 'tiwi' in host:
@@ -585,11 +586,11 @@ def evaluate(host):
             if jsunpack.detect(data):
                 data = jsunpack.unpack(data)
                 link = re.compile('''\{file:['"]([^'"]+)''', re.DOTALL).findall(data)[0]
-                xbmc.log('@#@HDPRO:%s' % link, xbmc.LOGNOTICE)
+                #xbmc.log('@#@HDPRO:%s' % link, xbmc.LOGNOTICE)
             else:
                 #link = re.compile('''video\/mp4.+?src:['"](.+?)['"]''', re.DOTALL).findall(data)[0]
                 link = re.compile('''dash\+xml.+?src:['"](.+?)['"]''', re.DOTALL).findall(data)[0]
-                xbmc.log('@#@HDPRO:%s' % link, xbmc.LOGNOTICE)
+                #xbmc.log('@#@HDPRO:%s' % link, xbmc.LOGNOTICE)
             return link + '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), host)
 
         elif 'pelishd.tv' in host:
@@ -613,7 +614,7 @@ def evaluate(host):
                         return
                     elif ret > -1:
                         host = stream_url[ret]
-                        xbmc.log('@#@HDPRO:%s' % host, xbmc.LOGNOTICE)
+                        #xbmc.log('@#@HDPRO:%s' % host, xbmc.LOGNOTICE)
                         return host + '|User-Agent=%s' % urllib.quote(client.agent())
                     else:
                         return
@@ -645,7 +646,7 @@ def evaluate(host):
                     return
                 elif ret > -1:
                     host = stream_url[ret]
-                    xbmc.log('@#@HDPRO:%s' % host, xbmc.LOGNOTICE)
+                    #xbmc.log('@#@HDPRO:%s' % host, xbmc.LOGNOTICE)
                     return host + '|User-Agent=%s' % urllib.quote(client.agent())
                 else:
                     return
@@ -752,25 +753,17 @@ def setView(content, viewType):
         print viewType
         print VT
 
-        xbmc.executebuiltin("Container.SetViewMode(%s)" % ( int(VT) ) )
+        xbmc.executebuiltin("Container.SetViewMode(%s)" % (int(VT)))
 
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_UNSORTED )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_LABEL )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_RATING )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_DATE )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_PROGRAM_COUNT )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_RUNTIME )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_GENRE )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_MPAA_RATING )
 
 def check_source():
     REPO_PATH = xbmc.translatePath('special://home/addons/repository.bugatsinho')
     if not os.path.exists(REPO_PATH):
         shutil.rmtree(ADDON_PATH, ignore_errors=True)
-        Dialog.ok(ADDON_PATH,Lang(32013))
+        Dialog.ok(ADDON_PATH, Lang(32013))
 
 def Open_settings():
-    control.openSettings(None,ID)
+    control.openSettings(None, ID)
 
 def cache_clear():
     cache.clear(withyes=False)
