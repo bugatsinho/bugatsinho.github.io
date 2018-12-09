@@ -632,10 +632,11 @@ def evaluate(host):
             cj = '__cfduid=%s' % str(cj['__cfduid'])
             vid_id = host.split('/')[-1]
             headers['Cookie'] = cj
-            data = requests.post('https://www.pelisplus.net/api/sources/%s' % vid_id, headers=headers).json()
+            data = requests.post('https://www.pelisplus.net/api/source/%s' % vid_id, headers=headers).json()
             streams = data['data']
             for stream in streams:
                 url = stream['file']
+                url = 'https://www.pelisplus.net' + url if url.startswith('/') else url
                 qual = '[COLORlime][B]%s Calidad[/B][/COLOR]' % stream['label']
                 res_quality.append(qual)
                 stream_url.append(url)
