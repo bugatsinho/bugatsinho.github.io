@@ -14,18 +14,11 @@ import threading
 from resources.lib.modules import client
 from resources.lib.modules import control
 from resources.lib.modules import cache
+from resources.lib.modules import search
 from resources.lib.modules import dom_parser as dom
 from t0mm0.common.addon import Addon
 from t0mm0.common.net import Net
 
-try:
-    from sqlite3 import dbapi2 as sqlite
-
-    print "Loading sqlite3 as DB engine"
-except BaseException:
-    from pysqlite2 import dbapi2 as sqlite
-
-    print "Loading pysqlite2 as DB engine"
 
 addon_id = 'plugin.video.releaseBB'
 plugin = xbmcaddon.Addon(id=addon_id)
@@ -69,7 +62,7 @@ def MainMenu():  # homescreen
     addon.add_directory({'mode': 'Categories', 'section': 'tv-shows'},
                         {'title': '[COLOR orange][B]Release BB [COLOR blue]Tv Shows [/COLOR][/B]'},
                         img=IconPath + 'tv.png', fanart=FANART)
-    addon.add_directory({'mode': 'search_bb'},
+    addon.add_directory({'mode': 'search_menu'},
                         {'title': '[COLOR orange][B]Release BB [COLOR yellow]Search[/COLOR][/B]'},
                         img=IconPath + 'search.png', fanart=FANART)
     addon.add_directory({'mode': 'settings'}, {'title': '[COLOR cyan][B]Settings-Tools[/B][/COLOR]'},
@@ -85,6 +78,7 @@ def MainMenu():  # homescreen
     addon.add_directory({'mode': 'forceupdate'},
                         {'title': '[COLOR gold][B]Version:' + ' [COLOR lime]%s[/COLOR][/B]' % version},
                         img=ICON, fanart=FANART, is_folder=False)
+    control.selectView('movies', 'menu-view')
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
@@ -104,6 +98,7 @@ def Categories(section):  # categories
                              ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',)],
                             img='https://pbs.twimg.com/profile_images/834058861669654528/p7gDr9C6_400x400.jpg',
                             fanart=FANART)
+    control.selectView('movies', 'menu-view')
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
@@ -145,7 +140,8 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
     except BaseException:
         control.infoDialog(
             '[COLOR red][B]Ooops![/B][/COLOR]\n[COLOR lime][B]Something wrong!![/B][/COLOR]', NAME, ICON, 3000)
-        xbmcplugin.endOfDirectory(int(sys.argv[1]))
+    control.selectView('movies', 'movie-view')
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
 def GetLinks(section, url, img, plot):  # Get Links
@@ -222,7 +218,8 @@ def GetLinks(section, url, img, plot):  # Get Links
         control.infoDialog(
             "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
             NAME, ICON, 3000)
-        xbmcplugin.endOfDirectory(int(sys.argv[1]))
+    control.selectView('movies', 'menu-view')
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
 def cloudflare_mode(url):
@@ -314,8 +311,8 @@ def PlayVideo(url, title, img, plot):
 def get_size(text):
     try:
         text = text.upper()
-        size = re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+) (?:GB|GiB|MB|MiB))', text)[-1]
-        div = 1 if size.endswith(('GB', 'GiB')) else 1024
+        size = re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+) (?:GB|GiB|Gb|MB|MiB|Mb))', text)[-1]
+        div = 1 if size.endswith(('GB', 'GiB', 'Gb')) else 1024
         size = float(re.sub('[^0-9|/.|/,]', '', size.replace(',', '.'))) / div
         size = '%.2f GB' % size
         return size
@@ -365,40 +362,45 @@ def Sinopsis(txt):
         return 'N/A'
 
 
-def Search_bb():
-    last_search = addon.load_data('search')
-    if not last_search:
-        last_search = ''
-    keyboard = xbmc.Keyboard()
-    keyboard.setHeading('[COLOR green]Search[/COLOR]')
-    keyboard.setDefault(last_search)
-    keyboard.doModal()
-    if keyboard.isConfirmed():
-        _query = keyboard.getText()
-        addon.save_data('search', _query)
-        query = _query.encode('utf-8')
-        try:
-            from resources.lib.modules import cfscrape
-            scraper = cfscrape.create_scraper()
-            headers = {'User-Agent': client.randomagent(),
-                       'Referer': 'http://rlsbb.ru'}
-            query = urllib.quote_plus(query).replace('+', '%2B')
-            url = 'http://search.rlsbb.ru/lib/search6515260491260.php?phrase=%s&pindex=1&radit=0.%s'
-            url = url % (query, random.randint(00000000000000001, 99999999999999999))
-            html = scraper.get(url, headers=headers).content
-            posts = json.loads(html)['results']
-            posts = [(i['post_name'], i['post_title']) for i in posts if i]
-            for movieUrl, title in posts:
-                movieUrl = urlparse.urljoin(BASE_URL, movieUrl)
-                title = title.encode('utf-8')
-                addon.add_directory({'mode': 'GetLinks', 'url': movieUrl},
-                                    {'title': title}, img=IconPath + 'search.png', fanart=FANART)
-        except BaseException:
-            control.infoDialog(
-                "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
-                NAME, ICON, 3000)
-    else:
-        return
+def search_menu():
+    addon.add_directory({'mode': 'search_bb', 'url': 'new'},
+                        {'title': '[B][COLOR orange]New Search[/COLOR][/B]'}, img=IconPath + 'search.png', fanart=FANART)
+    try:
+        from sqlite3 import dbapi2 as database
+    except BaseException:
+        from pysqlite2 import dbapi2 as database
+
+    dbcon = database.connect(control.searchFile)
+    dbcur = dbcon.cursor()
+
+    try:
+        dbcur.execute("""CREATE TABLE IF NOT EXISTS Search (url text, search text)""")
+    except BaseException:
+        pass
+
+    dbcur.execute("SELECT * FROM Search ORDER BY search")
+
+    lst = []
+
+    delete_option = False
+    for (url, search) in dbcur.fetchall():
+        title = '[B]%s[/B]' % urllib.unquote_plus(search).encode('utf-8')
+        delete_option = True
+        addon.add_directory({'mode': 'search_bb', 'url': url},
+                            {'title': title},
+                            [('Release BB Settings', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                             ('Delete Search Item',
+                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=del_search_item&query=%s)' % search,),
+                             ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',)],
+                            img=IconPath + 'search.png', fanart=FANART)
+        lst += [(search)]
+    dbcur.close()
+
+    if delete_option:
+        addon.add_directory({'mode': 'del_search_items'},
+                            {'title': 'Delete All Queries'},
+                            img=IconPath + 'search.png', fanart=FANART, is_folder=False)
+    control.selectView('movies', 'menu-view')
 
 
 def clear_Title(txt):
@@ -429,8 +431,16 @@ elif mode == 'GetTitles':
     GetTitles(section, url, startPage, numOfPages)
 elif mode == 'GetLinks':
     GetLinks(section, url, img, plot)
+elif mode == 'search_menu':
+    search_menu()
 elif mode == 'search_bb':
-    Search_bb()
+    search.Search_bb(url)
+elif mode == 'del_search_items':
+    from resources.lib.modules import search
+    search.search_clear()
+elif mode == 'del_search_item':
+    from resources.lib.modules import search
+    search.del_search(query)
 elif mode == 'PlayVideo':
     PlayVideo(url, title, img, plot)
 elif mode == 'settings':

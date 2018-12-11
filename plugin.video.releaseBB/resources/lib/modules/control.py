@@ -57,6 +57,7 @@ skinPath = xbmc.translatePath('special://skin/')
 addonPath = xbmc.translatePath(addonInfo('path'))
 dataPath = xbmc.translatePath(addonInfo('profile')).decode('utf-8')
 
+
 window = xbmcgui.Window(10000)
 dialog = xbmcgui.Dialog()
 progressDialog = xbmcgui.DialogProgress()
@@ -78,9 +79,11 @@ exists = xbmcvfs.exists
 copy = xbmcvfs.copy
 
 join = os.path.join
-settingsFile = os.path.join(dataPath, 'settings.xml')
-bookmarksFile = os.path.join(dataPath, 'bookmarks.db')
-cacheFile = os.path.join(dataPath, 'cache.db')
+settingsFile = join(dataPath, 'settings.xml')
+bookmarksFile = join(dataPath, 'bookmarks.db')
+viewsFile = join(dataPath, 'views.db')
+searchFile = join(dataPath, 'search.db')
+cacheFile = join(dataPath, 'cache.db')
 
 
 def infoDialog(message, heading=addonInfo('name'), icon='', time=3000):
@@ -146,11 +149,32 @@ def refresh():
 
 
 def idle():
-    return execute('Dialog.Close(busydialog)')
+
+    if float(addon('xbmc.addon').getAddonInfo('version')[:4]) > 17.6:
+        execute('Dialog.Close(busydialognocancel)')
+    else:
+        execute('Dialog.Close(busydialog)')
+
+
+def busy():
+
+    if float(addon('xbmc.addon').getAddonInfo('version')[:4]) > 17.6:
+        execute('ActivateWindow(busydialognocancel)')
+    else:
+        execute('ActivateWindow(busydialog)')
 
 
 def set_view_mode(vmid):
     return execute('Container.SetViewMode({0})'.format(vmid))
+
+
+def getKodiVersion():
+    return xbmc.getInfoLabel("System.BuildVersion").split(".")[0]
+
+
+def getCurrentViewId():
+    win = xbmcgui.Window(xbmcgui.getCurrentWindowId())
+    return str(win.getFocusId())
 
 
 # for compartmentalized theme addons
@@ -327,3 +351,52 @@ def enable_addon(addon_id, enable=True):
     }
 
     json_rpc(command)
+
+
+def selectView(content, viewtype):
+    import xbmcplugin, sys, xbmc
+    ''' Why recode whats allready written and works well,
+    Thanks go to Eldrado for it '''
+    if content:
+        content = 'movies'
+        xbmcplugin.setContent(int(sys.argv[1]), content)
+    if setting('auto-view') == 'true':
+
+        print setting(viewtype)
+        if setting(viewtype) == 'Info':
+            VT = '504'
+        elif setting(viewtype) == 'Info2':
+            VT = '503'
+        elif setting(viewtype) == 'Info3':
+            VT = '515'
+        elif setting(viewtype) == 'Fanart':
+            VT = '508'
+        elif setting(viewtype) == 'Poster Wrap':
+            VT = '501'
+        elif setting(viewtype) == 'Big List':
+            VT = '51'
+        elif setting(viewtype) == 'Low List':
+            VT = '724'
+        elif setting(viewtype) == 'List':
+            VT = '50'
+        elif setting(viewtype) == 'WideList':
+            VT = '55'
+        elif setting(viewtype) == 'Default Menu View':
+            VT = setting('default-view1')
+        elif setting(viewtype) == 'Default TV Shows View':
+            VT = setting('default-view2')
+        elif setting(viewtype) == 'Default Episodes View':
+            VT = setting('default-view3')
+        elif setting(viewtype) == 'Default Movies View':
+            VT = setting('default-view4')
+        elif setting(viewtype) == 'Default Docs View':
+            VT = setting('default-view5')
+        elif setting(viewtype) == 'Default Cartoons View':
+            VT = setting('default-view6')
+        elif setting(viewtype) == 'Default Anime View':
+            VT = setting('default-view7')
+
+        print viewtype
+        print VT
+
+        xbmc.executebuiltin("Container.SetViewMode(%s)" % (int(VT)))

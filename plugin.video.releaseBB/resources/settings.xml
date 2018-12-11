@@ -15,6 +15,11 @@
         <setting id="all-debrid" type="action" label="All-Debrid Auth" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_ad)" />
         <setting id="ad_reset" type="action" label="All-Debrid Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_ad)" />
     </category>
+    <category label="View Mode">
+        <setting id="auto-view" type="bool" label="Auto-View" default="true"/>
+        <setting id="menu-view" type="labelenum" label="Menu-View" values="List|WideList|Info|Info2|Info3|Fanart|Big list|Low List|Poster Wrap" default="List" enable="!eq(-1,false)"/>
+        <setting id="movie-view" type="labelenum" label="Movie-View" values="List|Info|Info2|Info3|Fanart|Big list|Low List|WideList|Poster Wrap" default="List" enable="!eq(-2,false)"/>
+    </category>
     <category label="TOOLS">
         <setting id="clearcache" type="action" label="CLEAR CACHE" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)" />
         <setting id="forceupdate" type="action" label="FORCE UPDATE" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=forceupdate)" />
