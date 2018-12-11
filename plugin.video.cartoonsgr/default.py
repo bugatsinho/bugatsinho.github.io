@@ -422,7 +422,7 @@ def search_menu():#6
     dbcur.close()
 
     if delete_option:
-        addDir(Lang(32039).encode('utf-8'), '', 'bug', ICON, FANART, '')
+        addDir(Lang(32039).encode('utf-8'), '', 29, ICON, FANART, '')
     views.selectView('movies', 'movie-view')
 
 
@@ -466,7 +466,6 @@ def Search(url):
 
 
     else:
-        control.busy()
         if 'gamato' in url:
             Search_gamato(url)
         else:
@@ -656,7 +655,7 @@ def addDir(name, url, mode, iconimage, fanart, description):
         cm.append(('GRecoTM Pair Tool', 'RunAddon(script.grecotm.pair)'))
         liz.addContextMenuItems(cm)
         ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
-    elif mode == 9 or mode == 17 or mode == 'bug':
+    elif mode == 9 or mode == 17 or mode == 'bug' or mode == 29:
         ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
 
     elif mode == 26:
