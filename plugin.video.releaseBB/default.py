@@ -8,8 +8,6 @@ import urlparse
 import re
 import sys
 import os
-import random
-import json
 import threading
 from resources.lib.modules import client
 from resources.lib.modules import control
@@ -78,7 +76,7 @@ def MainMenu():  # homescreen
     addon.add_directory({'mode': 'forceupdate'},
                         {'title': '[COLOR gold][B]Version:' + ' [COLOR lime]%s[/COLOR][/B]' % version},
                         img=ICON, fanart=FANART, is_folder=False)
-    control.selectView('movies', 'menu-view')
+    control.selectView('movies', 'menu-view', control.setting('menu-view'))
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
@@ -90,15 +88,16 @@ def Categories(section):  # categories
                 client.parseDOM(match, 'a', ret='href'))
     items = [(i[0], i[1]) for i in items if sec in i[1]]
     for title, link in items:
-        title = title.encode('utf-8')
+        title = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
         link = client.replaceHTMLCodes(link)
         addon.add_directory({'mode': 'GetTitles', 'section': section, 'url': link, 'startPage': '1', 'numOfPages': '2'},
                             {'title': title},
                             [('Release BB Settings', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                             ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',)],
+                             ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                             ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
                             img='https://pbs.twimg.com/profile_images/834058861669654528/p7gDr9C6_400x400.jpg',
                             fanart=FANART)
-    control.selectView('movies', 'menu-view')
+    control.selectView('movies', 'menu-view', control.setting('menu-view'))
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
@@ -123,12 +122,14 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
             # match = re.compile('postHeader.+?href="(.+?)".+?>(.+?)<.+?src=.+? src="(.+?).+?(Plot:.+?)</p>"', re.DOTALL).findall(html)
             for movieUrl, name, img, desc in match:
                 desc = Sinopsis(desc)
-                img += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), movieUrl)
+                img = img.replace('.ru', '.to')
+                name = '[B][COLORgold]{0}[/COLOR][/B]'.format(name.encode('utf-8'))
                 addon.add_directory({'mode': 'GetLinks', 'section': section, 'url': movieUrl, 'img': img, 'plot': desc},
                                     {'title': name, 'plot': desc},
                                     [('Release BB Settings',
                                       'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                                     ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',)],
+                                     ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                                     ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
                                     img=img, fanart=FANART)
             if 'Older Entries' not in html:
                 break
@@ -140,7 +141,7 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
     except BaseException:
         control.infoDialog(
             '[COLOR red][B]Ooops![/B][/COLOR]\n[COLOR lime][B]Something wrong!![/B][/COLOR]', NAME, ICON, 3000)
-    control.selectView('movies', 'movie-view')
+    control.selectView('movies', 'movie-view', control.setting('movie-view'))
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
@@ -168,9 +169,9 @@ def GetLinks(section, url, img, plot):  # Get Links
                 if any(x in url.lower() for x in ['sample', 'zippyshare']):
                     continue
 
-                print '*****************************' + host + ' : ' + url
+                addon.log('******* %s : %s' % (host, url))
                 if resolveurl.HostedMediaFile(url=url):
-                    print 'in GetLinks if loop'
+                    addon.log('in GetLinks if loop')
                     title = url.rpartition('/')
                     title = title[2].replace('.html', '')
                     title = title.replace('.htm', '')
@@ -181,6 +182,7 @@ def GetLinks(section, url, img, plot):  # Get Links
                     title = title.replace('_', ' ')
                     title = title.replace('.', ' ')
                     title = title.replace('480p', '[COLOR coral][B][I]480p[/B][/I][/COLOR]')
+                    title = title.replace('540p', '[COLOR coral][B][I]540p[/B][/I][/COLOR]')
                     title = title.replace('720p', '[COLOR gold][B][I]720p[/B][/I][/COLOR]')
                     title = title.replace('1080p', '[COLOR orange][B][I]1080p[/B][/I][/COLOR]')
                     title = title.replace('1080i', '[COLOR orange][B][I]1080i[/B][/I][/COLOR]')
@@ -193,7 +195,12 @@ def GetLinks(section, url, img, plot):  # Get Links
                         addon.add_directory(
                             {'mode': 'PlayVideo', 'url': url, 'listitem': listitem, 'img': img, 'title': name,
                              'plot': plot},
-                            {'title': title, 'plot': plot}, img=img, fanart=FANART, is_folder=False)
+                            {'title': title, 'plot': plot},
+                            [('Release BB Settings',
+                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                             ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                             ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
+                            img=img, fanart=FANART, is_folder=False)
                     else:
                         links.append((host, title, url, name))
 
@@ -210,15 +217,18 @@ def GetLinks(section, url, img, plot):  # Get Links
                 addon.add_directory(
                     {'mode': 'PlayVideo', 'url': link, 'listitem': listitem, 'img': img, 'title': name,
                      'plot': plot},
-                    {'title': title, 'plot': plot}, img=img, fanart=FANART, is_folder=False)
-
-
+                    {'title': title, 'plot': plot},
+                    [('Release BB Settings',
+                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                     ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                     ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
+                    img=img, fanart=FANART, is_folder=False)
 
     except BaseException:
         control.infoDialog(
             "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
             NAME, ICON, 3000)
-    control.selectView('movies', 'menu-view')
+    control.selectView('movies', 'menu-view', control.setting('menu-view'))
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
@@ -248,8 +258,9 @@ def response_html(url, cachetime):
 def link_tester(item):
     try:
         host, title, link, name = item[0], item[1], item[2], item[3]
+        #addon.log('URL Tested: [%s]: URL: %s ' % (host.upper(), link))
         na = ['has been deleted', 'file not found', 'file removed', 'sorry', 'step 1: select your plan']
-        r = client.request(link)
+        r = response_html(link, 1)
         if r is None:
             addon.log('NO result: [%s]: URL: %s ' % (host.upper(), link))
             return False, 'N/A'
@@ -287,7 +298,12 @@ def link_tester(item):
                 addon.add_directory(
                     {'mode': 'PlayVideo', 'url': link, 'listitem': listitem, 'img': img, 'title': name,
                      'plot': plot},
-                    {'title': title, 'plot': plot}, img=img, fanart=FANART, is_folder=False)
+                    {'title': title, 'plot': plot},
+                    [('Release BB Settings',
+                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                     ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                     ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
+                    img=img, fanart=FANART, is_folder=False)
 
     except BaseException:
         addon.log('URL ERROR: [%s]: URL: %s ' % (host.upper(), link))
@@ -391,7 +407,8 @@ def search_menu():
                             [('Release BB Settings', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
                              ('Delete Search Item',
                               'RunPlugin(plugin://plugin.video.releaseBB/?mode=del_search_item&query=%s)' % search,),
-                             ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',)],
+                             ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                             ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
                             img=IconPath + 'search.png', fanart=FANART)
         lst += [(search)]
     dbcur.close()
@@ -400,7 +417,7 @@ def search_menu():
         addon.add_directory({'mode': 'del_search_items'},
                             {'title': 'Delete All Queries'},
                             img=IconPath + 'search.png', fanart=FANART, is_folder=False)
-    control.selectView('movies', 'menu-view')
+    control.selectView('movies', 'menu-view', control.setting('menu-view'))
 
 
 def clear_Title(txt):
@@ -411,6 +428,23 @@ def clear_Title(txt):
     txt = txt.replace("&nbsp;", "").replace('&#8220;', '"').replace('\t', ' ').replace('\n', ' ')
     return txt
 
+
+def select_view():
+    try:
+        control.idle()
+        items = ['MENU-VIEW', 'TITLES-VIEW']
+        select = control.selectDialog(items, NAME)
+        if select == -1:
+            return
+
+        content = items[select]
+        addon.log('selected type: %s' % str(content))
+        VT = control.getCurrentViewId()
+        addon.log('setview VT-ID: %s' % str(VT))
+        control.selectView('setview', str(content.lower()), int(VT))
+        control.infoDialog('DONE!!!')
+    except BaseException:
+       return
 
 class Thread(threading.Thread):
 
@@ -455,5 +489,7 @@ elif mode == 'ClearCache':
 elif mode == 'forceupdate':
     control.infoDialog('Triggered a request for addon updates')
     control.execute('UpdateAddonRepos')
+elif mode == 'setview':
+    select_view()
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))

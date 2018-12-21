@@ -15,10 +15,13 @@
         <setting id="all-debrid" type="action" label="All-Debrid Auth" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_ad)" />
         <setting id="ad_reset" type="action" label="All-Debrid Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_ad)" />
     </category>
-    <category label="View Mode">
-        <setting id="auto-view" type="bool" label="Auto-View" default="true"/>
-        <setting id="menu-view" type="labelenum" label="Menu-View" values="List|WideList|Info|Info2|Info3|Fanart|Big list|Low List|Poster Wrap" default="List" enable="!eq(-1,false)"/>
-        <setting id="movie-view" type="labelenum" label="Movie-View" values="List|Info|Info2|Info3|Fanart|Big list|Low List|WideList|Poster Wrap" default="List" enable="!eq(-2,false)"/>
+    <category label="VIEW-MODE">
+        <setting type="lsep" label="Select View-Type" />
+        <setting id="selectview" type="action" label="Select View-Type" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)" />
+        <setting type="lsep" label="MENU-VIEW" />
+        <setting id="menu-view" label="Menu-View" type="text" default="Default"/>
+        <setting type="lsep" label="TITLES-VIEW" />
+        <setting id="movie-view" label="Titles-View" type="text" default="Default"/>
     </category>
     <category label="TOOLS">
         <setting id="clearcache" type="action" label="CLEAR CACHE" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)" />

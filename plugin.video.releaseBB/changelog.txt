@@ -1,3 +1,9 @@
++ [B][COLOR lime]1.5.0[/B][/COLOR] [COLOR gold](21-12-2018)[/COLOR]
+- rewrite View-Mode function
+  (now you can use the context menu
+   and set the viewtype you prefer by
+   select Set View as Default)
+
 + [B][COLOR lime]1.4.0[/B][/COLOR] [COLOR gold](11-12-2018)[/COLOR]
 - fix search link
 - better search function

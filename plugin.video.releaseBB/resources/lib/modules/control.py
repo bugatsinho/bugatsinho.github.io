@@ -22,6 +22,7 @@
 import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
 import os, json
 from init import syshandle
+from t0mm0.common.addon import Addon
 
 
 integer = 1000
@@ -113,20 +114,26 @@ def selectDialog(list, heading=addonInfo('name')):
 
 
 def openSettings(query=None, id=addonInfo('id')):
+    idle()
+    execute('Addon.OpenSettings({0})'.format(id))
 
-    try:
+    if query is not None:
 
-        idle()
-        execute('Addon.OpenSettings({0})'.format(id))
-        if query is None:
-            raise Exception()
-        c, f = query.split('.')
-        execute('SetFocus(%i)' % (int(c) + 100))
-        execute('SetFocus(%i)' % (int(f) + 200))
+        try:
 
-    except:
+            c, f = query.split('.')
+            if float(addon('xbmc.addon').getAddonInfo('version')[:4]) > 17.6:
+                execute('SetFocus(-{0})'.format(100 - int(c)))
+                if int(f):
+                    execute('SetFocus(-{0})'.format(80 - int(f)))
+            else:
+                execute('SetFocus({0})'.format(100 + int(c)))
+                if int(f):
+                    execute('SetFocus({0})'.format(200 + int(f)))
 
-        return
+        except Exception:
+            pass
+
 
 
 # Alternative method
@@ -353,50 +360,88 @@ def enable_addon(addon_id, enable=True):
     json_rpc(command)
 
 
-def selectView(content, viewtype):
+def selectView(content, viewtype, VT):
     import xbmcplugin, sys, xbmc
-    ''' Why recode whats allready written and works well,
-    Thanks go to Eldrado for it '''
-    if content:
+    if 'setview' in content:
+        if 'menu' in viewtype:
+            setSetting('menu-view', str(VT))
+        else:
+            setSetting('movie-view', str(VT))
+    else:
         content = 'movies'
-        xbmcplugin.setContent(int(sys.argv[1]), content)
-    if setting('auto-view') == 'true':
+        if setting('menu-view') == 'Default':
+            skin = xbmc.getSkinDir().lower()
+            #xbmc.log('SKIN: %s' % skin, xbmc.LOGNOTICE)
+            VT = 55 if 'estuary' in skin else 50
+            #xbmc.log('menu-VT: %s' % VT, xbmc.LOGNOTICE)
+            setSetting('menu-view', str(VT))
+            xbmcplugin.setContent(int(sys.argv[1]), content)
+            xbmc.executebuiltin("Container.SetViewMode(%s)" % (int(VT)))
 
-        print setting(viewtype)
-        if setting(viewtype) == 'Info':
-            VT = '504'
-        elif setting(viewtype) == 'Info2':
-            VT = '503'
-        elif setting(viewtype) == 'Info3':
-            VT = '515'
-        elif setting(viewtype) == 'Fanart':
-            VT = '508'
-        elif setting(viewtype) == 'Poster Wrap':
-            VT = '501'
-        elif setting(viewtype) == 'Big List':
-            VT = '51'
-        elif setting(viewtype) == 'Low List':
-            VT = '724'
-        elif setting(viewtype) == 'List':
-            VT = '50'
-        elif setting(viewtype) == 'WideList':
-            VT = '55'
-        elif setting(viewtype) == 'Default Menu View':
-            VT = setting('default-view1')
-        elif setting(viewtype) == 'Default TV Shows View':
-            VT = setting('default-view2')
-        elif setting(viewtype) == 'Default Episodes View':
-            VT = setting('default-view3')
-        elif setting(viewtype) == 'Default Movies View':
-            VT = setting('default-view4')
-        elif setting(viewtype) == 'Default Docs View':
-            VT = setting('default-view5')
-        elif setting(viewtype) == 'Default Cartoons View':
-            VT = setting('default-view6')
-        elif setting(viewtype) == 'Default Anime View':
-            VT = setting('default-view7')
+        elif setting('movie-view') == 'Default':
+            skin = xbmc.getSkinDir().lower()
+            VT = 55 if 'estuary' in skin else 50
+            setSetting('movie-view', str(VT))
+            xbmcplugin.setContent(int(sys.argv[1]), content)
+            xbmc.executebuiltin("Container.SetViewMode(%s)" % (int(VT)))
+        else:
+            if 'menu' in viewtype:
+                skin = xbmc.getSkinDir().lower()
+                vt = 55 if 'estuary' in skin else 50
+                VT = setting('menu-view') if setting('menu-view').isdigit() else vt
+                xbmc.log('392menu-VT: %s' % VT, xbmc.LOGNOTICE)
+            else:
+                skin = xbmc.getSkinDir().lower()
+                vt = 55 if 'estuary' in skin else 50
+                VT = setting('movie-view') if setting('movie-view').isdigit() else vt
+                xbmc.log('397movie-VT: %s' % VT, xbmc.LOGNOTICE)
+            xbmcplugin.setContent(int(sys.argv[1]), content)
+            xbmc.executebuiltin("Container.SetViewMode(%s)" % (int(VT)))
 
-        print viewtype
-        print VT
+    # < include > View_50_List < / include >
+    # < include > View_51_Poster < / include >
+    # < include > View_52_IconWall < / include >
+    # < include > View_53_Shift < / include >
+    # < include > View_54_InfoWall < / include >
+    # < include > View_55_WideList < / include >
+    # < include > View_500_Wall < / include >
+    # < include > View_501_Banner < / include >
+    # < include > View_502_FanArt < / include >
 
-        xbmc.executebuiltin("Container.SetViewMode(%s)" % (int(VT)))
+    # if setting('auto-view') == 'true':
+    #     setting(str(viewtype))
+    #     if setting(viewtype) == 'Info':
+    #         VT = '504'
+    #     elif setting(viewtype) == 'Info2':
+    #         VT = '503'
+    #     elif setting(viewtype) == 'Info3':
+    #         VT = '515'
+    #     elif setting(viewtype) == 'Fanart':
+    #         VT = '508'
+    #     elif setting(viewtype) == 'Poster Wrap':
+    #         VT = '501'
+    #     elif setting(viewtype) == 'Big List':
+    #         VT = '51'
+    #     elif setting(viewtype) == 'Low List':
+    #         VT = '724'
+    #     elif setting(viewtype) == 'List':
+    #         VT = '50'
+    #     elif setting(viewtype) == 'WideList':
+    #         VT = '55'
+    #     elif setting(viewtype) == 'Default Menu View':
+    #         VT = setting('default-view1')
+    #     elif setting(viewtype) == 'Default TV Shows View':
+    #         VT = setting('default-view2')
+    #     elif setting(viewtype) == 'Default Episodes View':
+    #         VT = setting('default-view3')
+    #     elif setting(viewtype) == 'Default Movies View':
+    #         VT = setting('default-view4')
+    #     elif setting(viewtype) == 'Default Docs View':
+    #         VT = setting('default-view5')
+    #     elif setting(viewtype) == 'Default Cartoons View':
+    #         VT = setting('default-view6')
+    #     elif setting(viewtype) == 'Default Anime View':
+    #         VT = setting('default-view7')
+
+
+
