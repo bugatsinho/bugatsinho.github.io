@@ -207,7 +207,7 @@
 	  </extension>
 	</addon>
 
-	<addon id="plugin.video.releaseBB" version="1.4.0" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
+	<addon id="plugin.video.releaseBB" version="1.5.0" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.t0mm0.common" version="2.1.1"/>
@@ -226,11 +226,11 @@
 		<website>https://bugatsinho.github.io/</website>
 		<twitter>https://twitter.com/bugatsinho</twitter>
 		<repo>https://bugatsinho.github.io/repo/</repo>
-		<news>+ [B][COLOR lime]1.4.0[/B][/COLOR] [COLOR gold](11-12-2018)[/COLOR]
-	- fix search link
-	- better search function
-	  store/remove search queries
-	- add View-Mode on settings to select view-type for menu and titles</news>
+		<news>+ [B][COLOR lime]1.5.0[/B][/COLOR] [COLOR gold](21-12-2018)[/COLOR]
+	- rewrite View-Mode function
+	  (now you can use the context menu
+	   and set the viewtype you prefer by
+	   select Set View as Default)</news>
 		<assets>
 			<icon>icon.png</icon>
 			<fanart>fanart.jpg</fanart>
