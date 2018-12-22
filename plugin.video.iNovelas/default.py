@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import re, sys, urllib, urlparse
 import xbmc, xbmcaddon, xbmcgui, xbmcplugin
-from resources import client, control  ###THANKS TO TWILIGHT FOR HIS CODE!!!
+from resources import client, control, cache  ###THANKS TO TWILIGHT FOR HIS CODE!!!
 import resolveurl
-###THANKS TO DANDYMedia to use his addon as template and making this addon that makes happy my wife!!!
+
 
 ADDON       = xbmcaddon.Addon()
 ADDON_DATA  = ADDON.getAddonInfo('profile')
@@ -19,7 +19,9 @@ Dialog      = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL     = 'http://mastelenovelashd.net/'
+BASEURL = 'http://mastelenovelashd.com/'
+headers = {'User-Agent': client.agent(),
+           'Referer': BASEURL}
 
 def Main_menu():
     addDir('[B][COLOR white]Últimos capítulos agregados[/COLOR][/B]', BASEURL, 5, ICON, FANART, '')
@@ -31,8 +33,8 @@ def Main_menu():
 
 
 def Get_lista(url): #3
-    r = client.request(url)
-    r = client.parseDOM(r, 'div', attrs={'class': 'sidebar'})[0]
+    r = client.request(url, headers=headers)
+    r = client.parseDOM(r, 'ul', attrs={'id': 'telenovelas'})[0]
     r = client.parseDOM(r, 'li')
     for item in r:
         name = client.parseDOM(item, 'a')[0]
@@ -47,7 +49,7 @@ def Get_lista(url): #3
 
 
 def Get_letras(url): #9
-    r = client.request(url)
+    r = client.request(url, headers=headers)
     r = client.parseDOM(r, 'ul', attrs={'id': 'letras'})[0]
     r = client.parseDOM(r, 'li')
     for item in r:
@@ -63,7 +65,7 @@ def Get_letras(url): #9
 
 
 def Get_content(url): #5
-    r = client.request(url)
+    r = client.request(url, headers=headers)
     data = client.parseDOM(r, 'div', attrs={'class': 'imagen'})
     data = zip(client.parseDOM(data, 'a', ret='href'),
                client.parseDOM(data, 'a', ret='title'),
@@ -96,7 +98,7 @@ def Get_content(url): #5
 
 
 def Episodes(url): #8
-    r = client.request(url)
+    r = client.request(url, headers=headers)
     data = client.parseDOM(r, 'ul', attrs={'id': 'listado'})[0]
     data = client.parseDOM(data, 'li')
     data = zip(client.parseDOM(data, 'a', ret='href'),
@@ -113,15 +115,15 @@ def Episodes(url): #8
 
 
 def Get_links(name,url): #10
-    OPEN = client.request(url)
-    Regex = re.compile('<iframe src="(.+?)"', re.DOTALL).findall(OPEN)
+    OPEN = client.request(url, headers=headers)
+    Regex = client.parseDOM(OPEN, 'iframe', ret='src')
     for link in Regex[::-1]:
         if 'verestrenos' in link:
             idp = link.split('mula=')[1]
             post = 'mole=%s' % idp
             link = client.request('http://www.verestrenos.net/rm/ajax.php', post=post)
 
-        vid_id = re.compile('http[s]?://(.+?)\.',re.DOTALL).findall(link)[0]
+        vid_id = re.compile('http[s]?://(.+?)\.', re.DOTALL).findall(link)[0]
         if 'sebuscar' in vid_id:
             continue
         vid_id = vid_id.replace('hqq', 'netu.tv')
