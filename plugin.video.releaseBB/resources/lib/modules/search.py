@@ -59,7 +59,7 @@ def Search_bb(url):
                 headers = {'User-Agent': client.randomagent(),
                            'Referer': 'http://rlsbb.ru'}
                 query = urllib.quote_plus(query).replace('+', '%2B')
-                url = 'http://search.rlsbb.ru/lib/search2341986049741.php?phrase=%s&pindex=1&radit=0.%s'
+                url = 'http://search.rlsbb.ru/lib/search452341986049741.php?phrase=%s&pindex=1&radit=0.%s'
                 url = url % (query, random.randint(00000000000000001, 99999999999999999))
                 #########save in Database#########
                 term = urllib.unquote_plus(query).decode('utf-8')

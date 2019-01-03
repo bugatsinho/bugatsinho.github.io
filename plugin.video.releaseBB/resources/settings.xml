@@ -16,8 +16,6 @@
         <setting id="ad_reset" type="action" label="All-Debrid Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_ad)" />
     </category>
     <category label="VIEW-MODE">
-        <setting type="lsep" label="Select View-Type" />
-        <setting id="selectview" type="action" label="Select View-Type" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)" />
         <setting type="lsep" label="MENU-VIEW" />
         <setting id="menu-view" label="Menu-View" type="text" default="Default"/>
         <setting type="lsep" label="TITLES-VIEW" />
