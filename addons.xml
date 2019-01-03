@@ -1,3 +1,4 @@
+
 <addons>
 	<addon id="repository.bugatsinho" name=" Bugatsinho repository" version="2.1" provider-name="Bugatsinho">
 		<extension point="xbmc.addon.repository" name="Bugatsinho repository">
@@ -121,23 +122,22 @@
 	
 	<addon id="plugin.video.iNovelas" name="iNovelas" version="0.1.6" provider-name="Bugatsinho">
 	  <requires>
-	    <import addon="xbmc.python" version="2.1.0"/>
-	    <import addon="script.module.resolveurl" version="5.0.00"/>
+		<import addon="xbmc.python" version="2.1.0"/>
+		<import addon="script.module.resolveurl" version="5.0.00"/>
 	  </requires>
 	  <extension point="xbmc.python.pluginsource" library="default.py">
-	    <provides>video</provides>
+		<provides>video</provides>
 	  </extension>
 	  <extension point="xbmc.addon.metadata">
-	    <reuselanguageinvoker>false</reuselanguageinvoker>
-	    <summary lang="en">iNovelas es un add-on con telenovelas latinas.</summary>
-	    <description lang="en">Enlaces gratis desde web para ver sus Telenovelas favoritas!</description>
+		<summary lang="en">iNovelas es un add-on con telenovelas latinas.</summary>
+		<description lang="en">Enlaces gratis desde web para ver sus Telenovelas favoritas!</description>
 		<disclaimer lang="en">El autor no aloja ni distribuye ninguno de los contenidos mostrados por este complemento o tiene alguna afiliación con los propietarios del sitio web</disclaimer>
 		<language>en es</language>
-	    <license>GNU GPL, version 2</license>
-	    <twitter>https://twitter.com/Bugatsinho</twitter>
-	    <news>version 0.1.6 22-12-2018
+		<license>GNU GPL, version 2</license>
+		<twitter>https://twitter.com/Bugatsinho</twitter>
+		<news>version 0.1.6 22-12-2018
 	 - Reparar Ultimos Capitulos error
-	    </news>
+		</news>
 	  </extension>
 	</addon>
 	
@@ -207,7 +207,7 @@
 	  </extension>
 	</addon>
 
-	<addon id="plugin.video.releaseBB" version="1.5.0" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
+	<addon id="plugin.video.releaseBB" version="1.5.1" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.t0mm0.common" version="2.1.1"/>
@@ -226,256 +226,13 @@
 		<website>https://bugatsinho.github.io/</website>
 		<twitter>https://twitter.com/bugatsinho</twitter>
 		<repo>https://bugatsinho.github.io/repo/</repo>
-		<news>+ [B][COLOR lime]1.5.0[/B][/COLOR] [COLOR gold](21-12-2018)[/COLOR]
-	- rewrite View-Mode function
-	  (now you can use the context menu
-	   and set the viewtype you prefer by
-	   select Set View as Default)</news>
-		<assets>
-			<icon>icon.png</icon>
-			<fanart>fanart.jpg</fanart>
-		</assets>
-	  </extension>
-	</addon><addons>
-	<addon id="repository.bugatsinho" name=" Bugatsinho repository" version="2.1" provider-name="Bugatsinho">
-		<extension point="xbmc.addon.repository" name="Bugatsinho repository">
-			<info compressed="false">https://raw.githubusercontent.com/bugatsinho/bugatsinho.github.io/master/addons.xml</info>
-			<checksum>https://raw.githubusercontent.com/bugatsinho/bugatsinho.github.io/master/addons.xml.md5</checksum>
-			<datadir zip="true">https://raw.githubusercontent.com/bugatsinho/bugatsinho.github.io/master/_zips</datadir>
-			<hashes>false</hashes>
-			<dir>
-				<info compressed="false">https://raw.githubusercontent.com/jsergio123/zips/master/addons.xml</info>
-				<checksum>https://raw.githubusercontent.com/jsergio123/zips/master/addons.xml.md5</checksum>
-				<datadir zip="true">https://raw.githubusercontent.com/jsergio123/zips/master/</datadir>
-			</dir>
-			<dir>
-				<info compressed="false">https://raw.githubusercontent.com/Twilight0/repo.twilight0.libs/master/_zips/addons.xml</info>
-				<checksum>https://raw.githubusercontent.com/Twilight0/repo.twilight0.libs/master/_zips/addons.xml.md5</checksum>
-				<datadir zip="true">https://raw.githubusercontent.com/Twilight0/repo.twilight0.libs/master/_zips/</datadir>
-			</dir>
-		</extension>
-		<extension point="xbmc.addon.metadata">
-			<summary>Bugatsinho repository</summary>
-			<description>This repository contains Greek, Spanish and other addons!Read first each addon's description!</description>
-			<platform>all</platform>
-		</extension>
-	</addon>
-
-	<addon id="service.subtitles.greeksubs" name="Greek Subs" version="1.1.3.1" provider-name="Bugatsinho">
-		<requires>
-			<import addon="xbmc.python" version="2.24.0"/>
-			<import addon="script.module.requests" version="2.8.1" />
-		</requires>
-		<extension point="xbmc.subtitle.module" library="service.py">
-		</extension>
-		<extension point="xbmc.addon.metadata">
-			<reuselanguageinvoker>false</reuselanguageinvoker>
-			<summary lang="en_GB">Greek Subs addon for subtitles</summary>
-			<summary lang="en_GB">Πρόσθετο υποτίτλων Greek Subs</summary>
-	        <description lang="en_GB">Search and download subtitles from yifisubs, subs4free/subs4series and subztv.club</description>
-			<description lang="el_GR">Εύρεση και λήψη υποτίτλων από τα yifisubs, subs4free/subs4series και subztv.club</description>
-			<disclaimer lang="en_GB">This service is only for Greek subtitles and not published nor endorsed by subs4free/subs4series and subztv.club</disclaimer>
-			<disclaimer lang="el_GR">Υπηρεσία μόνο ελληνικών υποτίτλων που δεν έχει δημοσιευθεί ούτε εγκριθεί από τα subs4free/subs4series και subztv.club</disclaimer>
-			<license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
-			<website>https://subztv.club/</website>
-			<platform>all</platform>
-			<language>el</language>
-			<news>[B]1.1.3.1[/B] 03-12-2018
-	- Αλλαγή domain για sub4free
-	- Διόρθωση για καλύτερη χειροκίνητη αναζήτηση
-	- Διορθώσεις Regex</news>
-		</extension>
-	</addon>
-
-	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.4.0.d" provider-name="Bugatsinho">
-	  <requires>
-		<import addon="xbmc.python" version="2.1.0"/>
-		<import addon="script.module.resolveurl" version="5.0.00"/>
-		<import addon="script.module.unshortenit"  version="0.3.1"/>
-	  </requires>
-	  <extension point="xbmc.python.pluginsource" library="default.py">
-			<provides>video</provides>
-	  </extension>
-	  <extension point="xbmc.addon.metadata">
-		<reuselanguageinvoker>false</reuselanguageinvoker>
-		<platform>all</platform>
-		<summary lang="el">ΠΑΙΔΙΚΑ</summary>
-		<description lang="el">ΤΑΙΝΙΕΣ κ ΣΕΙΡΕΣ για τα παιδιά ΜΕΤΑΓΛΩΤΙΣΜΕΝΑ ή με ΥΠΟΤΙΤΛΟΥΣ</description>
-		<disclaimer lang="el">Ο δημιουργός δεν φιλοξενεί ή διανέμει οποιαδήποτε από το περιεχόμενο που εμφανίζεται από αυτό το πρόσθετο και δεν έχει οποιαδήποτε σχέση με την ιστοσελίδα και τους ιδιοκτήτες αυτής.
-		</disclaimer>
-		<summary lang="en">Cartoons</summary>
-		<description lang="en">Movies and Series dubbed or with Greek subtitles for the kids.</description>
-		<disclaimer lang="en">The CartoonsGR's author  does not host, stream or distribute any of the content displayed inside this plugin and does not
-		have any relation with the website or the website's author.
-		</disclaimer>
-		<language>en el</language>
-		<license>GNU GPL, version 2</license>
-		<twitter>https://twitter.com/Bugatsinho</twitter>
-		<forum>https://www.facebook.com/groups/GRecoTM/</forum>
-		<source>http://grecotm.com/repo/</source>
-		<website>http://grecotm.com</website>
-		<news>[B]v0.4.0[/B] (07/12/2018)
-	  - Χρήση cache για γρήγορη πλοήγηση και μείωση κίνησης στην σελίδα
-	  - Προσθήκη Κατηγορία Γιορτινές(Χριστουγενιάτικα ή Πασχαλινά)
-	  - Προσθήκη Τοπ 100 στις ταινιές GAMATO-KIDS
-	  - Αποθήκευση, Διαγραφή και προβολή παλιότερων αναζητήσεων
-	  - Προσθήκη Διαγραφή αναζήτησης στο context menu
-	  - Προσθήκη Ρυθμίσεων στο context menu
-	  - Προσθήκη Καθαρισμού cache στο context menu</news>
-	  </extension>
-	</addon>
-
-
-	<addon id="plugin.video.pelisplus" name="PelisPlus TV" version="0.1.5.a" provider-name="Bugatsinho">
-	  <requires>
-		<import addon="xbmc.python" version="2.1.0"/>
-		<import addon="script.module.resolveurl" version="5.0.00"/>
-		<import addon="script.module.requests" version="2.19.1"/>
-	  </requires>
-	  <extension point="xbmc.python.pluginsource" library="default.py">
-			<provides>video</provides>
-	  </extension>
-	  <extension point="xbmc.addon.metadata">
-		<reuselanguageinvoker>false</reuselanguageinvoker>
-		<platform>all</platform>
-		<summary lang="es">PelisPlus TV Contenido desde pelisplus tv(Español-Latino) pagina web</summary>
-		<description lang="es">Contenido desde pelisplus tv(Español-Latino) pagina web</description>
-		<disclaimer lang="es">El autor de Pelisplus TV no aloja, transmite ni distribuye el contenido que se muestra dentro de este complemento y no
-		tener alguna relación con el sitio web o el autor del sitio web.
-		</disclaimer>
-		<summary lang="en">PelisPlus TV Content from peliplus tv (Spanish-Latino) website</summary>
-		<description lang="en">Content from peliplus tv (Spanish-Latino) website</description>
-		<disclaimer lang="en">The Pelisplus TV's author  does not host, stream or distribute any of the content displayed inside this plugin and does not
-		have any relation with the website or the website's author.
-		</disclaimer>
-		<language>en es</language>
-		<license>GNU GPL, version 2</license>
-		<twitter>https://twitter.com/Bugatsinho</twitter>
-		<news>[0.1.5] 09/12/2018
-	- add missing script.module.requests add-on
-		</news>
-	  </extension>
-	</addon>
-
-	<addon id="plugin.video.iNovelas" name="iNovelas" version="0.1.5" provider-name="Bugatsinho">
-	  <requires>
-	    <import addon="xbmc.python" version="2.1.0"/>
-	    <import addon="script.module.resolveurl" version="5.0.00"/>
-	  </requires>
-	  <extension point="xbmc.python.pluginsource" library="default.py">
-	    <provides>video</provides>
-	  </extension>
-	  <extension point="xbmc.addon.metadata">
-	    <reuselanguageinvoker>false</reuselanguageinvoker>
-	    <summary lang="en">iNovelas es un add-on con telenovelas latinas.</summary>
-	    <description lang="en">Enlaces gratis desde web para ver sus Telenovelas favoritas!</description>
-		<disclaimer lang="en">El autor no aloja ni distribuye ninguno de los contenidos mostrados por este complemento o tiene alguna afiliación con los propietarios del sitio web</disclaimer>
-		<language>en es</language>
-	    <license>GNU GPL, version 2</license>
-	    <twitter>https://twitter.com/Bugatsinho</twitter>
-	    <news>version 0.1.5 4-8-2018
-	 - Reparar Ultimos Capitulos error
-	    </news>
-	  </extension>
-	</addon>
-
-	<addon id="plugin.audio.mp3streams" name="MP3 Streams" version="2018.08.28" provider-name="Bugatsinho">
-	    <requires>
-	        <import addon="xbmc.python" version="2.1.0"/>
-	        <import addon="script.module.t0mm0.common" version="1.1.0"/>
-	        <import addon="script.module.mutagen"/>
-	        <import addon="script.module.requests" version="1.1.0"/>
-	    </requires>
-	    <extension point="xbmc.python.pluginsource" library="default.py">
-	        <provides>audio</provides>
-	    </extension>
-	    <extension point="xbmc.service" library="playerMP3.py" start="startup" />
-	    <extension point="xbmc.addon.metadata">
-	        <platform>all</platform>
-	        <summary>A music streaming collection</summary>
-	        <description>Browse, stream or download your favourite songs and albums</description>
-	        <news>Small fixes/fix artwork/next page. Credits to qahanik, kinkin, art by Marquerite for original code</news>
-	        <assets>
-	            <icon>icon.png</icon>
-	            <fanart>fanart.jpg</fanart>
-	        </assets>
-	    </extension>
-	</addon>
-
-	<addon id="script.module.unshortenit" name="Unshortenit Module" version="0.3.1.a" provider-name="Jeff Kehler, Twilight0">
-		<requires>
-			<import addon="xbmc.python" version="2.1.0"/>
-			<import addon="script.module.requests" version="2.12.4"/>
-		</requires>
-		<extension point="xbmc.python.module" library="lib" />
-		<extension point="xbmc.addon.metadata">
-			<summary lang="en">Unshortenit Module</summary>
-			<description lang="en">Unshortenit Module to reveal links from popular url shortener services</description>
-			<platform>all</platform>
-			<license>MIT</license>
-			<source>https://pypi.python.org/pypi/unshortenit/0.3.0</source>
-		</extension>
-	</addon>
-
-	<addon id="script.module.mutagen"
-       name="mutagen"
-       version="1.22.0"
-       provider-name="Joe Wreschnig">
-	  <requires>
-	    <import addon="xbmc.python" version="2.1.0"/>
-	  </requires>
-	  <extension point="xbmc.python.module"
-	             library="lib" />
-	  <extension point="xbmc.addon.metadata">
-	    <platform>all</platform>
-	    <language></language>
-	    <summary lang="en">Mutagen is a Python module to handle audio metadata.</summary>
-	    <description lang="en">Mutagen is a Python module to handle audio metadata. It supports ASF, FLAC,
-	M4A, Monkey's Audio, MP3, Musepack, Ogg Opus, Ogg FLAC, Ogg Speex, Ogg
-	Theora, Ogg Vorbis, True Audio, WavPack and OptimFROG audio files. All
-	versions of ID3v2 are supported, and all standard ID3v2.4 frames are
-	parsed. It can read Xing headers to accurately calculate the bitrate and
-	length of MP3s. ID3 and APEv2 tags can be edited regardless of audio
-	format. It can also manipulate Ogg streams on an individual packet/page
-	level.</description>
-	    <disclaimer lang="en">Code taken from http://code.google.com/p/mutagen/</disclaimer>
-	    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
-	    <website>http://code.google.com/p/mutagen/</website>
-	    <source>https://bitbucket.org/lazka/mutagen/overview</source>
-	  </extension>
-	</addon>
-
-	<addon id="plugin.video.releaseBB" version="1.5.0" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
-	  <requires>
-		<import addon="xbmc.python" version="2.1.0"/>
-		<import addon="script.module.t0mm0.common" version="2.1.1"/>
-		<import addon="script.module.resolveurl" version="5.0.1"/>
-		<import addon="script.module.simplejson" version="3.3.0"/>
-		<import addon="script.module.requests" version="2.19.1"/>
-	  </requires>
-	  <extension point="xbmc.python.pluginsource" library="default.py">
-		<provides>video</provides>
-	  </extension>
-	  <extension point="xbmc.addon.metadata">
-		<summary>Browse Release[COLOR orange][B]BB[/B][/COLOR]</summary>
-		<description>Stream a wide selection of scene release movies and Tv shows from releaseBB.... [COLOR red][B][I]YOU will need a real-debrid or a alldebrid account for this add-on[/B][/I][/COLOR] CREDITS to @MrEntertainRepo original dev of the add-on</description>
-		<platform>all</platform>
-		<disclaimer lang="en">All the movies on this website are hosted on the third party sites and uploaded by other people. We are not responsible for any content that hosted on on the third-party sites. If you have any legal issues please contact appropriate video owners hosters.</disclaimer>
-		<website>https://bugatsinho.github.io/</website>
-		<twitter>https://twitter.com/bugatsinho</twitter>
-		<repo>https://bugatsinho.github.io/repo/</repo>
-		<news>+ [B][COLOR lime]1.5.0[/B][/COLOR] [COLOR gold](21-12-2018)[/COLOR]
-	- rewrite View-Mode function
-	  (now you can use the context menu
-	   and set the viewtype you prefer by
-	   select Set View as Default)</news>
+		<news>+ [B][COLOR lime]1.5.1[/B][/COLOR] [COLOR gold](03-01-2019)[/COLOR]
+	- fix search url</news>
 		<assets>
 			<icon>icon.png</icon>
 			<fanart>fanart.jpg</fanart>
 		</assets>
 	  </extension>
 	</addon>
-
-</addons>
 
 </addons>
