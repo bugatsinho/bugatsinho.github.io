@@ -107,6 +107,7 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
             pageUrl = urlparse.urljoin(url, 'page/%d' % int(startPage))
         else:
             pageUrl = url
+
         html = response_html(pageUrl, '3')
         start = int(startPage)
         end = start + int(numOfPages)
@@ -115,14 +116,25 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
                 pageUrl = urlparse.urljoin(url, 'page/%s' % page)
                 html = response_html(pageUrl, '3')
             match = client.parseDOM(html, 'div', attrs={'class': 'post'})
-            match = [(client.parseDOM(i, 'a', ret='href')[0],
-                      client.parseDOM(i, 'a')[0],
-                      client.parseDOM(i, 'img', ret='src')[1],
-                      client.parseDOM(i, 'div', attrs={'class': 'postContent'})[0]) for i in match if i]
+            for item in match:
+                movieUrl = client.parseDOM(item, 'a', ret='href')[0]
+                name = client.parseDOM(item, 'a')[0]
+                try:
+                    img = client.parseDOM(item, 'img', ret='src')[1]
+                    img = img.replace('.ru', '.to')
+                except:
+                    img = ICON
+                try:
+                    desc = client.parseDOM(item, 'div', attrs={'class': 'postContent'})[0]
+                except:
+                    desc = 'N/A'
+            # match = [(client.parseDOM(i, 'a', ret='href')[0],
+            #           client.parseDOM(i, 'a')[0],
+            #           client.parseDOM(i, 'img', ret='src')[1],
+            #           client.parseDOM(i, 'div', attrs={'class': 'postContent'})[0]) for i in match if i]
             # match = re.compile('postHeader.+?href="(.+?)".+?>(.+?)<.+?src=.+? src="(.+?).+?(Plot:.+?)</p>"', re.DOTALL).findall(html)
-            for movieUrl, name, img, desc in match:
+            # for movieUrl, name, img, desc in match:
                 desc = Sinopsis(desc)
-                img = img.replace('.ru', '.to')
                 name = '[B][COLORgold]{0}[/COLOR][/B]'.format(name.encode('utf-8'))
                 addon.add_directory({'mode': 'GetLinks', 'section': section, 'url': movieUrl, 'img': img, 'plot': desc},
                                     {'title': name, 'plot': desc},
