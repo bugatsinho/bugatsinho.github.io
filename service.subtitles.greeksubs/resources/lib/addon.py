@@ -53,24 +53,38 @@ class Search:
             return
 
         if query is None:
+            if control.condVisibility('Player.HasVideo'):
+                title = control.infoLabel('VideoPlayer.Title')
 
-            title = control.infoLabel('VideoPlayer.Title')
+                if re.search(r'[^\x00-\x7F]+', title) is not None:
+                    title = control.infoLabel('VideoPlayer.OriginalTitle')
+                year = control.infoLabel('VideoPlayer.Year')
 
-            if re.search(r'[^\x00-\x7F]+', title) is not None:
-                title = control.infoLabel('VideoPlayer.OriginalTitle')
-            year = control.infoLabel('VideoPlayer.Year')
+                tvshowtitle = control.infoLabel('VideoPlayer.TVshowtitle')
 
-            tvshowtitle = control.infoLabel('VideoPlayer.TVshowtitle')
+                season = control.infoLabel('VideoPlayer.Season')
 
-            season = control.infoLabel('VideoPlayer.Season')
-
-            episode = control.infoLabel('VideoPlayer.Episode')
-            try:
-                imdb = control.infoLabel('VideoPlayer.IMDBNumber')
-                if not imdb:
+                episode = control.infoLabel('VideoPlayer.Episode')
+                try:
+                    imdb = control.infoLabel('VideoPlayer.IMDBNumber')
+                    if not imdb:
+                        imdb = '0'
+                except BaseException:
                     imdb = '0'
-            except BaseException:
-                imdb = '0'
+            else:
+                title = xbmc.getInfoLabel("ListItem.OriginalTitle")
+                year = xbmc.getInfoLabel("ListItem.Year")
+                tvshowtitle = xbmc.getInfoLabel("ListItem.TVShowTitle")
+                season = xbmc.getInfoLabel("ListItem.Season")
+                episode = xbmc.getInfoLabel("ListItem.Episode")
+                #labelType = xbmc.getInfoLabel("ListItem.DBTYPE")
+                try:
+                    imdb = control.infoLabel('ListItem.IMDBNumber')
+                    if not imdb:
+                        imdb = '0'
+                except BaseException:
+                    imdb = '0'
+
 
             if 's' in episode.lower():
                 season, episode = '0', episode[-1:]
@@ -88,6 +102,9 @@ class Search:
                 query, year = getCleanMovieTitle(title)
                 if not year == '':
                     query = '%s (%s)/imdb=%s' % (query, year, str(imdb))
+
+
+
 
         else:
             query = '%s/imdb=0' % re.sub('[\(|\)]', '', query)
