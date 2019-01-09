@@ -33,9 +33,9 @@ class s4f:
     def get(self, query):
 
         try:
-
-            match = re.findall('(.+?) \((\d{4})\)\/imdb=', query)
-            #xbmc.log('$#$MATCH: %s' % match, xbmc.LOGNOTICE)
+            query, imdb = query.split('/imdb=')
+            match = re.findall('^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
+            #xbmc.log('$#$MATCH-S4F: %s' % match, xbmc.LOGNOTICE)
 
             if len(match) > 0:
                 hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
@@ -68,9 +68,10 @@ class s4f:
             else:
                 hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
                        'Referer':'https://www.subs4series.com/'}
-                title, season, episode = re.findall('(.+?) S(\d+)E(\d+)/imdb=', query)[0]
+                title, hdlr = re.findall('^(?P<title>.+)\s+(?P<hdlr>S\d+E\d+)', query, re.I)[0]
+                #xbmc.log('$#$MATCH-S4F: %s | %s' % (title, hdlr), xbmc.LOGNOTICE)
 
-                hdlr = 'S%02dE%02d' % (int(season), int(episode))
+                #hdlr = 'S%02dE%02d' % (int(season), int(episode))
 
                 query = urllib.quote('%s %s' % (title, hdlr))
 

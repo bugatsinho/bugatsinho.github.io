@@ -32,9 +32,11 @@ class yifi:
     def get(self, query):
 
         try:
-            match = re.findall('(.+?) \((\d{4})\)\/imdb=(.+?)$', query)
+            query, imdb = query.split('/imdb=')
+            match = re.findall('^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
+            #xbmc.log('$#$MATCH-YIFI: %s' % match, xbmc.LOGNOTICE)
             if len(match) > 0:
-                title, year, imdb = match[0][0], match[0][1], match[0][1]
+                title, year = match[0][0], match[0][1]
                 if imdb.startswith('tt'):
                     r = client.request(self.base_link + 'movie-imdb/%s' % imdb)
 

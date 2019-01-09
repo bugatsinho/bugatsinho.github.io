@@ -34,11 +34,13 @@ class subztv:
 
     def get(self, query):
         try:
-            match = re.findall('(.+?) \((\d{4})\)\/imdb=(.+?)$', query)
+            query, imdb = query.split('/imdb=')
+            match = re.findall('^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
+            #xbmc.log('$#$MATCH-SUBZ: %s' % match, xbmc.LOGNOTICE)
 
             if len(match) > 0:
     
-                title, year, imdb = match[0][0], match[0][1], match[0][2]
+                title, year = match[0][0], match[0][1]
                 cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
                 
                 if imdb.startswith('tt'):
@@ -64,7 +66,8 @@ class subztv:
                 items = client.parseDOM(items, 'tr')
 
             else:
-                title, season, episode = re.findall('(.+?) S(\d+)E(\d+)/imdb=', query)[0]
+                title, season, episode = re.findall('^(?P<title>.+)\s+S(\d+)E(\d+)', query, re.I)[0]
+                #xbmc.log('$#$MATCH-SUBZ: %s | %s | %s' % (title, season, episode), xbmc.LOGNOTICE)
     
                 season, episode = '%01d' % int(season), '%01d' % int(episode)
                 hdlr = 'season-%s-episode-%s' % (season, episode)

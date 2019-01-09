@@ -85,7 +85,6 @@ class Search:
                 except BaseException:
                     imdb = '0'
 
-
             if 's' in episode.lower():
                 season, episode = '0', episode[-1:]
 
@@ -102,12 +101,11 @@ class Search:
                 query, year = getCleanMovieTitle(title)
                 if not year == '':
                     query = '%s (%s)/imdb=%s' % (query, year, str(imdb))
-
-
-
+            #xbmc.log('$#$QUERY-NONE-FINAL: %s' % query, xbmc.LOGNOTICE)
 
         else:
             query = '%s/imdb=0' % re.sub('[\(|\)]', '', query)
+            #xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
 
         self.query = query
         #xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
