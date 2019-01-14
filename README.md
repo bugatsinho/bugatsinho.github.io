@@ -8,14 +8,11 @@ Feel free to open an issue if something wrong with them!
 
 You can buy me a ☕ or 🍺
 
-![](https://s2.coinmarketcap.com/static/img/coins/16x16/1.png)
-: 1P4YbDEGkRtATGLb8WmEud4V1rpcAQyhZS
+![](https://s2.coinmarketcap.com/static/img/coins/16x16/1.png): 1P4YbDEGkRtATGLb8WmEud4V1rpcAQyhZS
 
-![](https://s2.coinmarketcap.com/static/img/coins/16x16/1027.png)
- 0x0bE3cC5547b2e9EA4B4677F1EFf4ea93cC204C44
+![](https://s2.coinmarketcap.com/static/img/coins/16x16/1027.png): 0x0bE3cC5547b2e9EA4B4677F1EFf4ea93cC204C44
  
-![](https://s2.coinmarketcap.com/static/img/coins/16x16/1694.png)
- Sumoo5EQ8XXHBzgyYpMkUe1CY6hwTkPxr5hdZaUTCU9tiQVQATz38oVc16Y47mRmkQGaYtmQU294UEp12iJcKfPt3iwHR6gT9e3
+![](https://s2.coinmarketcap.com/static/img/coins/16x16/1694.png): Sumoo5EQ8XXHBzgyYpMkUe1CY6hwTkPxr5hdZaUTCU9tiQVQATz38oVc16Y47mRmkQGaYtmQU294UEp12iJcKfPt3iwHR6gT9e3
 
 [Follow me on Twitter](https://twitter.com/bugatsinho)
 
