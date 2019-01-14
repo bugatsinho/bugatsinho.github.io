@@ -1,3 +1,11 @@
++ [B][COLOR lime]1.6.0[/B][/COLOR] [COLOR gold](14-01-2019)[/COLOR]
+- fix search url
+- add Set View-Type option(like exodus viewtypes)
+- add Premiumize authorization on settings
+- fix dom_parser and parseDOM function
+- linked github addon url by clicking Github-Help on main menu
+
+
 + [B][COLOR lime]1.5.1[/B][/COLOR] [COLOR gold](03-01-2019)[/COLOR]
 - fix search url
 

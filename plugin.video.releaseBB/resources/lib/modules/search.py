@@ -54,13 +54,20 @@ def Search_bb(url):
             _query = keyboard.getText()
             query = _query.encode('utf-8')
             try:
+
                 from resources.lib.modules import cfscrape
                 scraper = cfscrape.create_scraper()
+
+                query = urllib.quote_plus(query)
+                referer_link = 'http://search.rlsbb.ru/search/{0}'.format(query)
                 headers = {'User-Agent': client.randomagent(),
-                           'Referer': 'http://rlsbb.ru'}
-                query = urllib.quote_plus(query).replace('+', '%2B')
-                url = 'http://search.rlsbb.ru/lib/search452341986049741.php?phrase=%s&pindex=1&radit=0.%s'
-                url = url % (query, random.randint(00000000000000001, 99999999999999999))
+                           'Referer': referer_link}
+
+                code = scraper.get(referer_link, headers=headers).content
+                code = client.parseDOM(code, 'script', ret='data-code-rlsbb')[0]
+
+                url = 'http://search.rlsbb.ru/lib/search45224149886049641.php?phrase={0}&pindex=1&code={1}&radit=0.{2}'
+                url = url.format(query.replace('+', '%2B'), code, random.randint(00000000000000001, 99999999999999999))
                 #########save in Database#########
                 term = urllib.unquote_plus(query).decode('utf-8')
                 dbcon = database.connect(control.searchFile)

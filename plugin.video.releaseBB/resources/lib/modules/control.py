@@ -80,24 +80,23 @@ exists = xbmcvfs.exists
 copy = xbmcvfs.copy
 
 join = os.path.join
+DatabasePath = xbmc.translatePath("special://userdata/Database")
 settingsFile = join(dataPath, 'settings.xml')
 bookmarksFile = join(dataPath, 'bookmarks.db')
 viewsFile = join(dataPath, 'views.db')
+DBviewsFile = join(DatabasePath, 'ViewModes6.db')
 searchFile = join(dataPath, 'search.db')
 cacheFile = join(dataPath, 'cache.db')
 
 
-def infoDialog(message, heading=addonInfo('name'), icon='', time=3000):
+def infoDialog(message, heading=addonInfo('name'), icon='', time=3000, sound=True):
 
     if icon == '':
         icon = addonInfo('icon')
 
     try:
-
-        dialog.notification(heading, message, icon, time, sound=False)
-
+        dialog.notification(heading, message, icon, time, sound=sound)
     except:
-
         execute("Notification(%s, %s, %s, %s)" % (heading, message, time, icon))
 
 
@@ -360,88 +359,35 @@ def enable_addon(addon_id, enable=True):
     json_rpc(command)
 
 
-def selectView(content, viewtype, VT):
-    import xbmcplugin, sys, xbmc
-    if 'setview' in content:
-        if 'menu' in viewtype:
-            setSetting('menu-view', str(VT))
+def platform():
+    if xbmc.getCondVisibility('system.platform.android'):
+        return 'android'
+    elif xbmc.getCondVisibility('system.platform.linux'):
+        return 'linux'
+    elif xbmc.getCondVisibility('system.platform.windows'):
+        return 'windows'
+    elif xbmc.getCondVisibility('system.platform.osx'):
+        return 'osx'
+    elif xbmc.getCondVisibility('system.platform.atv2'):
+        return 'atv2'
+    elif xbmc.getCondVisibility('system.platform.ios'):
+        return 'ios'
+
+
+def open_git(url=None):
+    try:
+        if not url:
+            git_url = 'https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.releaseBB'
         else:
-            setSetting('movie-view', str(VT))
-    else:
-        content = 'movies'
-        if setting('menu-view') == 'Default':
-            skin = xbmc.getSkinDir().lower()
-            #xbmc.log('SKIN: %s' % skin, xbmc.LOGNOTICE)
-            VT = 55 if 'estuary' in skin else 50
-            #xbmc.log('menu-VT: %s' % VT, xbmc.LOGNOTICE)
-            setSetting('menu-view', str(VT))
-            xbmcplugin.setContent(int(sys.argv[1]), content)
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % (int(VT)))
-
-        elif setting('movie-view') == 'Default':
-            skin = xbmc.getSkinDir().lower()
-            VT = 55 if 'estuary' in skin else 50
-            setSetting('movie-view', str(VT))
-            xbmcplugin.setContent(int(sys.argv[1]), content)
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % (int(VT)))
+            git_url = url
+        if platform() == 'android':  # Android
+            return xbmc.executebuiltin('StartAndroidActivity(,android.intent.action.VIEW,,%s)' % git_url)
         else:
-            if 'menu' in viewtype:
-                skin = xbmc.getSkinDir().lower()
-                vt = 55 if 'estuary' in skin else 50
-                VT = setting('menu-view') if setting('menu-view').isdigit() else vt
-                xbmc.log('392menu-VT: %s' % VT, xbmc.LOGNOTICE)
-            else:
-                skin = xbmc.getSkinDir().lower()
-                vt = 55 if 'estuary' in skin else 50
-                VT = setting('movie-view') if setting('movie-view').isdigit() else vt
-                xbmc.log('397movie-VT: %s' % VT, xbmc.LOGNOTICE)
-            xbmcplugin.setContent(int(sys.argv[1]), content)
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % (int(VT)))
+            import webbrowser
+            return webbrowser.open(git_url)
+    except BaseException:
+        return
 
-    # < include > View_50_List < / include >
-    # < include > View_51_Poster < / include >
-    # < include > View_52_IconWall < / include >
-    # < include > View_53_Shift < / include >
-    # < include > View_54_InfoWall < / include >
-    # < include > View_55_WideList < / include >
-    # < include > View_500_Wall < / include >
-    # < include > View_501_Banner < / include >
-    # < include > View_502_FanArt < / include >
-
-    # if setting('auto-view') == 'true':
-    #     setting(str(viewtype))
-    #     if setting(viewtype) == 'Info':
-    #         VT = '504'
-    #     elif setting(viewtype) == 'Info2':
-    #         VT = '503'
-    #     elif setting(viewtype) == 'Info3':
-    #         VT = '515'
-    #     elif setting(viewtype) == 'Fanart':
-    #         VT = '508'
-    #     elif setting(viewtype) == 'Poster Wrap':
-    #         VT = '501'
-    #     elif setting(viewtype) == 'Big List':
-    #         VT = '51'
-    #     elif setting(viewtype) == 'Low List':
-    #         VT = '724'
-    #     elif setting(viewtype) == 'List':
-    #         VT = '50'
-    #     elif setting(viewtype) == 'WideList':
-    #         VT = '55'
-    #     elif setting(viewtype) == 'Default Menu View':
-    #         VT = setting('default-view1')
-    #     elif setting(viewtype) == 'Default TV Shows View':
-    #         VT = setting('default-view2')
-    #     elif setting(viewtype) == 'Default Episodes View':
-    #         VT = setting('default-view3')
-    #     elif setting(viewtype) == 'Default Movies View':
-    #         VT = setting('default-view4')
-    #     elif setting(viewtype) == 'Default Docs View':
-    #         VT = setting('default-view5')
-    #     elif setting(viewtype) == 'Default Cartoons View':
-    #         VT = setting('default-view6')
-    #     elif setting(viewtype) == 'Default Anime View':
-    #         VT = setting('default-view7')
 
 
 

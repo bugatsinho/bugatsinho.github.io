@@ -21,7 +21,7 @@
 
 import re, sys, cookielib, time, random
 import urllib, urllib2, urlparse, HTMLParser
-import cache
+import cache, dom_parser
 
 try:
     import requests
@@ -212,53 +212,20 @@ def retriever(source, destination, *args):
     Opener().retrieve(source, destination, *args)
 
 
-def parseDOM(html, name=u"", attrs=None, ret=False):
+def parseDOM(html, name='', attrs=None, ret=False):
 
-    if attrs is None:
-        attrs = {}
+    if attrs:
 
-    if isinstance(name, str):  # Should be handled
-        try:
-            name = name  # .decode("utf-8")
-        except:
-            pass
+        attrs = dict((key, re.compile(value + ('$' if value else ''))) for key, value in attrs.iteritems())
 
-    if isinstance(html, str):
-        try:
-            html = [html.decode("utf-8")]  # Replace with chardet thingy
-        except:
-            html = [html]
-    elif isinstance(html, unicode):
-        html = [html]
-    elif not isinstance(html, list):
-        return u""
+    results = dom_parser.parse_dom(html, name, attrs, ret)
 
-    if not name.strip():
-        return u""
+    if ret:
+        results = [result.attrs[ret.lower()] for result in results]
+    else:
+        results = [result.content for result in results]
 
-    ret_lst = []
-    for item in html:
-        temp_item = re.compile('(<[^>]*?\n[^>]*?>)').findall(item)
-        for match in temp_item:
-            item = item.replace(match, match.replace("\n", " "))
-
-        lst = _getDOMElements(item, name, attrs)
-
-        if isinstance(ret, str):
-            lst2 = []
-            for match in lst:
-                lst2 += _getDOMAttributes(match, name, ret)
-            lst = lst2
-        else:
-            lst2 = []
-            for match in lst:
-                temp = _getDOMContent(item, name, match, ret).strip()
-                item = item[item.find(temp, item.find(match)) + len(temp):]
-                lst2.append(temp)
-            lst = lst2
-        ret_lst += lst
-
-    return ret_lst
+    return results
 
 
 def _getDOMContent(html, name, match, ret):  # Cleanup

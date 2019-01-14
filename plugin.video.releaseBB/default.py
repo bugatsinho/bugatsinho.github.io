@@ -13,6 +13,7 @@ from resources.lib.modules import client
 from resources.lib.modules import control
 from resources.lib.modules import cache
 from resources.lib.modules import search
+from resources.lib.modules import view
 from resources.lib.modules import dom_parser as dom
 from t0mm0.common.addon import Addon
 from t0mm0.common.net import Net
@@ -45,10 +46,11 @@ plot = addon.queries.get('plot', None)
 ADDON = control.addon()
 FANART = ADDON.getAddonInfo('fanart')
 ICON = ADDON.getAddonInfo('icon')
+
 NAME = ADDON.getAddonInfo('name')
 version = ADDON.getAddonInfo('version')
 IconPath = control.addonPath + "/resources/icons/"
-
+BANNER = IconPath + "banner.png"
 base = control.setting('domain')
 BASE_URL = 'http://%s' % base.lower()
 
@@ -65,20 +67,23 @@ def MainMenu():  # homescreen
                         img=IconPath + 'search.png', fanart=FANART)
     addon.add_directory({'mode': 'settings'}, {'title': '[COLOR cyan][B]Settings-Tools[/B][/COLOR]'},
                         img=ICON, fanart=FANART, is_folder=False)
+    addon.add_directory({'mode': 'setviews'}, {'title': '[COLOR cyan][B]Set View-Types[/B][/COLOR]'},
+                        img=ICON, fanart=FANART)
     # addon.add_directory({'mode': 'RealDebrid'},  {'title':  '[COLOR gold][B]Real Debrid Auth[/B][/COLOR]'},
     #                    img=IconPath + 'rd.png', fanart=FANART, is_folder=False)
     # addon.add_directory({'mode': 'ResolverSettings'}, {'title':  '[COLOR cyan][B]Resolver Settings[/B][/COLOR]'},
     #                    img=IconPath + 'resolver.png', fanart=FANART, is_folder=False)
     # addon.add_directory({'mode': 'ClearCache'}, {'title': '[COLOR red][B]Clear Cache[/B][/COLOR]'},
     #                    img=ICON, fanart=FANART, is_folder=False)
-    addon.add_directory({'mode': 'help'}, {'title': '[COLOR gold][B][I]https://bugatsinho.github.io[/B][/I][/COLOR]'},
+    addon.add_directory({'mode': 'help'}, {'title': '[COLOR gold][B][I]Github-Help[/B][/I][/COLOR]'},
                         img='https://bugatsinho.github.io/images/bug.png', fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'forceupdate'},
                         {'title': '[COLOR gold][B]Version:' + ' [COLOR lime]%s[/COLOR][/B]' % version},
                         img=ICON, fanart=FANART, is_folder=False)
-    control.selectView('movies', 'menu-view', control.setting('menu-view'))
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
+    
+    control.content(int(sys.argv[1]), 'addons')
+    control.directory(int(sys.argv[1]))
+    view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
 
 def Categories(section):  # categories
     sec = '/category/%s' % section
@@ -97,8 +102,10 @@ def Categories(section):  # categories
                              ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
                             img='https://pbs.twimg.com/profile_images/834058861669654528/p7gDr9C6_400x400.jpg',
                             fanart=FANART)
-    control.selectView('movies', 'menu-view', control.setting('menu-view'))
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+    
+    control.content(int(sys.argv[1]), 'addons')
+    control.directory(int(sys.argv[1]))
+    view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
 
 
 def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
@@ -153,8 +160,10 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
     except BaseException:
         control.infoDialog(
             '[COLOR red][B]Ooops![/B][/COLOR]\n[COLOR lime][B]Something wrong!![/B][/COLOR]', NAME, ICON, 3000)
-    control.selectView('movies', 'movie-view', control.setting('movie-view'))
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+    
+    control.content(int(sys.argv[1]), 'movies')
+    control.directory(int(sys.argv[1]))
+    view.setView('movies', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
 
 
 def GetLinks(section, url, img, plot):  # Get Links
@@ -240,8 +249,10 @@ def GetLinks(section, url, img, plot):  # Get Links
         control.infoDialog(
             "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
             NAME, ICON, 3000)
-    control.selectView('movies', 'menu-view', control.setting('menu-view'))
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+    
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
 
 
 def cloudflare_mode(url):
@@ -395,7 +406,7 @@ def search_menu():
                         {'title': '[B][COLOR orange]New Search[/COLOR][/B]'}, img=IconPath + 'search.png', fanart=FANART)
     try:
         from sqlite3 import dbapi2 as database
-    except BaseException:
+    except ImportError:
         from pysqlite2 import dbapi2 as database
 
     dbcon = database.connect(control.searchFile)
@@ -429,7 +440,10 @@ def search_menu():
         addon.add_directory({'mode': 'del_search_items'},
                             {'title': 'Delete All Queries'},
                             img=IconPath + 'search.png', fanart=FANART, is_folder=False)
-    control.selectView('movies', 'menu-view', control.setting('menu-view'))
+
+    control.content(int(sys.argv[1]), 'addons')
+    control.directory(int(sys.argv[1]))
+    view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
 
 
 def clear_Title(txt):
@@ -441,22 +455,37 @@ def clear_Title(txt):
     return txt
 
 
-def select_view():
+def setviews():
+
     try:
         control.idle()
-        items = ['MENU-VIEW', 'TITLES-VIEW']
-        select = control.selectDialog(items, NAME)
-        if select == -1:
-            return
 
-        content = items[select]
-        addon.log('selected type: %s' % str(content))
-        VT = control.getCurrentViewId()
-        addon.log('setview VT-ID: %s' % str(VT))
-        control.selectView('setview', str(content.lower()), int(VT))
-        control.infoDialog('DONE!!!')
-    except BaseException:
-       return
+        items = [
+            ('Menus', 'addons'), ('Movies & Shows', 'movies'), ('Links', 'files')
+        ]
+
+        select = control.selectDialog([i[0] for i in items], 'SELECT')
+
+        if select == -1:
+            raise Exception()
+
+        content = items[select][1]
+        xbmc.log('$#$CONTENT: %s' % content, xbmc.LOGNOTICE)
+
+        title = 'CLICK HERE TO SAVE VIEW'
+
+        poster, banner, fanart = ICON, BANNER, FANART
+
+        addon.add_directory({'mode': 'addView', 'content': content},
+                            {'type': 'video', 'title': title, 'icon': poster, 'thumb': poster,
+                             'poster': poster, 'banner': banner},
+                            img=ICON, fanart=FANART)
+        control.content(int(sys.argv[1]), content)
+        control.directory(int(sys.argv[1]))
+        view.setView(content, {})
+    except:
+        quit()
+
 
 class Thread(threading.Thread):
 
@@ -501,7 +530,11 @@ elif mode == 'ClearCache':
 elif mode == 'forceupdate':
     control.infoDialog('Triggered a request for addon updates')
     control.execute('UpdateAddonRepos')
-elif mode == 'setview':
-    select_view()
-
-xbmcplugin.endOfDirectory(int(sys.argv[1]))
+elif mode == 'help':
+    control.open_git()
+elif mode == 'addView':
+    view.addView(content)
+elif mode == 'setviews':
+    setviews()
+elif mode == 'del_views':
+    view.view_clear()

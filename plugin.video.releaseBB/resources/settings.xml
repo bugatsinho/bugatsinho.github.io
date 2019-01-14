@@ -9,20 +9,30 @@
     <category label="RESOLVER">
         <setting type="lsep" label="ResolveUrl-Settings" />
         <setting id="open_smu_settings" type="action" label="ResolveUrl Settings" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=ResolverSettings)" />
+        <setting type="sep" />
         <setting type="lsep" label="PREMIUM SERVICES AUTHORIZATION" />
         <setting id="real-debrid" type="action" label="Real-Debrid Auth" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_rd)" />
         <setting id="rd_reset" type="action" label="Real-Debrid Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_rd)" />
+        <setting type="sep" />
+        <setting id="pm" type="action" label="Premiumize Auth" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_pm)" />
+        <setting id="pm_reset" type="action" label="Premiumize Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_pm)" />
+        <setting type="sep" />
         <setting id="all-debrid" type="action" label="All-Debrid Auth" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_ad)" />
         <setting id="ad_reset" type="action" label="All-Debrid Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_ad)" />
     </category>
     <category label="VIEW-MODE">
-        <setting type="lsep" label="MENU-VIEW" />
-        <setting id="menu-view" label="Menu-View" type="text" default="Default"/>
-        <setting type="lsep" label="TITLES-VIEW" />
-        <setting id="movie-view" label="Titles-View" type="text" default="Default"/>
+        <setting type="lsep" label="Select View-Types" />
+        <setting id="selectview" type="action" label="Select View-Type" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)" />
+        <setting id="resetviews" type="action" label="Reset View-Types" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=del_views)" />
+        <setting type="sep" />
+        <setting type="lsep" label="ReleaseBB View-Types" />
+        <setting id="menu-view" label="Menu View-Type" type="text" default=""/>
+        <setting id="movie-view" label="Movies &amp; Tv shows View-Type" type="text" default=""/>
+        <setting id="links-view" label="Links View-Type" type="text" default=""/>
     </category>
     <category label="TOOLS">
-        <setting id="clearcache" type="action" label="CLEAR CACHE" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)" />
-        <setting id="forceupdate" type="action" label="FORCE UPDATE" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=forceupdate)" />
+        <setting id="clearcache" type="action" label="Clear Cache" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)" />
+        <setting id="resetviews" type="action" label="Reset View-Types" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=del_views)" />
+        <setting id="forceupdate" type="action" label="Force Update" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=forceupdate)" />
     </category>
 </settings>
