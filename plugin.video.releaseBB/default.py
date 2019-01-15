@@ -340,9 +340,7 @@ def link_tester(item):
     except BaseException:
         addon.log('URL ERROR: [%s]: URL: %s ' % (host.upper(), link))
 
-    control.content(int(sys.argv[1]), 'videos')
-    control.directory(int(sys.argv[1]))
-    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+
 
 
 def PlayVideo(url, title, img, plot):
