@@ -26,6 +26,7 @@ import sys
 from resources.lib.modules import control
 from resources.lib.modules import cache
 from resources.lib.modules import client
+from resources.lib.modules import view
 from t0mm0.common.addon import Addon
 
 addon = Addon('plugin.video.releaseBB', sys.argv)
@@ -96,9 +97,17 @@ def Search_bb(url):
         try:
             from resources.lib.modules import cfscrape
             scraper = cfscrape.create_scraper()
+            referer_link = 'http://search.rlsbb.ru/search/{0}'.format(url)
             headers = {'User-Agent': client.randomagent(),
-                       'Referer': 'http://rlsbb.ru'}
-            html = scraper.get(url, headers=headers).content
+                       'Referer': referer_link}
+
+            code = scraper.get(referer_link, headers=headers).content
+            code = client.parseDOM(code, 'script', ret='data-code-rlsbb')[0]
+
+            s_url = 'http://search.rlsbb.ru/lib/search45224149886049641.php?phrase={0}&pindex=1&code={1}&radit=0.{2}'
+            s_url = s_url.format(url.replace('+', '%2B'), code, random.randint(00000000000000001, 99999999999999999))
+            html = scraper.get(s_url, headers=headers).content
+            xbmc.log('$#$HTML:%s' % html, xbmc.LOGNOTICE)
             posts = json.loads(html)['results']
             posts = [(i['post_name'], i['post_title']) for i in posts if i]
             for movieUrl, title in posts:
@@ -106,10 +115,16 @@ def Search_bb(url):
                 title = title.encode('utf-8')
                 addon.add_directory({'mode': 'GetLinks', 'url': movieUrl},
                                     {'title': title}, img=IconPath + 'search.png', fanart=FANART)
+
+
         except BaseException:
             control.infoDialog(
                 "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
                 NAME, ICON, 3000)
+
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
 
 
 def del_search(query):

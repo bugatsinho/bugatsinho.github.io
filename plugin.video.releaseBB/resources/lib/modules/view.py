@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-    Based on Covenant's search
+    Based on Covenant's viewtypes
     Author Bugatsinho
 
         License summary below, for more details please read license.txt file

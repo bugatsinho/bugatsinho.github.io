@@ -58,16 +58,21 @@ BASE_URL = 'http://%s' % base.lower()
 def MainMenu():  # homescreen
     addon.add_directory({'mode': 'Categories', 'section': 'movies'},
                         {'title': '[COLOR orange][B]Release BB [COLOR blue]Movies [/COLOR][/B]'},
+                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=IconPath + 'movie.png', fanart=FANART)
     addon.add_directory({'mode': 'Categories', 'section': 'tv-shows'},
                         {'title': '[COLOR orange][B]Release BB [COLOR blue]Tv Shows [/COLOR][/B]'},
+                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=IconPath + 'tv.png', fanart=FANART)
     addon.add_directory({'mode': 'search_menu'},
                         {'title': '[COLOR orange][B]Release BB [COLOR yellow]Search[/COLOR][/B]'},
+                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=IconPath + 'search.png', fanart=FANART)
     addon.add_directory({'mode': 'settings'}, {'title': '[COLOR cyan][B]Settings-Tools[/B][/COLOR]'},
+                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=ICON, fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'setviews'}, {'title': '[COLOR cyan][B]Set View-Types[/B][/COLOR]'},
+                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=ICON, fanart=FANART)
     # addon.add_directory({'mode': 'RealDebrid'},  {'title':  '[COLOR gold][B]Real Debrid Auth[/B][/COLOR]'},
     #                    img=IconPath + 'rd.png', fanart=FANART, is_folder=False)
@@ -76,9 +81,11 @@ def MainMenu():  # homescreen
     # addon.add_directory({'mode': 'ClearCache'}, {'title': '[COLOR red][B]Clear Cache[/B][/COLOR]'},
     #                    img=ICON, fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'help'}, {'title': '[COLOR gold][B][I]Github-Help[/B][/I][/COLOR]'},
+                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img='https://bugatsinho.github.io/images/bug.png', fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'forceupdate'},
                         {'title': '[COLOR gold][B]Version:' + ' [COLOR lime]%s[/COLOR][/B]' % version},
+                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=ICON, fanart=FANART, is_folder=False)
     
     control.content(int(sys.argv[1]), 'addons')
@@ -99,7 +106,7 @@ def Categories(section):  # categories
                             {'title': title},
                             [('Release BB Settings', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
                              ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                             ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
+                             ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                             img='https://pbs.twimg.com/profile_images/834058861669654528/p7gDr9C6_400x400.jpg',
                             fanart=FANART)
     
@@ -148,7 +155,7 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
                                     [('Release BB Settings',
                                       'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
                                      ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                                     ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
+                                     ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                                     img=img, fanart=FANART)
             if 'Older Entries' not in html:
                 break
@@ -207,6 +214,8 @@ def GetLinks(section, url, img, plot):  # Get Links
                     title = title.replace('720p', '[COLOR gold][B][I]720p[/B][/I][/COLOR]')
                     title = title.replace('1080p', '[COLOR orange][B][I]1080p[/B][/I][/COLOR]')
                     title = title.replace('1080i', '[COLOR orange][B][I]1080i[/B][/I][/COLOR]')
+                    title = title.replace('2160p', '[COLOR cyan][B][I]4K[/B][/I][/COLOR]')
+                    title = title.replace('.4K.', '[COLOR cyan][B][I]4K[/B][/I][/COLOR]')
                     title = title.replace('mkv', '[COLOR gold][B][I]MKV[/B][/I][/COLOR] ')
                     title = title.replace('avi', '[COLOR pink][B][I]AVI[/B][/I][/COLOR] ')
                     title = title.replace('mp4', '[COLOR purple][B][I]MP4[/B][/I][/COLOR] ')
@@ -220,7 +229,7 @@ def GetLinks(section, url, img, plot):  # Get Links
                             [('Release BB Settings',
                               'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
                              ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                             ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
+                             ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                             img=img, fanart=FANART, is_folder=False)
                     else:
                         links.append((host, title, url, name))
@@ -242,7 +251,7 @@ def GetLinks(section, url, img, plot):  # Get Links
                     [('Release BB Settings',
                       'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
                      ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                     ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
+                     ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                     img=img, fanart=FANART, is_folder=False)
 
     except BaseException:
@@ -325,11 +334,15 @@ def link_tester(item):
                     [('Release BB Settings',
                       'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
                      ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                     ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
+                     ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                     img=img, fanart=FANART, is_folder=False)
 
     except BaseException:
         addon.log('URL ERROR: [%s]: URL: %s ' % (host.upper(), link))
+
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
 
 
 def PlayVideo(url, title, img, plot):
@@ -406,7 +419,7 @@ def search_menu():
                         {'title': '[B][COLOR orange]New Search[/COLOR][/B]'}, img=IconPath + 'search.png', fanart=FANART)
     try:
         from sqlite3 import dbapi2 as database
-    except ImportError:
+    except BaseException:
         from pysqlite2 import dbapi2 as database
 
     dbcon = database.connect(control.searchFile)
@@ -425,13 +438,13 @@ def search_menu():
     for (url, search) in dbcur.fetchall():
         title = '[B]%s[/B]' % urllib.unquote_plus(search).encode('utf-8')
         delete_option = True
-        addon.add_directory({'mode': 'search_bb', 'url': url},
+        addon.add_directory({'mode': 'search_bb', 'url': search},
                             {'title': title},
                             [('Release BB Settings', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
                              ('Delete Search Item',
                               'RunPlugin(plugin://plugin.video.releaseBB/?mode=del_search_item&query=%s)' % search,),
                              ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                             ('Set View as Default', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setview)',)],
+                             ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                             img=IconPath + 'search.png', fanart=FANART)
         lst += [(search)]
     dbcur.close()
@@ -441,9 +454,9 @@ def search_menu():
                             {'title': 'Delete All Queries'},
                             img=IconPath + 'search.png', fanart=FANART, is_folder=False)
 
-    control.content(int(sys.argv[1]), 'addons')
+    control.content(int(sys.argv[1]), 'videos')
     control.directory(int(sys.argv[1]))
-    view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
 
 
 def clear_Title(txt):
