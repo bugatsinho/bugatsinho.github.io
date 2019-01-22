@@ -54,43 +54,73 @@ BANNER = IconPath + "banner.png"
 base = control.setting('domain')
 BASE_URL = 'http://%s' % base.lower()
 
+tested_links = []
+
 
 def MainMenu():  # homescreen
     addon.add_directory({'mode': 'Categories', 'section': 'movies'},
-                        {'title': '[COLOR orange][B]Release BB [COLOR blue]Movies [/COLOR][/B]'},
-                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
+                        {'title': control.lang(32000).encode('utf-8')},
+                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=IconPath + 'movie.png', fanart=FANART)
     addon.add_directory({'mode': 'Categories', 'section': 'tv-shows'},
-                        {'title': '[COLOR orange][B]Release BB [COLOR blue]Tv Shows [/COLOR][/B]'},
-                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
+                        {'title': control.lang(32001).encode('utf-8')},
+                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=IconPath + 'tv.png', fanart=FANART)
     addon.add_directory({'mode': 'search_menu'},
-                        {'title': '[COLOR orange][B]Release BB [COLOR yellow]Search[/COLOR][/B]'},
-                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
+                        {'title': control.lang(32002).encode('utf-8')},
+                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=IconPath + 'search.png', fanart=FANART)
-    addon.add_directory({'mode': 'settings'}, {'title': '[COLOR cyan][B]Settings-Tools[/B][/COLOR]'},
-                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
+
+    downloads = True if control.setting('downloads') == 'true' and (
+                len(control.listDir(control.setting('movie.download.path'))[0]) > 0 or
+                len(control.listDir(control.setting('tv.download.path'))[0]) > 0) else False
+    if downloads:
+        addon.add_directory({'mode': 'downloadlist'}, {'title': control.lang(32003).encode('utf-8')},
+                            [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
+                            img=ICON, fanart=FANART)
+
+    addon.add_directory({'mode': 'settings'}, {'title': control.lang(32004).encode('utf-8')},
+                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=ICON, fanart=FANART, is_folder=False)
-    addon.add_directory({'mode': 'setviews'}, {'title': '[COLOR cyan][B]Set View-Types[/B][/COLOR]'},
-                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
+    addon.add_directory({'mode': 'setviews'}, {'title': control.lang(32005).encode('utf-8')},
+                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=ICON, fanart=FANART)
-    # addon.add_directory({'mode': 'RealDebrid'},  {'title':  '[COLOR gold][B]Real Debrid Auth[/B][/COLOR]'},
-    #                    img=IconPath + 'rd.png', fanart=FANART, is_folder=False)
-    # addon.add_directory({'mode': 'ResolverSettings'}, {'title':  '[COLOR cyan][B]Resolver Settings[/B][/COLOR]'},
-    #                    img=IconPath + 'resolver.png', fanart=FANART, is_folder=False)
-    # addon.add_directory({'mode': 'ClearCache'}, {'title': '[COLOR red][B]Clear Cache[/B][/COLOR]'},
-    #                    img=ICON, fanart=FANART, is_folder=False)
-    addon.add_directory({'mode': 'help'}, {'title': '[COLOR gold][B][I]Github-Help[/B][/I][/COLOR]'},
-                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
+   
+    addon.add_directory({'mode': 'help'}, {'title': control.lang(32006).encode('utf-8')},
+                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img='https://bugatsinho.github.io/images/bug.png', fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'forceupdate'},
-                        {'title': '[COLOR gold][B]Version:' + ' [COLOR lime]%s[/COLOR][/B]' % version},
-                        [('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
+                        {'title': '[COLOR gold][B]Version: [COLOR lime]%s[/COLOR][/B]' % version},
+                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=ICON, fanart=FANART, is_folder=False)
     
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+
+
+def downloads_root():
+    movie_downloads = control.setting('movie.download.path')
+    tv_downloads = control.setting('tv.download.path')
+    cm = [(control.lang(32007).encode('utf-8'),
+           'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)'),
+          (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')]
+    if len(control.listDir(movie_downloads)[0]) > 0:
+        item = control.item(label='Movies')
+        item.addContextMenuItems(cm)
+        item.setArt({'icon': IconPath + 'movie.png', 'fanart': FANART})
+        xbmcplugin.addDirectoryItem(int(sys.argv[1]), movie_downloads, item, True)
+
+    if len(control.listDir(tv_downloads)[0]) > 0:
+        item = control.item(label='Tv Shows')
+        item.addContextMenuItems(cm)
+        item.setArt({'icon': IconPath + 'tv.png', 'fanart': FANART})
+        xbmcplugin.addDirectoryItem(int(sys.argv[1]), tv_downloads, item, True)
+
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+
 
 def Categories(section):  # categories
     sec = '/category/%s' % section
@@ -104,9 +134,9 @@ def Categories(section):  # categories
         link = client.replaceHTMLCodes(link)
         addon.add_directory({'mode': 'GetTitles', 'section': section, 'url': link, 'startPage': '1', 'numOfPages': '2'},
                             {'title': title},
-                            [('Release BB Settings', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                             ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                             ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                            [(control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                             (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                             (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                             img='https://pbs.twimg.com/profile_images/834058861669654528/p7gDr9C6_400x400.jpg',
                             fanart=FANART)
     
@@ -150,32 +180,119 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
             # for movieUrl, name, img, desc in match:
                 desc = Sinopsis(desc)
                 name = '[B][COLORgold]{0}[/COLOR][/B]'.format(name.encode('utf-8'))
-                addon.add_directory({'mode': 'GetLinks', 'section': section, 'url': movieUrl, 'img': img, 'plot': desc},
+                mode = 'GetPack' if 'tv-packs' in url else 'GetLinks'
+                addon.add_directory({'mode': mode, 'section': section, 'url': movieUrl, 'img': img, 'plot': desc},
                                     {'title': name, 'plot': desc},
-                                    [('Release BB Settings',
+                                    [(control.lang(32007).encode('utf-8'),
                                       'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                                     ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                                     ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                                     (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                                     (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                                     img=img, fanart=FANART)
             if 'Older Entries' not in html:
                 break
         # keep iterating until the last page is reached
         if 'Older Entries' in html:
             addon.add_directory({'mode': 'GetTitles', 'url': url, 'startPage': str(end), 'numOfPages': numOfPages},
-                                {'title': '[COLOR orange][B][I]Older Entries...[/B][/I][/COLOR]'},
+                                {'title': control.lang(32010).encode('utf-8')},
                                 img=IconPath + 'nextpage.png', fanart=FANART)
     except BaseException:
         control.infoDialog(
-            '[COLOR red][B]Ooops![/B][/COLOR]\n[COLOR lime][B]Something wrong!![/B][/COLOR]', NAME, ICON, 3000)
+            control.lang(32011).encode('utf-8'), NAME, ICON, 5000)
     
     control.content(int(sys.argv[1]), 'movies')
     control.directory(int(sys.argv[1]))
     view.setView('movies', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
 
 
+def GetPack(section, url, img, plot): # TV packs links
+    try:
+        html = response_html(url, '3')
+        main = client.parseDOM(html, 'div', {'class': 'postContent'})[0]
+        data = client.parseDOM(main, 'p')
+        data = [i for i in data if 'nfo1.' in i]
+        for i in data:
+            title = client.parseDOM(i, 'strong')[0]
+            title = clear_Title(title)
+            title = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
+            frames = dom.parse_dom(i, 'a', req='href')
+            frames = [i.attrs['href'] for i in frames if not 'uploadgig' in i.content.lower()]
+            frames = [i for i in frames if 'nfo1.' in i]
+            addon.add_directory({'mode': 'GetLinksPack', 'section': section, 'url': frames, 'img': img, 'plot': plot},
+                                {'title': title, 'plot': plot},
+                                [(control.lang(32007).encode('utf-8'),
+                                  'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                                 (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                                 (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                                img=img, fanart=FANART)
+
+    except BaseException:
+        control.infoDialog(
+            control.lang(32012).encode('utf-8'),
+            NAME, ICON, 5000)
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+
+
+def GetLinksPack(section, url, img, plot):
+    try:
+        urls = eval(url)
+        frames = []
+        for u in urls:
+            html = response_html(u, '72')
+            data = client.parseDOM(html, 'ol')[0]
+            frames += client.parseDOM(data, 'div')
+            try:
+                check = re.findall('.(S\d+E\d+).', data, re.I)[0]
+                if check:
+                    check = True
+                    hdlr = re.compile(r'.(S\d+E\d+).', re.I)
+                else:
+                    check = re.findall(r'\.(\d+)\.', data, re.DOTALL)[0]
+                    if check:
+                        check = True
+                        hdlr = re.compile(r'\.(\d+)\.')
+
+            except IndexError:
+                check = False
+
+        if check:
+            frames = sorted(frames, key=lambda x: hdlr.search(x).group(1))
+        else:
+            frames = frames
+
+        for frame in frames:
+            title = frame.split('/')[-1]
+            host = GetDomain(frame)
+            host = '[B][COLORcyan]{0}[/COLOR][/B]'.format(host.encode('utf-8'))
+            title = '{0}-[B][COLORgold]{1}[/COLOR][/B]'.format(host, title.encode('utf-8'))
+            cm = [(control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                  (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                  (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)]
+            downloads = True if control.setting('downloads') == 'true' and not (control.setting(
+                'movie.download.path') == '' or control.setting('tv.download.path') == '') else False
+            if downloads:
+                cm.append((control.lang(32013).encode('utf-8'),
+                           'RunPlugin(plugin://plugin.video.releaseBB/?mode=download&title=%s&img=%s&url=%s)' %
+                           (title.split('-')[1], img, frame))
+                          )
+            addon.add_directory(
+                {'mode': 'PlayVideo', 'url': frame, 'listitem': listitem, 'img': img, 'title': title, 'plot': plot},
+                {'title': title, 'plot': plot}, cm, img=img, fanart=FANART, is_folder=False)
+
+    except BaseException:
+        control.infoDialog(
+            control.lang(32012).encode('utf-8'),
+            NAME, ICON, 5000)
+
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+
 def GetLinks(section, url, img, plot):  # Get Links
     try:
         import resolveurl
+        from resources.lib.modules import init
         html = response_html(url, '3')
         listitem = GetMediaInfo(html)
         name = '%s (%s)' % (listitem[0], listitem[1])
@@ -226,10 +343,10 @@ def GetLinks(section, url, img, plot):  # Get Links
                             {'mode': 'PlayVideo', 'url': url, 'listitem': listitem, 'img': img, 'title': name,
                              'plot': plot},
                             {'title': title, 'plot': plot},
-                            [('Release BB Settings',
+                            [(control.lang(32007).encode('utf-8'),
                               'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                             ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                             ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                             (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                             (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                             img=img, fanart=FANART, is_folder=False)
                     else:
                         links.append((host, title, url, name))
@@ -240,24 +357,46 @@ def GetLinks(section, url, img, plot):  # Get Links
                 threads.append(Thread(link_tester, i))
             [i.start() for i in threads]
             [i.join() for i in threads]
+
+            for item in tested_links:
+                link, title, name = item[0], item[1], item[2]
+                cm = [(control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                      (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                      (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)]
+                downloads = True if control.setting('downloads') == 'true' and not (control.setting(
+                    'movie.download.path') == '' or control.setting('tv.download.path') == '') else False
+                if downloads:
+                    #frame = resolveurl.resolve(link)
+                    cm.append((control.lang(32013).encode('utf-8'),
+                               'RunPlugin(plugin://plugin.video.releaseBB/?mode=download&title=%s&img=%s&url=%s)' %
+                               (name, img, link))
+                              )
+                addon.add_directory(
+                    {'mode': 'PlayVideo', 'url': link, 'listitem': listitem, 'img': img, 'title': name, 'plot': plot},
+                    {'title': title, 'plot': plot}, cm, img=img, fanart=FANART, is_folder=False)
+
         else:
             for item in links:
                 host, title, link, name = item[0], item[1], item[2], item[3]
                 title = '%s - %s' % (host, title)
+                cm = [(control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                      (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                      (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)]
+                downloads = True if control.setting('downloads') == 'true' and not (control.setting(
+                    'movie.download.path') == '' or control.setting('tv.download.path') == '') else False
+                if downloads:
+                    cm.append((control.lang(32013).encode('utf-8'),
+                               'RunPlugin(plugin://plugin.video.releaseBB/?mode=download&title=%s&img=%s&url=%s)' %
+                               (name, img, link))
+                              )
                 addon.add_directory(
-                    {'mode': 'PlayVideo', 'url': link, 'listitem': listitem, 'img': img, 'title': name,
-                     'plot': plot},
-                    {'title': title, 'plot': plot},
-                    [('Release BB Settings',
-                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                     ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                     ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
-                    img=img, fanart=FANART, is_folder=False)
+                    {'mode': 'PlayVideo', 'url': link, 'listitem': listitem, 'img': img, 'title': name, 'plot': plot},
+                    {'title': title, 'plot': plot}, cm, img=img, fanart=FANART, is_folder=False)
 
     except BaseException:
         control.infoDialog(
-            "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
-            NAME, ICON, 3000)
+            control.lang(32012).encode('utf-8'),
+            NAME, ICON, 5000)
     
     control.content(int(sys.argv[1]), 'videos')
     control.directory(int(sys.argv[1]))
@@ -273,6 +412,64 @@ def cloudflare_mode(url):
     return result
 
 
+def download(title, img, url):
+    from resources.lib.modules import control
+    control.busy()
+    import json
+
+    if url is None:
+        return
+
+    try:
+        import resolveurl
+        url = resolveurl.resolve(url)
+    except Exception:
+        control.idle()
+        xbmcgui.Dialog().ok(NAME, 'Download failed', 'Your service can\'t resolve this hoster', 'or Link is down')
+        return
+    try:
+        headers = dict(urlparse.parse_qsl(url.rsplit('|', 1)[1]))
+    except:
+        headers = dict('')
+
+    content = re.compile('(.+?)\sS(\d*)E\d*$').findall(title)
+    transname = title.translate(None, '\/:*?"<>|').strip('.')
+    transname = re.sub('\[.+?\]', '', transname)
+    levels =['../../../..', '../../..', '../..', '..']
+
+    if len(content) == 0:
+        dest = control.setting('movie.download.path')
+        dest = control.transPath(dest)
+        for level in levels:
+            try: control.makeFile(os.path.abspath(os.path.join(dest, level)))
+            except: pass
+        control.makeFile(dest)
+        dest = os.path.join(dest, transname)
+        control.makeFile(dest)
+    else:
+        dest = control.setting('tv.download.path')
+        dest = control.transPath(dest)
+        for level in levels:
+            try: control.makeFile(os.path.abspath(os.path.join(dest, level)))
+            except: pass
+        control.makeFile(dest)
+        tvtitle = re.sub('\[.+?\]', '', content[0])
+        transtvshowtitle = tvtitle.translate(None, '\/:*?"<>|').strip('.')
+        dest = os.path.join(dest, transtvshowtitle)
+        control.makeFile(dest)
+        dest = os.path.join(dest, 'Season %01d' % int(content[0][1]))
+        control.makeFile(dest)
+
+    ext = os.path.splitext(urlparse.urlparse(url).path)[1][1:]
+    if not ext in ['mp4', 'mkv', 'flv', 'avi', 'mpg']: ext = 'mp4'
+    dest = os.path.join(dest, transname + '.' + ext)
+    headers = urllib.quote_plus(json.dumps(headers))
+
+    from resources.lib.modules import downloader
+    control.idle()
+    downloader.doDownload(url, dest, title, img, headers)
+
+
 def response_html(url, cachetime):
     try:
         resulto = client.request(url)
@@ -283,8 +480,8 @@ def response_html(url, cachetime):
         return html
     except BaseException:
         control.infoDialog(
-            "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
-            NAME, ICON, 3000)
+            control.lang(32012).encode('utf-8'),
+            NAME, ICON, 5000)
 
 
 def link_tester(item):
@@ -327,19 +524,10 @@ def link_tester(item):
             if valid:
                 addon.log('URL PASSED: [%s]: URL: %s : SIZE: %s' % (host.upper(), link, size))
                 title = '%s|[COLORlime][B]%s[/COLOR][/B]| - %s' % (host, size, title)
-                addon.add_directory(
-                    {'mode': 'PlayVideo', 'url': link, 'listitem': listitem, 'img': img, 'title': name,
-                     'plot': plot},
-                    {'title': title, 'plot': plot},
-                    [('Release BB Settings',
-                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                     ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                     ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
-                    img=img, fanart=FANART, is_folder=False)
+                tested_links.append((link, title, name))
 
     except BaseException:
         addon.log('URL ERROR: [%s]: URL: %s ' % (host.upper(), link))
-
 
 
 
@@ -355,7 +543,7 @@ def PlayVideo(url, title, img, plot):
     except BaseException:
         control.infoDialog(
             '[COLOR red][B]Probably your service doesn\'t support this provider![/B][/COLOR]\n'
-            '[COLOR lime][B]Please try a different link!![/B][/COLOR]', NAME, ICON, 3000)
+            '[COLOR lime][B]Please try a different link!![/B][/COLOR]', NAME, ICON, 5000)
 
 
 def get_size(text):
@@ -414,10 +602,10 @@ def Sinopsis(txt):
 
 def search_menu():
     addon.add_directory({'mode': 'search_bb', 'url': 'new'},
-                        {'title': '[B][COLOR orange]New Search[/COLOR][/B]'}, img=IconPath + 'search.png', fanart=FANART)
+                        {'title': control.lang(32014).encode('utf-8')}, img=IconPath + 'search.png', fanart=FANART)
     try:
         from sqlite3 import dbapi2 as database
-    except BaseException:
+    except ImportError:
         from pysqlite2 import dbapi2 as database
 
     dbcon = database.connect(control.searchFile)
@@ -438,18 +626,18 @@ def search_menu():
         delete_option = True
         addon.add_directory({'mode': 'search_bb', 'url': search},
                             {'title': title},
-                            [('Release BB Settings', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                             ('Delete Search Item',
+                            [(control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                             (control.lang(32015).encode('utf-8'),
                               'RunPlugin(plugin://plugin.video.releaseBB/?mode=del_search_item&query=%s)' % search,),
-                             ('Clear Cache', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                             ('Set View-Type', 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                             (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                             (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                             img=IconPath + 'search.png', fanart=FANART)
         lst += [(search)]
     dbcur.close()
 
     if delete_option:
         addon.add_directory({'mode': 'del_search_items'},
-                            {'title': 'Delete All Queries'},
+                            {'title': control.lang(32016).encode('utf-8')},
                             img=IconPath + 'search.png', fanart=FANART, is_folder=False)
 
     control.content(int(sys.argv[1]), 'videos')
@@ -472,7 +660,9 @@ def setviews():
         control.idle()
 
         items = [
-            ('Menus', 'addons'), ('Movies & Shows', 'movies'), ('Links', 'files')
+            (control.lang(32017).encode('utf-8'), 'addons'),
+            (control.lang(32018).encode('utf-8'), 'movies'),
+            (control.lang(32019).encode('utf-8'), 'files')
         ]
 
         select = control.selectDialog([i[0] for i in items], 'SELECT')
@@ -481,9 +671,8 @@ def setviews():
             raise Exception()
 
         content = items[select][1]
-        xbmc.log('$#$CONTENT: %s' % content, xbmc.LOGNOTICE)
 
-        title = 'CLICK HERE TO SAVE VIEW'
+        title = control.lang(32020).encode('utf-8')
 
         poster, banner, fanart = ICON, BANNER, FANART
 
@@ -515,6 +704,10 @@ elif mode == 'Categories':
     Categories(section)
 elif mode == 'GetTitles':
     GetTitles(section, url, startPage, numOfPages)
+elif mode == 'GetPack':
+    GetPack(section, url, img, plot)
+elif mode == 'GetLinksPack':
+    GetLinksPack(section, url, img, plot)
 elif mode == 'GetLinks':
     GetLinks(section, url, img, plot)
 elif mode == 'search_menu':
@@ -539,7 +732,7 @@ elif mode == 'ResolverSettings':
 elif mode == 'ClearCache':
     cache.delete(control.cacheFile, False)
 elif mode == 'forceupdate':
-    control.infoDialog('Triggered a request for addon updates')
+    control.infoDialog(control.lang(32021).encode('utf-8'))
     control.execute('UpdateAddonRepos')
 elif mode == 'help':
     control.open_git()
@@ -549,3 +742,7 @@ elif mode == 'setviews':
     setviews()
 elif mode == 'del_views':
     view.view_clear()
+elif mode == 'downloadlist':
+    downloads_root()
+elif mode == 'download':
+    download(title, img, url)

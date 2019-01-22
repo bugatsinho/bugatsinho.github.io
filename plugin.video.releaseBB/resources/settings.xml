@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="GENERAL">
         <setting type="lsep" label="LINKS/SIZE" />
@@ -20,6 +20,15 @@
         <setting id="all-debrid" type="action" label="All-Debrid Auth" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_ad)" />
         <setting id="ad_reset" type="action" label="All-Debrid Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_ad)" />
     </category>
+    <category label="DOWNLOADS">
+        <setting id="downloads" type="bool" label="Enable Downloads" default="false" />
+        <setting type="sep" />
+        <setting id="movie.download.path" type="folder" label="Movies Path"  default="" />
+        <setting id="tv.download.path" type="folder" label="Episodes Path"  default="" />
+        <setting type="lsep" label="[CR]" />
+		<setting type="lsep" label="32023" />
+		<setting type="lsep" label="32024" />
+    </category>
     <category label="VIEW-MODE">
         <setting type="lsep" label="Select View-Types" />
         <setting id="selectview" type="action" label="Select View-Type" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)" />
@@ -31,8 +40,8 @@
         <setting id="links-view" label="Links View-Type" type="text" default=""/>
     </category>
     <category label="TOOLS">
-        <setting id="clearcache" type="action" label="Clear Cache" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)" />
-        <setting id="resetviews" type="action" label="Reset View-Types" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=del_views)" />
-        <setting id="forceupdate" type="action" label="Force Update" enable="true" option="close" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=forceupdate)" />
+        <setting id="clearcache" type="action" label="Clear Cache" enable="true" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)" />
+        <setting id="resetviews" type="action" label="Reset View-Types" enable="true" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=del_views)" />
+        <setting id="forceupdate" type="action" label="Force Update" enable="true" action="RunPlugin(plugin://plugin.video.releaseBB/?mode=forceupdate)" />
     </category>
 </settings>

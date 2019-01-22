@@ -49,7 +49,7 @@ except ImportError:
 def Search_bb(url):
     if 'new' in url:
         keyboard = xbmc.Keyboard()
-        keyboard.setHeading('[COLOR green]Release BB Search[/COLOR]')
+        keyboard.setHeading(control.lang(32002).encode('utf-8'))
         keyboard.doModal()
         if keyboard.isConfirmed():
             _query = keyboard.getText()
@@ -89,10 +89,7 @@ def Search_bb(url):
                                         {'title': title}, img=IconPath + 'search.png', fanart=FANART)
 
             except BaseException:
-                control.infoDialog(
-                    "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n"
-                    "[COLOR lime][B]Please try again!![/B][/COLOR]",
-                    NAME, ICON, 3000)
+                control.infoDialog(control.lang(32022).encode('utf-8'), NAME, ICON, 5000)
     else:
         try:
             from resources.lib.modules import cfscrape
@@ -118,9 +115,7 @@ def Search_bb(url):
 
 
         except BaseException:
-            control.infoDialog(
-                "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]",
-                NAME, ICON, 3000)
+            control.infoDialog(control.lang(32022).encode('utf-8'), NAME, ICON, 5000)
 
     control.content(int(sys.argv[1]), 'videos')
     control.directory(int(sys.argv[1]))

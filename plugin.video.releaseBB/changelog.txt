@@ -1,3 +1,8 @@
++ [B][COLOR lime]1.7.0[/B][/COLOR] [COLOR gold](22-01-2019)[/COLOR]
+- fix Tv Show Packs
+- add Download Function(context menu)
+- add Downloads on Main menu(downloads must be enabled in settings)
+
 + [B][COLOR lime]1.6.0[/B][/COLOR] [COLOR gold](14-01-2019)[/COLOR]
 - fix search url
 - add Set View-Type option(like exodus viewtypes)
