@@ -432,7 +432,7 @@ def download(title, img, url):
     except:
         headers = dict('')
 
-    content = re.compile('(.+?)\sS(\d*)E\d*$').findall(title)
+    content = re.compile('(.+?)\s+[\.|\(|\[]S(\d+)E\d+[\.|\)|\]]', re.I).findall(title)
     transname = title.translate(None, '\/:*?"<>|').strip('.')
     transname = re.sub('\[.+?\]', '', transname)
     levels =['../../../..', '../../..', '../..', '..']
