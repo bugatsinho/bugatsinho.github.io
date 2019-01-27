@@ -576,8 +576,10 @@ def GetMediaInfo(html):
         match = client.parseDOM(html, 'h1', attrs={'class': 'postTitle'})[0]
         match = re.findall('(.+?)\s+(\d{4}|S\d+E\d+)', match)[0]
         return match
-    except BaseException:
-        return []
+    except IndexError:
+        match = client.parseDOM(html, 'h1', attrs={'class': 'postTitle'})[0]
+        match = re.sub('<.+?>', '', match)
+        return match
 
 
 def Sinopsis(txt):
