@@ -1,3 +1,6 @@
++ [B][COLOR lime]1.7.2[/B][/COLOR] [COLOR gold](26-01-2019)[/COLOR]
+- fix no year or episode title issue(like MMA and UFC titles)
+
 + [B][COLOR lime]1.7.1[/B][/COLOR] [COLOR gold](25-01-2019)[/COLOR]
 - fix path issue on Downloads
 
