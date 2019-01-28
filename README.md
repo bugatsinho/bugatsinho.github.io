@@ -8,7 +8,7 @@ Feel free to open an issue if something wrong with them!
 
 You can buy me a ☕ or 🍺
 
-PAYPAL:            ![](images/QR%20Code.png)
+PAYPAL: http://bit.ly/donar_paypal            ![](images/QR%20Code.png)
 
 ![](https://s2.coinmarketcap.com/static/img/coins/16x16/1.png): 1P4YbDEGkRtATGLb8WmEud4V1rpcAQyhZS
 
