@@ -23,7 +23,7 @@ import re, hashlib, time, os
 
 try:
     from sqlite3 import dbapi2 as database
-except:
+except ImportError:
     from pysqlite2 import dbapi2 as database
 
 import xbmcaddon, xbmcvfs, xbmcgui, xbmc

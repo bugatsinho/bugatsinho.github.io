@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import cookielib, urllib2, re, urllib
-from resources import client
+from resources.modules import client
 
 
 def test_video(url):

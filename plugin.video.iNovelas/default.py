@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re, sys, urllib, urlparse
-import xbmc, xbmcaddon, xbmcgui, xbmcplugin
-from resources import client, control, cache  ###THANKS TO TWILIGHT FOR HIS CODE!!!
+import xbmcaddon, xbmcgui, xbmcplugin, xbmc
+from resources.modules import control, client
 import resolveurl
 
 
@@ -150,12 +150,28 @@ def evaluate(host):
     try:
         host, referer = host.split('|')
         if 'openload' in host:
-            from resources import openload
-            if openload.test_video(host):
+            from resources.resolvers import openload
+            try:
                 host = openload.get_video_openload(host)
-            else:
+            except BaseException:
                 host = resolveurl.resolve(host)
             return host
+
+        elif 'gamovideo' in host:
+            r = client.request(host, referer=referer)
+            #xbmc.log('@#@GAMO-DATA:%s' % r, xbmc.LOGNOTICE)
+            from resources.modules import jsunpack
+            source = re.findall('''(eval\(function\(p,a,c,k,e,(?:r|d).+?.split\('\|'\)\)\))''', r, re.DOTALL)[0]
+            data = jsunpack.unpack(source)
+            #xbmc.log('@#@GAMO-UNPACK:%s' % data, xbmc.LOGNOTICE)
+            link = re.findall('''file:['"](http.+?v.mp4)['"]''', data, re.DOTALL)[0]
+            #xbmc.log('@#@GAMO-link:%s' % link, xbmc.LOGNOTICE)
+            return link
+
+        elif 'hqq' in host or 'waaw' in host:
+            from resources.resolvers import netutv
+            media = netutv.get_video_url(host, referer)
+            return media
 
         elif resolveurl.HostedMediaFile(host):
             host = resolveurl.resolve(host)
