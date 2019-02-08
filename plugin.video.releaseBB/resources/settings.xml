@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="GENERAL">
-        <setting type="lsep" label="LINKS/SIZE" />
-        <setting id="test.links" label="Remove 'DEAD' Links|Show File Size" type="bool" default="false"/>
         <setting type="lsep" label="Select Domain" />
         <setting id="domain" label="DOMAIN" type="select" values="RLSBB.TO|RLSBB.RU" default="RLSBB.TO"/>
+        <setting type="lsep" label="LINKS/SIZE" />
+        <setting id="test.links" label="Remove 'DEAD' Links|Show File Size" type="bool" default="false"/>
     </category>
     <category label="RESOLVER">
         <setting type="lsep" label="ResolveUrl-Settings" />

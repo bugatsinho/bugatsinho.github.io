@@ -26,7 +26,7 @@ from resources.lib.modules import control, cache
 
 
 def addView(content):
-    try:
+    #try:
         skin = control.skin
         record = (skin, content, str(control.getCurrentViewId()))
         control.makeFile(control.dataPath)
@@ -56,8 +56,8 @@ def addView(content):
         skinIcon = control.addon().getAddonInfo('icon')
 
         control.infoDialog(viewName, heading=skinName, icon=skinIcon, time=3000)
-    except BaseException:
-        return
+    # except BaseException:
+    #     return
 
 
 def setView(content, viewDict=None):

@@ -104,7 +104,7 @@ def Search_bb(url):
             s_url = 'http://search.rlsbb.ru/lib/search45224149886049641.php?phrase={0}&pindex=1&code={1}&radit=0.{2}'
             s_url = s_url.format(url.replace('+', '%2B'), code, random.randint(00000000000000001, 99999999999999999))
             html = scraper.get(s_url, headers=headers).content
-            xbmc.log('$#$HTML:%s' % html, xbmc.LOGNOTICE)
+            #xbmc.log('$#$HTML:%s' % html, xbmc.LOGNOTICE)
             posts = json.loads(html)['results']
             posts = [(i['post_name'], i['post_title']) for i in posts if i]
             for movieUrl, title in posts:

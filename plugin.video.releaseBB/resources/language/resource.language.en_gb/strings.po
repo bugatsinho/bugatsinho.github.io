@@ -126,23 +126,23 @@ msgid "Movies View"
 msgstr ""
 
 msgctxt "#32034"
-msgid "Login Details"
+msgid ""
 msgstr ""
 
 msgctxt "#32035"
-msgid "Username"
+msgid ""
 msgstr ""
 
 msgctxt "#32036"
-msgid "Password"
+msgid ""
 msgstr ""
 
 msgctxt "#32037"
-msgid "Register at http://paidikestainies.online/"
+msgid ""
 msgstr ""
 
 msgctxt "#32038"
-msgid "CLICK HERE TO SAVE VIEW"
+msgid "[COLOR gold]Recommended Movies[/COLOR]"
 msgstr ""
 
 msgctxt "#32039"
