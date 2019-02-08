@@ -130,17 +130,17 @@ def Categories(section):  # categories
                 client.parseDOM(match, 'a', ret='href'))
     items = [(i[0], i[1]) for i in items if sec in i[1]]
     img = IconPath + 'movies.png' if 'movies' in section else IconPath + 'tv_shows.png'
-
-    addon.add_directory({'mode': 'recom', 'url': BASE_URL},
-                        {'title': control.lang(32038).encode('utf-8')},
-                        [(control.lang(32007).encode('utf-8'),
-                          'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                         (control.lang(32008).encode('utf-8'),
-                          'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                         (control.lang(32009).encode('utf-8'),
-                          'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
-                        img=img,
-                        fanart=FANART)
+    if 'movie' in section:
+        addon.add_directory({'mode': 'recom', 'url': BASE_URL},
+                            {'title': control.lang(32038).encode('utf-8')},
+                            [(control.lang(32007).encode('utf-8'),
+                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                             (control.lang(32008).encode('utf-8'),
+                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                             (control.lang(32009).encode('utf-8'),
+                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                            img=img,
+                            fanart=FANART)
     for title, link in items:
         title = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
         link = client.replaceHTMLCodes(link)

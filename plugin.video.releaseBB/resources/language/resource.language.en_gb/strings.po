@@ -142,7 +142,7 @@ msgid ""
 msgstr ""
 
 msgctxt "#32038"
-msgid "[COLOR gold]Recommended Movies[/COLOR]"
+msgid "[COLOR gold][B]Recommended Movies[/B][/COLOR]"
 msgstr ""
 
 msgctxt "#32039"
