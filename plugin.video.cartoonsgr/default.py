@@ -48,7 +48,7 @@ def Main_addDir():
 
 
 def gamatokids():
-    addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]', GAMATO + 'movies',
+    addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]', GAMATO + 'genre/μεταγλωτισμένα/',
            4, ART + 'dub.jpg', FANART, '')
     addDir('[B][COLOR yellow]TOP 100[/COLOR][/B]', GAMATO + 'top-imdb', 21, ART + 'top.png', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002).encode('utf-8') + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
@@ -531,7 +531,10 @@ def gamato_kids(url): #4
     data = cache.get(client.request, 4, url)
     posts = client.parseDOM(data, 'article', attrs={'class': 'item movies'})
     for post in posts:
-        plot = client.parseDOM(post, 'div', attrs={'class': 'texto'})[0]
+        try:
+            plot = re.findall('''texto["']>(.+?)</div> <div''', post, re.DOTALL)[0]
+        except IndexError:
+            plot = 'N/A'
         desc = client.replaceHTMLCodes(plot)
         desc = desc.encode('utf-8', 'ignore')
         try:
@@ -545,9 +548,9 @@ def gamato_kids(url): #4
         addDir('[B][COLOR white]{0}[/COLOR][/B]'.format(title), link, 12, poster, FANART, str(desc))
     try:
         np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'arrow_pag'})[-1]
-        page = np.split('/')[-1]
+        page = np[-2] if np.endswith('/') else re.findall('page/(\d+)/', np)[0]
         title = '[B][COLORgold]>>>' + Lang(32011).encode('utf-8') + ' [COLORwhite]([COLORlime]%s[/COLOR])[/COLOR][/B]' % page
-        addDir(title, np, 4, ART + 'next.jpg', FANART, '')
+        addDir(title, np.encode('utf-8'), 4, ART + 'next.jpg', FANART, '')
     except BaseException:
         pass
     views.selectView('movies', 'movie-view')
