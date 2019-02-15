@@ -41,3 +41,6 @@ PAYPAL: http://bit.ly/donar_paypal            ![](images/QR%20Code.png)
 
 ![](images/mp3.png)     
 [**MP3Streams source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.audio.mp3streams)
+
+![](images/sport.png)       
+[**Sport365 source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.sport365.live) 
