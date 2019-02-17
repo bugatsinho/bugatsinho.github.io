@@ -89,13 +89,14 @@ def Get_Seasons(url, name):#4
     ss = zip(client.parseDOM(data, 'a', ret='href'),
              client.parseDOM(data, 'a'))
     xbmc.log('@#@SEASONS:%s' % ss, xbmc.LOGNOTICE)
-    desc = client.parseDOM(r, 'p', attrs={'class': 'read-more-wrap'})[0].encode('latin-1')
+    desc = client.parseDOM(r, 'p', attrs={'class': 'text-dark font-size-13'})[0].encode('latin-1')
     desc = clear_Title(desc)
     for i in ss:
-        season = re.sub('\n', '', i[1])
+        xbmc.log('@#@FOR-i:%s' % i[1], xbmc.LOGNOTICE)
+        season = re.sub('[\n|\t|\r|\s]', '', i[1])
         surl = url + '|' + episodes.encode('utf-8') + '|' + i[0][1:].encode('utf-8') + '|' + str(poster)
         title = '[B][COLOR white]%s [B]| [COLOR lime]%s[/COLOR][/B]' % (name, season)
-        addDir(title, surl, 7, poster, FANART, str(desc))
+        addDir(title, surl, 7, poster, FANART, desc)
     setView('movies', 'menu-view')
 
 def Get_epis(url):#7
@@ -509,9 +510,8 @@ def clear_Title(txt):
     return txt
 
 
-
-def addDir(name,url,mode,iconimage,fanart,description):
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&iconimage="+urllib.quote_plus(iconimage)+"&description="+urllib.quote_plus(description)
+def addDir(name, url, mode, iconimage, fanart, description):
+    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name.encode('utf-8'))+"&iconimage="+urllib.quote_plus(iconimage)+"&description="+urllib.quote_plus(description.encode('utf-8'))
     ok=True
     liz=xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
     liz.setInfo( type="Video", infoLabels={"Title": name,"Plot":description})
