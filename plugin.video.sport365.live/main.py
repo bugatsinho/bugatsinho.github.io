@@ -1,10 +1,22 @@
 # -*- coding: utf-8 -*-
-
-import sys,re,os
-import urllib,urllib2
+'''
+╭━━╮╱╱╱╱╱╱╱╱╱╱╭╮╱╱╱╱╱╱╱╭╮
+┃╭╮┃╱╱╱╱╱╱╱╱╱╭╯╰╮╱╱╱╱╱╱┃┃
+┃╰╯╰┳╮╭┳━━┳━━╋╮╭╋━━┳┳━╮┃╰━┳━━╮
+┃╭━╮┃┃┃┃╭╮┃╭╮┃┃┃┃━━╋┫╭╮┫╭╮┃╭╮┃
+┃╰━╯┃╰╯┃╰╯┃╭╮┃┃╰╋━━┃┃┃┃┃┃┃┃╰╯┃
+╰━━━┻━━┻━╮┣╯╰╯╰━┻━━┻┻╯╰┻╯╰┻━━╯
+╱╱╱╱╱╱╱╭━╯┃
+╱╱╱╱╱╱╱╰━━╯
+'''
+import sys
+import re
+import os
+import urllib
 import urlparse
-
-import xbmc,xbmcgui,xbmcaddon
+import xbmc
+import xbmcgui
+import xbmcaddon
 import xbmcplugin
 import threading
 
@@ -14,14 +26,14 @@ args            = urlparse.parse_qs(sys.argv[2][1:])
 my_addon        = xbmcaddon.Addon()
 addonName       = my_addon.getAddonInfo('name')
 my_addon_id     = my_addon.getAddonInfo('id')
-
 PATH            = my_addon.getAddonInfo('path')
 DATAPATH        = xbmc.translatePath(my_addon.getAddonInfo('profile')).decode('utf-8')
 RESOURCES       = PATH+'/resources/'
 
-sys.path.append( os.path.join( RESOURCES, "lib" ) )
+sys.path.append(os.path.join( RESOURCES, "lib"))
 
-FANART=PATH+'/fanart.jpg'
+FANART = my_addon.getAddonInfo('fanart')
+ICON = my_addon.getAddonInfo('icon')
 
 
 ## COMMON Functions
@@ -51,14 +63,14 @@ def addLinkItem(name, url, mode, params=1, iconimage='DefaultFolder.png', infoLa
     xbmcplugin.addSortMethod(addon_handle, sortMethod=xbmcplugin.SORT_METHOD_NONE, label2Mask = "%R, %Y, %P")
     return ok
 
-def addDir(name,ex_link=None, params=1, mode='folder',iconImage='DefaultFolder.png', infoLabels=None, fanart=FANART,contextmenu=None):
-    url = build_url({'mode': mode, 'foldername': name, 'ex_link' : ex_link, 'params' : params})
+def addDir(name, ex_link=None, params=1, mode='folder', iconImage='DefaultFolder.png', infoLabels=None, fanart=FANART, contextmenu=None):
+    url = build_url({'mode': mode, 'foldername': name, 'ex_link': ex_link, 'params': params})
 
     li = xbmcgui.ListItem(name)
     if infoLabels:
         li.setInfo(type="video", infoLabels=infoLabels)
     
-    art_keys=['thumb','poster','banner','fanart','clearart','clearlogo','landscape','icon']
+    art_keys=['thumb', 'poster', 'banner', 'fanart', 'clearart', 'clearlogo', 'landscape', 'icon']
     art = dict(zip(art_keys,[iconImage for x in art_keys]))
     art['landscape'] = fanart if fanart else art['landscape'] 
     art['fanart'] = fanart if fanart else art['landscape'] 
@@ -176,7 +188,7 @@ if mode is None:
     #addDir('LiveTV: psa-tv',ex_link='',params={'_service':'psatv','_act':'ListChannels'}, mode='site',iconImage=RESOURCES+'psatv.png')
     #addDir('LiveTV: polon-tv',ex_link='',params={'_service':'polontv','_act':'ListChannels'}, mode='site',iconImage=RESOURCES+'polontv.png')
     #addDir('LiveTV: tvp1-online',ex_link='',params={'_service':'tvp1onlineblogspot','_act':'ListChannels'}, mode='site',iconImage=RESOURCES+'tvp1onlineblogspot.png')
-    addDir('Sport365 LIVE',ex_link='',params={'_service':'sport365','_act':'ListChannels'}, mode='site2',iconImage=RESOURCES+'sport365.png')
+    addDir('Sport365 LIVE',ex_link='',params={'_service':'sport365','_act':'ListChannels'}, mode='site2', iconImage=ICON, fanart=FANART)
     #addDir('LiveTV: sport.tvp',ex_link='http://sport.tvp.pl/na-antenie',params={'_service':'sporttvp','_act':'ListChannels'}, mode='site',iconImage=RESOURCES+'sporttvp.png')
 
     #li = xbmcgui.ListItem(label = '[COLOR blue]aktywuj PVR Live TV[/COLOR]', iconImage=RESOURCES+'PVR.png')
