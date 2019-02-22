@@ -2,7 +2,6 @@
 <addon id="plugin.video.sport365.live" name="Sport365" version="2.2" provider-name="Bugatsinho">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
-        <import addon="service.cronxbmc" optional="true"/>
         <import addon="script.module.requests" version="2.19.1"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="main.py">
@@ -22,9 +21,7 @@
     <fanart>fanart.png</fanart>
   </assets>
   <news>
-      -Fork version 1.0 by GalAnonim!
-      -Add also language of the stream and quality
-      -Change Base Url to fix times issues due to timezones
+      -Remove unnecessary code and imports
   </news>
   </extension>
 </addon>
