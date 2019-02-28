@@ -109,20 +109,19 @@ def getChannels(addheader=False):
             out.append({'title': title, 'tvid': '', 'url': url, 'group': '', 'urlepg': '', 'code': code})
     return out
 
+
 def getStreams(url):
-    myurl,ret=url.split('@')
+    myurl, ret = url.split('@')
     content = getUrl(myurl)
-    #sources=re.compile('__showWindow\([\'"](.*?)[\'"]').findall(content)
     sources=re.compile('<span id=["\']span_link_links[\'"] onClick="\w+\(\'(.*?)\'').findall(content)
-    #s=sources[0]
-    out=[]
-    for i, s in enumerate(sources):
+    out = []
+    for i, s in enumerate(set(sources)):
         enc_data=json.loads(base64.b64decode(s))
         ciphertext = 'Salted__' + enc_data['s'].decode('hex') + base64.b64decode(enc_data['ct'])
         src=aes.decrypt(ret,base64.b64encode(ciphertext))
         src=src.strip('"').replace('\\','')
-        title = 'Link %d'%(i+1)
-        out.append({'title':title,'tvid':title,'key':ret,'url':src,'refurl':myurl,'urlepg':''})
+        title = 'Link %d' % (i+1)
+        out.append({'title': title, 'tvid': title, 'key': ret, 'url': src, 'refurl': myurl, 'urlepg': ''})
     return out
 
 
@@ -153,26 +152,26 @@ def getChannelVideo(item):
         srcs = re.compile('src=[\'"](.*?)[\'"]').findall(data)
         if f and r and d and action:
             payload = urllib.urlencode({'b': b[0], 'd': d[0], 'f': f[0], 'r': r[0]})
-            data2,c= getUrlc(action[0],payload, header=header, usecookies=True)
-            link=re.compile('\([\'"][^"\']+[\'"], [\'"][^"\']+[\'"], [\'"]([^"\']+)[\'"], 1\)').findall(data2)
-            enc_data=json.loads(base64.b64decode(link[0]))
+            data2, c = getUrlc(action[0],payload, header=header, usecookies=True)
+            link = re.compile('\([\'"][^"\']+[\'"], [\'"][^"\']+[\'"], [\'"]([^"\']+)[\'"], 1\)').findall(data2)
+            enc_data = json.loads(base64.b64decode(link[0]))
             ciphertext = 'Salted__' + enc_data['s'].decode('hex') + base64.b64decode(enc_data['ct'])
-            src=aes.decrypt(item.get('key'),base64.b64encode(ciphertext))
-            src=src.replace('"','').replace('\\','').encode('utf-8')
-            a,c=getUrlc(srcs[-1], header=header, usecookies=True) if srcs else '',''
-            a,c=getUrlc(src, header=header, usecookies=True)
+            src = aes.decrypt(item.get('key'),base64.b64encode(ciphertext))
+            src = src.replace('"','').replace('\\','').encode('utf-8')
+            a, c = getUrlc(srcs[-1], header=header, usecookies=True) if srcs else '', ''
+            a, c = getUrlc(src, header=header, usecookies=True)
             # print a
             if src.startswith('http'):
-                href =src+'|Referer=%s&User-Agent=%s&X-Requested-With=ShockwaveFlash/22.0.0.209'%(urllib.quote(action[0]),UA)
-                #href =src+'|Referer=%s&User-Agent=%s'%(urllib.quote(action[0]),UA)
-                #href = src
+                href = src + '|Referer=%s&User-Agent=%s&X-Requested-With=ShockwaveFlash/22.0.0.209' %\
+                       (urllib.quote(action[0]), UA)
                 print href
-                return href,srcs[-1],header
+                return href, srcs[-1], header
             else:
-                href=aes.decode_hls(src)
+                href = aes.decode_hls(src)
                 if href:
-                    href +='|Referer=%s&User-Agent=%s&X-Requested-With=ShockwaveFlash/22.0.0.209'%(urllib.quote(r[0]),UA)
-                    return href,srcs[-1],header
+                    href += '|Referer=%s&User-Agent=%s&X-Requested-With=ShockwaveFlash/22.0.0.209' %\
+                            (urllib.quote(r[0]), UA)
+                    return href, srcs[-1], header
     return ''
 
 # getUrlrh(src)

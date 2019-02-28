@@ -131,20 +131,20 @@ def sport356Thread(url):
         xbmc.sleep(1000)
     print 'sport356Thread: KODI STOPPED, OUTSIDE WHILE LOOP ... EXITING'
 
-def sport356Thread2(url,header):
+
+def sport356Thread2(url, header):
     import sport365 as s
     import re
-    
+
     player = xbmc.Player()
-    xbmc.sleep(2000)    # speep
-    print 'sport356Thread: passed url: [%s] '%url
-    #print header
+    xbmc.sleep(2000)
+    print 'sport356Thread: passed url: [%s] ' % url
     player.pause()
-    
+
     while player.isPlaying():
         print 'sport356Thread: KODI IS PLAYING, sleeping 4s'
-        a,c=s.getUrlc(url,header=header,useCookies=True)
-        banner =  re.compile('url:["\'](.*?)[\'"]').findall(a)[0]
+        a, c = s.getUrlc(url, header=header, usecookies=True)
+        banner = re.compile('url:["\'](.*?)[\'"]').findall(a)[0]
         xbmc.log(banner)
         xbmc.sleep(2000)
         s.getUrlc(banner)
