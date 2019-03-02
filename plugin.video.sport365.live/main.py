@@ -71,7 +71,7 @@ def addDir(name, ex_link=None, params=1, mode='folder', iconImage='DefaultFolder
     li = xbmcgui.ListItem(name)
     if infoLabels:
         li.setInfo(type="video", infoLabels=infoLabels)
-    
+    li.setProperty('fanart_image', fanart)
     art_keys=['thumb', 'poster', 'banner', 'fanart', 'clearart', 'clearlogo', 'landscape', 'icon']
     art = dict(zip(art_keys,[iconImage for x in art_keys]))
     art['landscape'] = fanart if fanart else art['landscape'] 
@@ -164,13 +164,7 @@ ex_link = args.get('ex_link', [''])[0]
 params = args.get('params', [{}])[0]
 
 
-if mode is None:
-    addDir('Sport365 LIVE', ex_link='', params={'_service':'sport365','_act':'ListChannels'}, mode='site2', iconImage=ICON, fanart=FANART)
-    #li = xbmcgui.ListItem(label = '[COLOR blue]aktywuj PVR Live TV[/COLOR]', iconImage=RESOURCES+'PVR.png')
-    #xbmcplugin.addDirectoryItem(handle=addon_handle, url=build_url({'mode': 'Opcje'}) ,listitem=li)
-
-
-elif mode[0] =='site2':
+def play_stream(params):
     params = eval(params)
     service = params.get('_service')
     act = params.get('_act')
@@ -178,30 +172,42 @@ elif mode[0] =='site2':
     if act == 'ListChannels':
         params.update({'_act': 'get_streams_play'})
         items = mod.getChannels(ex_link)
-        img_service = '%s.png'%(RESOURCES+service)
+        img_service = '%s.png' % (RESOURCES + service)
         print img_service
         for one in items:
-            addLinkItem(one.get('title', ''), one['url'], params=params, mode='site2', IsPlayable=True,infoLabels=one, iconimage=one.get('img', img_service))
+            addLinkItem(one.get('title', ''), one['url'], params=params, mode='site2', IsPlayable=True,
+                        infoLabels=one, iconimage=one.get('img', img_service))
+
     if act == 'get_streams_play':
-        streams = mod.getStreams(ex_link)
-        if streams:
-            t = [stream.get('title') for stream in streams]
+        frames = mod.getStreams(ex_link)
+        if frames:
+            t = [frame['title'] for frame in frames]
             s = xbmcgui.Dialog().select("Select Stream", t)
-            if s > -1:
-                stream_url, url, header = mod.getChannelVideo(streams[s])
+            if s == -1:
+                return
+            elif s > -1:
+                stream_url, url, header = mod.getChannelVideo(frames[s])
             else:
-                stream_url = ''
+                return
             if stream_url:
-                thread = threading.Thread(name='sport356Thread', target=sport356Thread2, args=[url,header])
-                thread.start()
+                # thread = threading.Thread(name='sport356Thread', target=sport356Thread2, args=[url,header])
+                # thread.start()
                 xbmcplugin.setResolvedUrl(addon_handle, True, xbmcgui.ListItem(path=stream_url))
             else:
                 xbmcplugin.setResolvedUrl(addon_handle, False, xbmcgui.ListItem(path=stream_url))
-
         else:
             xbmcgui.Dialog().ok("Sorry for that", 'plz contact Dev')
 
-        
+
+if mode is None:
+    addDir('Sport365 LIVE', ex_link='', params={'_service':'sport365','_act':'ListChannels'}, mode='site2', iconImage=ICON, fanart=FANART)
+    #li = xbmcgui.ListItem(label = '[COLOR blue]aktywuj PVR Live TV[/COLOR]', iconImage=RESOURCES+'PVR.png')
+    #xbmcplugin.addDirectoryItem(handle=addon_handle, url=build_url({'mode': 'Opcje'}) ,listitem=li)
+
+
+elif mode[0] == 'site2':
+    play_stream(params)
+
 elif mode[0] == 'folder':
     pass
 
