@@ -117,7 +117,7 @@ def sport356Thread(url):
     xbmc.sleep(2000)    # speep
     player = xbmc.Player()
     player.pause()
-    print 'sport356Thread: passed url: [%s] '%href
+    print 'sport356Thread: passed url: [%s] '% href
     #print header
     h=header
     while player.isPlaying():
@@ -192,6 +192,7 @@ def play_stream(params):
             if stream_url:
                 # thread = threading.Thread(name='sport356Thread', target=sport356Thread2, args=[url,header])
                 # thread.start()
+                stream_url = stream_url.replace('/i', '/index.m3u8')
                 xbmcplugin.setResolvedUrl(addon_handle, True, xbmcgui.ListItem(path=stream_url))
             else:
                 xbmcplugin.setResolvedUrl(addon_handle, False, xbmcgui.ListItem(path=stream_url))
