@@ -566,10 +566,11 @@ def evaluate(host):
             host = host
         #xbmc.log('@#@HOST-FINAL:%s' % host, xbmc.LOGNOTICE)
         if 'openload' in host:
-            from resources.lib.modules import openload
-            if openload.test_video(host):
-                host = openload.get_video_openload(host)
-            else:
+            try:
+                from resources.lib.modules import openload
+                oplink = openload.get_video_openload(host)
+                host = resolveurl.resolve(oplink) if oplink == '' else oplink
+            except BaseException:
                 host = resolveurl.resolve(host)
             return host
 

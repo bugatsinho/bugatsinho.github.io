@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.pelisplus" name="PelisPlus TV" version="0.1.6" provider-name="Bugatsinho">
+<addon id="plugin.video.pelisplus" name="PelisPlus TV" version="0.1.7" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
@@ -24,8 +24,8 @@
     <language>en es</language>
     <license>GNU GPL, version 2</license>
     <twitter>https://twitter.com/Bugatsinho</twitter>
-    <news>[0.1.6] 16/02/2019
-- fix tvshow issue
+    <news>[0.1.7] 07/03/2019
+- fix resolver issue
     </news>
   </extension>
 </addon>
