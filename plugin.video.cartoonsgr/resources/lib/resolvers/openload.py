@@ -16,7 +16,7 @@ def test_video(url):
 def get_video_openload(url):
     data = client.request(url, headers={'User-Agent': ua})
     try:
-        code = re.findall('p style="" id="[^"]+">(.*?)<\/p', data, flags=re.DOTALL)[0]
+        code = re.findall('p id="[^"]+" style="">(.*?)<\/p', data, flags=re.DOTALL)[0]
         _0x59ce16 = eval(re.findall('_0x59ce16=([^;]+)', data)[0].replace('parseInt', 'int'))
         _1x4bfb36 = eval(re.findall('_1x4bfb36=([^;]+)', data)[0].replace('parseInt', 'int'))
         parseInt = eval(re.findall('_0x30725e,(\(parseInt.*?)\),', data)[0].replace('parseInt', 'int'))
@@ -24,7 +24,6 @@ def get_video_openload(url):
         link = read_openload(link)
         return '%s|User-Agent=%s&Referer=%s' % (link, urllib.quote_plus(ua), urllib.quote_plus(url))
     except:
-        pass
         return ''
 
 

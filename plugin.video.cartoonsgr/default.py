@@ -695,8 +695,8 @@ def evaluate(host):
         if 'openload' in host:
             try:
                 from resources.lib.resolvers import openload
-                host = openload.get_video_openload(host)
-                return host
+                oplink = openload.get_video_openload(host)
+                host = resolveurl.resolve(oplink) if oplink == '' else oplink
             except BaseException:
                 host = resolveurl.resolve(host)
 
