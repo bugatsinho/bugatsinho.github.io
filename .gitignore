@@ -2,8 +2,8 @@
 */*
 
 # Only Include these specific directories and subdirectories:
-!zips/
-!zips/*/
+!_zips/
+!_zips/*/
 
 # Windows image file caches
 Thumbs.db

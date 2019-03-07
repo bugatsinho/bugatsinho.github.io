@@ -23,7 +23,7 @@
 		</extension>
 	</addon>
 
-	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.4.1" provider-name="Bugatsinho">
+	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.4.2" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.python" version="2.19.0"/>
 		<import addon="script.module.resolveurl" version="5.0.00"/>
@@ -50,12 +50,12 @@
 		<forum>https://www.facebook.com/groups/GRecoTM/</forum>
 		<source>http://grecotm.com/repo/</source>
 		<website>http://grecotm.com</website>
-		<news>[B]v0.4.1[/B] (10/02/2018)
-	  - Διόρθωση gamato movies</news>
+		<news>[B]v0.4.2[/B] (07/03/2019)
+  	- Διόρθωση resolver</news>
 	  </extension>
 	</addon>
 
-	<addon id="plugin.video.iNovelas" name="iNovelas" version="0.1.7" provider-name="Bugatsinho">
+	<addon id="plugin.video.iNovelas" name="iNovelas" version="0.1.8" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.resolveurl" version="5.0.00"/>
@@ -70,13 +70,13 @@
 		<language>en es</language>
 		<license>GNU GPL, version 2</license>
 		<twitter>https://twitter.com/Bugatsinho</twitter>
-		<news>version 0.1.7 01-02-2018
-	 - Reparar netu/gamovideo resolvers
+		<news>version 0.1.8 07-03-2019
+ 	- Reparar openload resolver
 		</news>
 	  </extension>
 	</addon>
 
-	<addon id="plugin.video.pelisplus" name="PelisPlus TV" version="0.1.6" provider-name="Bugatsinho">
+	<addon id="plugin.video.pelisplus" name="PelisPlus TV" version="0.1.7" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.resolveurl" version="5.0.00"/>
@@ -101,8 +101,8 @@
 		<language>en es</language>
 		<license>GNU GPL, version 2</license>
 		<twitter>https://twitter.com/Bugatsinho</twitter>
-		<news>[0.1.6] 16/02/2019
-	- fix tvshow issue
+		<news>[0.1.7] 07/03/2019
+	- fix resolver issue
 		</news>
 	  </extension>
 	</addon>
