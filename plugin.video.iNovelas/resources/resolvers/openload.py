@@ -1,34 +1,29 @@
 # -*- coding: utf-8 -*-
 import cookielib, urllib2, re, urllib
-from resources.modules import client
+from resources.lib.modules import client
+ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:61.0) Gecko/20100101 Firefox/61.0"
 
 
 def test_video(url):
     data = client.request(url)
-    if 'We’re Sorry!' not in data:
-        return True
-    else:
+    if 'We’re Sorry!' in data:
         data = client.request(url.replace("/embed/", "/f/"))
-        if 'We’re Sorry!' not in data:
-            return True
-        else:
-            return False
-
+        if 'We’re Sorry!' in data:
+            return False, "[Openload] No file available"
+    return True, ""
 
 
 def get_video_openload(url):
-    data = client.request(url)
+    data = client.request(url, headers={'User-Agent': ua})
     try:
-        code = re.findall('p style="" id="[^"]+">(.*?)<\/p', data, flags=re.DOTALL)[0]
+        code = re.findall('p id="[^"]+" style="">(.*?)<\/p', data, flags=re.DOTALL)[0]
         _0x59ce16 = eval(re.findall('_0x59ce16=([^;]+)', data)[0].replace('parseInt', 'int'))
         _1x4bfb36 = eval(re.findall('_1x4bfb36=([^;]+)', data)[0].replace('parseInt', 'int'))
         parseInt = eval(re.findall('_0x30725e,(\(parseInt.*?)\),', data)[0].replace('parseInt', 'int'))
         link = decode(code, parseInt, _0x59ce16, _1x4bfb36)
         link = read_openload(link)
-        ua = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3163.100 Safari/537.36"
-        return '%s|User-Agent=%s&Referer=%s' % (link, urllib.quote(ua), url)
+        return '%s|User-Agent=%s&Referer=%s' % (link, urllib.quote_plus(ua), urllib.quote_plus(url))
     except:
-        pass
         return ''
 
 

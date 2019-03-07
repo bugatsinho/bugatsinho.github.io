@@ -150,9 +150,10 @@ def evaluate(host):
     try:
         host, referer = host.split('|')
         if 'openload' in host:
-            from resources.resolvers import openload
             try:
-                host = openload.get_video_openload(host)
+                from resources.lib.resolvers import openload
+                oplink = openload.get_video_openload(host)
+                host = resolveurl.resolve(oplink) if oplink == '' else oplink
             except BaseException:
                 host = resolveurl.resolve(host)
             return host
