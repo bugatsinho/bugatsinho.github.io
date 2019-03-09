@@ -6,6 +6,11 @@
         <datadir zip="true">https://raw.githubusercontent.com/bugatsinho/bugatsinho.github.io/master/_zips</datadir>
         <hashes>false</hashes>
         <dir>
+            <info compressed="false">https://raw.githubusercontent.com/nemesis668/repository.streamarmy/master/addons.xml</info>
+            <checksum>http://raw.githubusercontent.com/nemesis668/repository.streamarmy/master/addons.xml.md5</checksum>
+            <datadir zip="true">http://raw.githubusercontent.com/nemesis668/repository.streamarmy/master/zips/</datadir>
+        </dir>
+        <dir>
             <info compressed="false">https://raw.githubusercontent.com/jsergio123/zips/master/addons.xml</info>
             <checksum>https://raw.githubusercontent.com/jsergio123/zips/master/addons.xml.md5</checksum>
             <datadir zip="true">https://raw.githubusercontent.com/jsergio123/zips/master/</datadir>
