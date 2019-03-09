@@ -21,7 +21,7 @@ import json
 import base64
 import cookielib
 import requests
-import aes
+import magic_aes
 
 BASEURL='http://www.sport365.live/en/main'
 UA='Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
@@ -106,7 +106,7 @@ def getChannels(addheader=False):
             qualang = '[COLOR gold]%s-%s[/COLOR]' % (lang, quality)
             title = '%s%s: [COLOR blue]%s[/COLOR] %s, %s' % (online, etime, title1, qualang, title2[0])
             code = quality + lang
-            out.append({'title': title, 'tvid': '', 'url': url, 'group': '', 'urlepg': '', 'code': code})
+            out.append({"title": title, "url": url, "code": code})
     return out
 
 
@@ -118,10 +118,10 @@ def getStreams(url):
     for i, s in enumerate(set(sources)):
         enc_data=json.loads(base64.b64decode(s))
         ciphertext = 'Salted__' + enc_data['s'].decode('hex') + base64.b64decode(enc_data['ct'])
-        src=aes.decrypt(ret,base64.b64encode(ciphertext))
+        src= magic_aes.decrypt(ret,base64.b64encode(ciphertext))
         src=src.strip('"').replace('\\','')
         title = 'Link %d' % (i+1)
-        out.append({'title': title, 'tvid': title, 'key': ret, 'url': src, 'refurl': myurl, 'urlepg': ''})
+        out.append({"title": title, "tvid": title, "key": ret, "url": src, "refurl": myurl})
     return out
 
 
@@ -130,8 +130,8 @@ def getChannelVideo(item):
     #xbmc.log('@#@CHANNEL-VIDEO-ITEM: %s' % item, xbmc.LOGNOTICE)
     s = requests.Session()
     header = {'User-Agent': UA,
-              'Referer': item['url']}
-    content = s.get(item.get('url'), headers=header).content
+              'Referer': item.get('url')}
+    content = s.get(item['url'], headers=header).content
     import uuid
     hash = uuid.uuid4().hex
     url = re.findall(r'location.replace\(\'([^\']+)', content)[0]
@@ -169,22 +169,20 @@ def getChannelVideo(item):
             link = re.compile('\([\'"][^"\']+[\'"], [\'"][^"\']+[\'"], [\'"]([^"\']+)[\'"], 1\)').findall(data2)
             enc_data = json.loads(base64.b64decode(link[0]))
             ciphertext = 'Salted__' + enc_data['s'].decode('hex') + base64.b64decode(enc_data['ct'])
-            src = aes.decrypt(item.get('key'),base64.b64encode(ciphertext))
+            src = magic_aes.decrypt(item['key'],base64.b64encode(ciphertext))
             src = src.replace('"','').replace('\\','').encode('utf-8')
             a, c = getUrlc(srcs[-1], header=header, usecookies=True) if srcs else '', ''
             a, c = getUrlc(src, header=header, usecookies=True)
             # print a
             if src.startswith('http'):
-                href = src + '|Referer=%s&User-Agent=%s&X-Requested-With=ShockwaveFlash/22.0.0.209' %\
-                       (urllib.quote(action[0]), UA)
-                print href
-                return href, srcs[-1], header
+                href = src + '|Referer=http://h5.adshell.net/peer5&User-Agent=%s' % UA
+                # print href
+                return href, srcs[-1], header, item['title']
             else:
-                href = aes.decode_hls(src)
+                href = magic_aes.decode_hls(src)
                 if href:
-                    href += '|Referer=%s&User-Agent=%s&X-Requested-With=ShockwaveFlash/22.0.0.209' %\
-                            (urllib.quote(r[0]), UA)
-                    return href, srcs[-1], header
+                    href += '|Origin=http://h5.adshell.net&Referer=http://h5.adshell.net/peer5&User-Agent=%s' % UA
+                    return href, srcs[-1], header, item['title']
     return ''
 
 # getUrlrh(src)
