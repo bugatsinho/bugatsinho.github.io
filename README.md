@@ -18,7 +18,7 @@ PAYPAL: http://bit.ly/donar_paypal            ![](images/QR%20Code.png)
 
 [Follow me on Twitter](https://twitter.com/bugatsinho)
 
-[Repository v2.1](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.1.zip?raw=true)
+[Repository v2.2](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.2.zip?raw=true)
 
 
 **ADD-ONS:**
