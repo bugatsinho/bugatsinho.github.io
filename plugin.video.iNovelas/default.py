@@ -134,7 +134,9 @@ def Get_links(name,url): #10
 
 def resolve(name, url, iconimage, description):
     host = url
+    xbmc.log('@#@#HOST:%s' % host, xbmc.LOGNOTICE)
     stream_url = evaluate(host)
+    xbmc.log('@#@#STREAM:%s' % stream_url, xbmc.LOGNOTICE)
     name = name.split(' [B]|')[0]
     try:
         liz = xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
@@ -148,17 +150,19 @@ def resolve(name, url, iconimage, description):
 
 def evaluate(host):
     try:
-        host, referer = host.split('|')
+
         if 'openload' in host:
-            try:
-                from resources.lib.resolvers import openload
-                oplink = openload.get_video_openload(host)
-                host = resolveurl.resolve(oplink) if oplink == '' else oplink
-            except BaseException:
+            host, referer = host.split('|')
+            from resources.resolvers import openload
+            oplink = openload.get_video_openload(host)
+            if oplink == '':
                 host = resolveurl.resolve(host)
+            else:
+                host = oplink
             return host
 
         elif 'gamovideo' in host:
+            host, referer = host.split('|')
             r = client.request(host, referer=referer)
             #xbmc.log('@#@GAMO-DATA:%s' % r, xbmc.LOGNOTICE)
             from resources.modules import jsunpack
@@ -170,8 +174,11 @@ def evaluate(host):
             return link
 
         elif 'hqq' in host or 'waaw' in host:
+            #xbmc.log('@#@#-HQQ', xbmc.LOGNOTICE)
+            host, referer = host.split('|')
             from resources.resolvers import netutv
             media = netutv.get_video_url(host, referer)
+            #xbmc.log('@#@#MEDIA-HQQ:%s' % media, xbmc.LOGNOTICE)
             return media
 
         elif resolveurl.HostedMediaFile(host):

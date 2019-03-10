@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import cookielib, urllib2, re, urllib
-from resources.lib.modules import client
+from resources.modules import client
 ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:61.0) Gecko/20100101 Firefox/61.0"
 
 
