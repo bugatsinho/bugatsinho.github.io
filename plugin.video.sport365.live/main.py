@@ -204,7 +204,14 @@ def take_stream(params):
         liz.setProperty("IsPlayable", "true")
         liz.setPath(stream_url)
         idle()
-        xbmc.Player().play(stream_url, liz)
+        try:
+            xbmc.executebuiltin('RunPlugin(' + stream_url + ')')
+        except BaseException:
+            pass
+        try:
+            xbmc.Player().play(stream_url, liz)
+        except BaseException:
+            pass
 
         #xbmcplugin.setResolvedUrl(addon_handle, False, liz)
     else:
