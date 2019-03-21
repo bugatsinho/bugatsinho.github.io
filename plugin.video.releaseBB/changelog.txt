@@ -1,3 +1,6 @@
++ [B][COLOR lime]1.7.4[/B][/COLOR] [COLOR gold](20-03-2019)[/COLOR]
+- Fix menus
+
 + [B][COLOR lime]1.7.3[/B][/COLOR] [COLOR gold](08-02-2019)[/COLOR]
 - New Artwork credits to @jokstergfx
 - Add Recommended Movies
