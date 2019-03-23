@@ -1,3 +1,6 @@
+2019.03.23
+- fix play issue on kodi18 thanks to @lorkadiscovery
+
 2018.08.28
 - fix compilation artwork
 - fix next page
