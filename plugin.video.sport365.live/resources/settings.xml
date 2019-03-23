@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="Sport365">
+        <setting id="language" label="Language" type="select" values="cn|de|en|es|fr|hu|il|it|jp|nl|no|pl|pt|ru|se" default="en" sort="yes" />
+    </category>
+</settings>

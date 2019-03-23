@@ -165,9 +165,10 @@ def play_stream(params):
     params = eval(params)
     service = params.get('_service')
     act = params.get('_act')
+    url = params.get('_url') + str(my_addon.getSetting('language'))
     mod = __import__(service)
     if act == 'ListChannels':
-        items = mod.getChannels(ex_link)
+        items = mod.getChannels(ex_link, url)
         img_service = '%s.png' % (RESOURCES + service)
         for one in items:
             params.update({'title': one.get('title', '')})
@@ -245,7 +246,10 @@ def busy():
 
 
 if mode is None:
-    addDir('Sport365 LIVE', ex_link='', params={'_service':'sport365','_act':'ListChannels'}, mode='site2', iconImage=ICON, fanart=FANART)
+    addDir('Sport365 LIVE', ex_link='', params={'_service':'sport365','_act':'ListChannels','_url':'http://www.sport365.live/'}, mode='site2', iconImage=ICON, fanart=FANART)
+    addDir('Sport247 LIVE', ex_link='', params={'_service':'sport365','_act':'ListChannels','_url':'http://www.sport247.live/'}, mode='site2', iconImage=ICON, fanart=FANART)
+    addDir('s365 LIVE', ex_link='', params={'_service':'sport365','_act':'ListChannels','_url':'http://www.s365.live/'}, mode='site2', iconImage=ICON, fanart=FANART)
+    addDir('LiveSportStreams', ex_link='', params={'_service':'sport365','_act':'ListChannels','_url':'http://www.livesportstreams.tv/'}, mode='site2', iconImage=ICON, fanart=FANART)
     #li = xbmcgui.ListItem(label = '[COLOR blue]aktywuj PVR Live TV[/COLOR]', iconImage=RESOURCES+'PVR.png')
     #xbmcplugin.addDirectoryItem(handle=addon_handle, url=build_url({'mode': 'Opcje'}) ,listitem=li)
 
