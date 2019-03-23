@@ -481,7 +481,7 @@ def fetchFile(title, artist, album, track, url, filename):
 
     nDownloaders = getNmrDownloaders()
     log('Number of downloaders= %d' % nDownloaders)
-    if nDownloaders >= MAX_DOWNLOADERS-1: #-1 to allow for fetchNext
+    if nDownloaders >= MAX_DOWNLOADERS: #-1 to allow for fetchNext
         stopDownloaders()
 
     if xbmcvfs.exists(xbmc.translatePath(filename)) and xbmcvfs.File(filename).size() > 250 * 1024:

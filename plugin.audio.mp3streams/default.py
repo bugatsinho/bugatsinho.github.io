@@ -366,7 +366,7 @@ def albums(name, url):
     duplicate = []
     link = GET_url(url)
     try:
-        artist_url = regex_from_to(link, 'class="art_wrap__img" src="', '"')
+        artist_url = regex_from_to(link, 'class="album_report__image"\s*', '"')
         get_artist_icon(name, artist_url)
         xbmc.log("370 name = {0}\nartist_url = {1}".format(name, artist_url), xbmc.LOGNOTICE)
     except:
@@ -476,6 +476,9 @@ def play_album(name, url, iconimage, mix, clear):
         dp = xbmcgui.DialogProgress()
         dp.create("MP3 Streams",'Creating Your Playlist')
         dp.update(0)
+    
+    _playlist = []
+    
     for track,id,songurl,meta, d1,album,artist,songname,dur in match:
         count+=1
         if 'musicmp3' in origurl:
@@ -497,11 +500,14 @@ def play_album(name, url, iconimage, mix, clear):
                 url = find_url(trn).strip() + id
         else:
             url = 'https://listen.musicmp3.ru/' + id  #'http://files.musicmp3.ru/lofi/' + id #find_url(trn).strip() + id
+        url2 = url
+        track = track.replace('track','')
+
         songname = songname.replace('&amp;', 'and')
         if 'musicmp3' in origurl:
             artist = artist.replace('&amp;', 'and')
             album = album.replace('&amp;', 'and')
-            title = "%s. %s" % (track.replace('track',''), songname)
+            title = "%s. %s" % (track, songname)
         elif 'goldenmp3' in origurl:
             artist = nartist.replace('&amp;', 'and')
             ntrack = album.replace('&amp;', 'and')
@@ -513,35 +519,35 @@ def play_album(name, url, iconimage, mix, clear):
             title = "%s. %s" % (trn, songname)
             dur=str((int(dur.split(':')[0])*60) + int(dur.split(':')[1]))
         addDirAudio(title, url, 10, iconimage, songname, artist, album, dur, '')
-        if 'musicmp3' in origurl:
-            url, liz = playerMP3.getListItem(songname, artist, album, trn, iconimage, dur, url, fanart, 'true', GOTHAM_FIX_2)
-        elif 'goldenmp3' in origurl:
-            url, liz = playerMP3.getListItem(ntrack, songname, album, trn, iconimage, dur, url, fanart, 'true', GOTHAM_FIX_2)
-        else:
-            url, liz = playerMP3.getListItem(songname, artist, album, trn, iconimage, dur, url, fanart, 'true', GOTHAM_FIX_2)
-        if FOLDERSTRUCTURE=="0":
-            stored_path = os.path.join(MUSIC_DIR, artist, album, songname + '.mp3')
-        else:
-            stored_path = os.path.join(MUSIC_DIR, artist + ' - ' + album, songname + '.mp3')
-        if os.path.exists(stored_path):
-            url = stored_path
-        playlist.append((url, liz))
+
+        #title = "%s. %s" % (track, title)
+        filename = playerMP3.createFilename(title, artist, album, url2)
+        playerMP3.fetchFile(title, artist, album, track, url2, filename)
+
+        liz = xbmcgui.ListItem(title)
+        liz.setInfo('music', {'Title':title, 'Artist':artist, 'Album':album})
+        liz.setProperty('mimetype', 'audio/mpeg')
+        liz.setProperty('IsPlayable', 'true')
+        _playlist.append((track, filename, liz))
         if mix != 'mix':
-            progress = len(playlist) / float(nItem) * 100
-            dp.update(int(progress), 'Adding to Your Playlist',title)
+            progress = len(_playlist) / float(nItem) * 100
+            dp.update(int(progress), 'Adding to Your Playlist', title)
             if dp.iscanceled():
-                return
-    pl = get_XBMCPlaylist(clear)
-    for url ,liz in playlist:
-        pl.add(url,liz)
-        #if pl.size() > 3:
-        #    break
+                break
+
+    _playlist = sorted(_playlist, key=lambda x: int(x[0]))
+    pl = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
+    pl.clear()
+    index = 1
+    for track, url, liz in _playlist:
+        pl.add(url,liz,index)
+        index+=1 
+
     dp.close()
     if float(xbmc_version) < 17:
         newPlay(pl, clear)
     else:
-        if clear or (not xbmc.Player().isPlayingAudio()):
-            xbmc.Player().play(pl)
+        xbmc.Player().play(pl, windowed=True, startpos=0)
 
 def play_song(url, name, songname, artist, album, iconimage, dur, clear):
     import playerMP3
