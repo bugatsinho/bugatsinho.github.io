@@ -366,7 +366,7 @@ def albums(name, url):
     duplicate = []
     link = GET_url(url)
     try:
-        artist_url = regex_from_to(link, 'class="art_wrap__img" src="', '"')
+        artist_url = regex_from_to(link, 'class="album_report__image"\s*src="', '"')
         get_artist_icon(name, artist_url)
         xbmc.log("370 name = {0}\nartist_url = {1}".format(name, artist_url), xbmc.LOGNOTICE)
     except:
