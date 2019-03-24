@@ -6,15 +6,7 @@ Here you can find my 3rd party add-ons and repository for Kodi!
 
 Feel free to open an issue if something wrong with them!
 
-You can buy me a ☕ or 🍺
-
-PAYPAL: http://bit.ly/donar_paypal            ![](images/QR%20Code.png)
-
-![](https://s2.coinmarketcap.com/static/img/coins/16x16/1.png): 1P4YbDEGkRtATGLb8WmEud4V1rpcAQyhZS
-
-![](https://s2.coinmarketcap.com/static/img/coins/16x16/1027.png): 0x0bE3cC5547b2e9EA4B4677F1EFf4ea93cC204C44
- 
-![](https://s2.coinmarketcap.com/static/img/coins/16x16/1694.png): Sumoo5EQ8XXHBzgyYpMkUe1CY6hwTkPxr5hdZaUTCU9tiQVQATz38oVc16Y47mRmkQGaYtmQU294UEp12iJcKfPt3iwHR6gT9e3
+You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 
 [Follow me on Twitter](https://twitter.com/bugatsinho)
 
