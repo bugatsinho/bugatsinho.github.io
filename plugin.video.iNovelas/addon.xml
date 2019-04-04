@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.iNovelas" name="iNovelas" version="0.1.9" provider-name="Bugatsinho">
+<addon id="plugin.video.iNovelas" name="iNovelas" version="0.1.10" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
@@ -14,7 +14,7 @@
 	<language>en es</language>
     <license>GNU GPL, version 2</license>
     <twitter>https://twitter.com/Bugatsinho</twitter>
-    <news>version 0.1.9 09-03-2019
+    <news>version 0.1.10 04-04-2019
  - Reparar openload resolver
     </news>
   </extension>
