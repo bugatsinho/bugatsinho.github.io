@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="Website Language">
+        <setting type="lsep" label="Select Language" />
+        <setting id="lang" label="Language" type="select" values="English|Ελληνικά|Italiano|Français|Español|Polish|Deutsch|Slovenski|Hrvatski" default="English"/>
+    </category>
+</settings>

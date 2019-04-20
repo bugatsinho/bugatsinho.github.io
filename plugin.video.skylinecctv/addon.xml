@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.skylinecctv" name="Skyline WebCams" version="0.0.1" provider-name="Bugatsinho">
+  <requires>
+    <import addon="xbmc.python" version="2.25.0"/>
+    <import addon="script.module.kodi-six" version="0.0.2"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en">Skyline webcams</summary>
+    <description lang="en">Skyline webcams</description>
+	<disclaimer lang="en">Skyline webcams</disclaimer>
+	<language>en es</language>
+    <license>GNU GPL, version 2</license>
+    <twitter>https://twitter.com/Bugatsinho</twitter>
+    <website>https://bugatsinho.github.io</website>
+    <news>version 0.0.1
+    </news>
+  </extension>
+</addon>
