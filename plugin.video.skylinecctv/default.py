@@ -31,7 +31,7 @@ headers = {'User-Agent': client.agent(),
 def get_lang():
     lang = ADDON.getSetting('lang').encode('utf-8')
     lang_dict = {'English': 'en',
-                 'Ελληνικά': 'el',
+                 'Greek': 'el',
                  'Español': 'es',
                  'Français': 'fr',
                  'Deutsch': 'de',
@@ -52,9 +52,29 @@ def Main_menu():
     addDir('[B][COLOR white]New Live Cams[/COLOR][/B]', new_url.format(web_lang), 6, ICON, FANART, '')
     addDir('[B][COLOR white]Live Cams by Country[/COLOR][/B]', BASEURL.format(web_lang), 4, ICON, FANART, '')
     addDir('[B][COLOR white]Random Live Cam[/COLOR][/B]', BASEURL.format(web_lang), 3, ICON, FANART, '')
+    addDir('[B][COLOR white]Greek Live Cams[/COLOR][/B]', BASEURL.format(web_lang), 8, ICON, FANART, '')
     addDir('[B][COLOR cyan]Settings[/COLOR][/B]', '', 7, ICON, FANART, '')
     addDir('[B][COLOR gold]Version: [COLOR lime]%s[/COLOR][/B]' % vers, '', 'BUG', ICON, FANART, '')
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+
+
+
+def get_greek_cams():
+    link = 'http://www.livecameras.gr/'
+    headers = {"User-Agent": client.agent()}
+    r = client.request(link, headers=headers)
+    r = r.decode('cp1253')
+    cams = client.parseDOM(r, 'div', attrs={'class': 'fp-playlist'})[0]
+    cams = zip(client.parseDOM(cams, 'a', ret='href'),
+               client.parseDOM(cams, 'a', ret='data-title'),
+               client.parseDOM(cams, 'img', ret='src'))
+    for stream, name, poster in cams:
+        name = re.sub('".+?false', '', name)
+        name = client.replaceHTMLCodes(name).encode('utf-8')
+        stream = 'http:' + stream if stream.startswith('//') else stream
+        stream += '|Referer={}'.format(link)
+        poster = link + poster if poster.startswith('/') else poster
+        addDir('[B][COLOR white]%s[/COLOR][/B]' % name, stream, 100, poster, '', 'name')
 
 
 def get_the_random(url): #3
@@ -256,7 +276,8 @@ elif mode == 6:
     get_new(url)
 elif mode == 7:
     Open_settings()
-
+elif mode == 8:
+    get_greek_cams()
 elif mode == 100:
     resolve(name, url, iconimage, description)
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
