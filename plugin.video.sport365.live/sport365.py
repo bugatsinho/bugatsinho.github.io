@@ -63,9 +63,8 @@ def getUrlc(url, data=None, header={}, usecookies=True):
     return link, c
 
 
-def getChannels(addheader=False, BASEURL='http://www.sport365.live/en'):
-    ret=''
-    xbmc.log('@#@#BASEURL: %s' % BASEURL, xbmc.LOGNOTICE)
+def getChannels(addheader=False, BASEURL='http://www.sport365.sx/en'):
+    ret = ''
     content = getUrl(BASEURL + '/main')
     wrapper = re.compile('(http[^"]+/advertisement.js\?\d+)').findall(content)
     wrappers = re.compile('<script type="text/javascript" src="(http://s1.medianetworkinternational.com/js/\w+.js)"').findall(content)
@@ -120,7 +119,7 @@ def getStreams(url):
     for i, s in enumerate(set(sources)):
         enc_data=json.loads(base64.b64decode(s))
         ciphertext = 'Salted__' + enc_data['s'].decode('hex') + base64.b64decode(enc_data['ct'])
-        src= magic_aes.decrypt(ret,base64.b64encode(ciphertext))
+        src= magic_aes.decrypt(ret, base64.b64encode(ciphertext))
         src=src.strip('"').replace('\\','')
         title = 'Link %d' % (i+1)
         out.append({"title": title, "tvid": title, "key": ret, "url": src, "refurl": myurl})
@@ -145,7 +144,7 @@ def getChannelVideo(item):
     if link:
         link = re.sub(r'&#(\d+);', lambda x: chr(int(x.group(1))), link[0])
         data = s.get(link, headers=header).content
-        # xbmc.log('@#@CHANNEL-VIDEO-DATA: %s' % data, xbmc.LOGNOTICE)
+        #xbmc.log('@#@CHANNEL-VIDEO-DATA: %s' % data, xbmc.LOGNOTICE)
         f = re.compile('.*?name="f"\s*value=["\']([^"\']+)["\']').findall(data)
         d = re.compile('.*?name="d"\s*value=["\']([^"\']+)["\']').findall(data)
         r = re.compile('.*?name="r"\s*value=["\']([^"\']+)["\']').findall(data)
@@ -155,19 +154,26 @@ def getChannelVideo(item):
         if f and r and d and action:
             payload = urllib.urlencode({'b': b[0], 'd': d[0], 'f': f[0], 'r': r[0]})
             data2, c = getUrlc(action[0], payload, header=header, usecookies=True)
-
-            #######ads banners#########
-            bheaders = header
-            bheaders['Referer'] = action[0]
-            banner = re.findall(r'videojs.*?script\s+src="([^"]+)', data2)[0]
-            bsrc = s.get(banner, headers=bheaders).content
-            banner = re.findall(r"url:'([^']+)", bsrc)[0]
-            bsrc = s.get(banner, headers=bheaders).content
-            bheaders['Referer'] = banner
-            banner = re.findall(r'window.location.replace\("([^"]+)"\);\s*}\)<\/script><div', bsrc)[0]
-            bsrc = s.get(banner).status_code
-            ###########################
-
+            try:
+                #######ads banners#########
+                bheaders = header
+                bheaders['Referer'] = action[0]
+                banner = re.findall(r'<script\s*src=[\'"](.+?)[\'"]', data2)[-1]
+                #xbmc.log('@#@BANNER-LINK: %s' % banner, xbmc.LOGNOTICE)
+                bsrc = s.get(banner, headers=bheaders).content
+                #xbmc.log('@#@BANNER-DATA: %s' % bsrc, xbmc.LOGNOTICE)
+                banner = re.findall(r"url:'([^']+)", bsrc)[0]
+                #xbmc.log('@#@BANNER-LINK2: %s' % banner, xbmc.LOGNOTICE)
+                bsrc = s.get(banner, headers=bheaders).content
+                #xbmc.log('@#@BANNER-DATA2: %s' % bsrc, xbmc.LOGNOTICE)
+                bheaders['Referer'] = banner
+                banner = re.findall(r'window.location.replace\("([^"]+)"\);\s*}\)<\/script><div', bsrc)[0]
+                banner = urllib.quote(banner, ':/()!@#$%^&;><?')
+                #xbmc.log('@#@BANNER-LINK3: %s' % bsrc, xbmc.LOGNOTICE)
+                bsrc = s.get(banner).status_code
+                ###########################
+            except BaseException:
+                pass
             link = re.compile('\([\'"][^"\']+[\'"], [\'"][^"\']+[\'"], [\'"]([^"\']+)[\'"], 1\)').findall(data2)
             enc_data = json.loads(base64.b64decode(link[0]))
             ciphertext = 'Salted__' + enc_data['s'].decode('hex') + base64.b64decode(enc_data['ct'])

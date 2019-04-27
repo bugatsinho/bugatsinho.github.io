@@ -144,34 +144,33 @@
 	  </extension>
 	</addon>
 
-	<addon id="plugin.video.sport365.live" name="Sport365" version="2.5.2" provider-name="Bugatsinho">
-        <requires>
-            <import addon="xbmc.python" version="2.1.0"/>
-            <import addon="script.module.requests" version="2.19.1"/>
-            <import addon="plugin.video.f4mTester" />
-        </requires>
-        <extension point="xbmc.python.pluginsource" library="main.py">
-            <provides>video</provides>
-        </extension>
-      <extension point="xbmc.addon.metadata">
-        <summary lang="en">Sport365 originally made by GalAnonim</summary>
-        <description lang="en">Fork version 1.0 by GalAnonim!Kindly note that Sport365 Live is not an official part of the media player you are running, and therefore not to be mentioned within official support channels, this addon has nothing to do with the media player itself, nor it’s intended use, it is simply a third party plugin which has been added to your system.</description>
-        <disclaimer lang="en">Sport365 Live does not provide any streams of its own. Stream quality, content and copyright are responsibility of the ad-financed source web site.</disclaimer>
-        <language>en</language>
-        <platform>all</platform>
-        <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
-        <website>https://bugatsinho.github.io</website>
-        <twitter>@bugatsinho</twitter>
-      <assets>
-        <icon>icon.png</icon>
-        <fanart>fanart.png</fanart>
-      </assets>
-      <news>2.5.2 23-03-2019
-    - add inputstream option for playback(settings)
-    - add alternatives domains and language support
-          (https://github.com/bugatsinho/bugatsinho.github.io/pull/15)</news>
-      </extension>
-    </addon>
+	<addon id="plugin.video.sport365.live" name="Sport365" version="2.5.3" provider-name="Bugatsinho">
+		<requires>
+			<import addon="xbmc.python" version="2.1.0"/>
+			<import addon="script.module.requests" version="2.19.1"/>
+			<import addon="plugin.video.f4mTester" />
+		</requires>
+		<extension point="xbmc.python.pluginsource" library="main.py">
+			<provides>video</provides>
+		</extension>
+	  <extension point="xbmc.addon.metadata">
+		<summary lang="en">Sport365 originally made by GalAnonim</summary>
+		<description lang="en">Fork version 1.0 by GalAnonim!Kindly note that Sport365 Live is not an official part of the media player you are running, and therefore not to be mentioned within official support channels, this addon has nothing to do with the media player itself, nor it’s intended use, it is simply a third party plugin which has been added to your system.</description>
+		<disclaimer lang="en">Sport365 Live does not provide any streams of its own. Stream quality, content and copyright are responsibility of the ad-financed source web site.</disclaimer>
+		<language>en</language>
+		<platform>all</platform>
+		<license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+		<website>https://bugatsinho.github.io</website>
+		<twitter>@bugatsinho</twitter>
+	  <assets>
+		<icon>icon.png</icon>
+		<fanart>fanart.png</fanart>
+	  </assets>
+	  <news>2.5.3 27-04-2019
+	- Remove Alt Domains that dont work
+	- Fix banners issue</news>
+	  </extension>
+	</addon>
 
     <addon id="plugin.video.skylinecctv" name="Skyline WebCams" version="0.0.2" provider-name="Bugatsinho">
 	  <requires>
