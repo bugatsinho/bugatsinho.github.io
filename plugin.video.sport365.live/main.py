@@ -30,6 +30,7 @@ my_addon        = xbmcaddon.Addon()
 addonName       = my_addon.getAddonInfo('name')
 my_addon_id     = my_addon.getAddonInfo('id')
 PATH            = my_addon.getAddonInfo('path')
+VERSION         = my_addon.getAddonInfo('version')
 DATAPATH        = xbmc.translatePath(my_addon.getAddonInfo('profile')).decode('utf-8')
 RESOURCES       = PATH+'/resources/'
 
@@ -86,8 +87,8 @@ def take_stream(params):
         liz.setInfo(type="Video", infoLabels={"title": orig_title})
         liz.setProperty("IsPlayable", "true")
         idle()
-        if my_addon.getSetting('play') != 'F4M':
-            stream_url = stream_url.replace('/i', '/index.m3u8')
+        if my_addon.getSetting('play') == 'Inputstream':
+            stream_url = stream_url.replace('/i', '/master.m3u8')
             liz.setPath(stream_url)
             if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 17.5:
                 liz.setMimeType('application/vnd.apple.mpegurl')
@@ -109,6 +110,23 @@ def take_stream(params):
                 return ok
             except BaseException:
                 pass
+
+        elif my_addon.getSetting('play') == 'Streamlink':
+            # stream_url = 'hls://' + stream_url.replace('/i', '/master.m3u8')
+            import streamlink.session
+            session = streamlink.session.Streamlink()
+            stream_url, hdrs = stream_url.split('|')
+            stream_url = 'hls://' + stream_url.replace('/i', '/master.m3u8')
+            hdrs += '&Origin=http://h5.adshell.net'
+            session.set_option("http-headers", hdrs)
+
+            streams = session.streams(stream_url)
+            stream_url = streams['best'].to_url() + '|' + hdrs
+
+            liz.setPath(stream_url)
+            idle()
+            ok = xbmcplugin.setResolvedUrl(addon_handle, False, liz)
+            return ok
 
         else:
             stream_url = 'plugin://plugin.video.f4mTester/?streamtype=HLSRETRY&url={0}&name={1}'.format(
@@ -213,7 +231,8 @@ def addDir(name, ex_link=None, params=1, mode='folder', iconImage='DefaultFolder
            contextmenu=None):
     url = build_url({'mode': mode, 'foldername': name, 'ex_link': ex_link, 'params': params})
 
-    folder = False if mode in ['take_stream', 'opensettings', 'enable_input'] else True
+    nofolders = ['take_stream', 'opensettings', 'enable_input', 'forceupdate', 'open_news']
+    folder = False if mode in nofolders else True
 
     li = xbmcgui.ListItem(name)
     if infoLabels:
@@ -405,19 +424,17 @@ if mode is None:
     # else:
     #     url = 'http://www.{}.live/'.format(domain)
 
-    # addDir('Sport Events', ex_link='',
-    #        params={'_service': 'sport365', '_act': 'ListChannels', '_url': url}, mode='site2',
-    #        iconImage=ICON, fanart=FANART)
+    addDir('News - Updates', ex_link='', mode='open_news', iconImage=ICON, fanart=FANART)
     addDir('Sport365 LIVE', ex_link='',
            params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.sport365.sx/'}, mode='site2',
            iconImage=ICON, fanart=FANART)
-    addDir('[COLORcyan]Alternative Domains[/COLOR]', ex_link='', mode='opensettings',
-           iconImage=ICON, fanart=FANART)
+    # addDir('[COLORcyan]Alternative Domains[/COLOR]', ex_link='', mode='opensettings',
+    #        iconImage=ICON, fanart=FANART)
 
     # addDir('Sport247 LIVE', ex_link='',
     #        params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.sport247.live/'}, mode='site2',
     #        iconImage=ICON, fanart=FANART)
-    addDir('s365 LIVE', ex_link='',
+    addDir('s365 LIVE(alt)', ex_link='',
            params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.s365.live/'}, mode='site2',
            iconImage=ICON, fanart=FANART)
     # addDir('LiveSportStreams', ex_link='',
@@ -425,6 +442,8 @@ if mode is None:
     #        mode='site2', iconImage=ICON, fanart=FANART)
 
     addDir('Settings', ex_link='', mode='opensettings', iconImage=ICON, fanart=FANART)
+    addDir('[COLOR gold][B]Version: [COLOR lime]%s[/COLOR][/B]' % VERSION, ex_link='', mode='forceupdate',
+           iconImage=ICON, fanart=FANART)
     #li = xbmcgui.ListItem(label = '[COLOR blue]aktywuj PVR Live TV[/COLOR]', iconImage=RESOURCES+'PVR.png')
     #xbmcplugin.addDirectoryItem(handle=addon_handle, url=build_url({'mode': 'Opcje'}) ,listitem=li)
 
@@ -451,6 +470,14 @@ elif mode[0] == 'enable_rtmp':
    rtmp_enable()
    Settings()
 
+elif mode[0] == 'open_news':
+    import newsbox
+    newsbox.welcome()
+
+elif mode[0] == 'forceupdate':
+    dialog = xbmcgui.Dialog()
+    dialog.notification(addonName, "Triggered a request for addon updates", ICON, 5000, sound=True)
+    xbmc.executebuiltin('UpdateAddonRepos')
 
 else:
     xbmcplugin.setResolvedUrl(addon_handle, False, xbmcgui.ListItem(path=''))
