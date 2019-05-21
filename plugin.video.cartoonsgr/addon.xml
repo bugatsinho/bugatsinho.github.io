@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.4.3" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.4.4" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.python" version="2.19.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
@@ -26,7 +26,9 @@
     <forum>https://www.facebook.com/groups/GRecoTM/</forum>
     <source>http://grecotm.com/repo/</source>
     <website>http://grecotm.com</website>
-    <news>[B]v0.4.3[/B] (04/04/2019)
-  - Διόρθωση resolver</news>
+    <news>[B]v0.4.4[/B] (21/05/2019)
+  - Διόρθωση του Gamatomovies
+  - Διόρθωση για τα λινκς με ονομα "ΕΔΩ"
+  - Δημιουργία σκραπερ για τα λινκς από tenies-online</news>
   </extension>
 </addon>

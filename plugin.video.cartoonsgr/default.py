@@ -8,6 +8,7 @@ from resources.lib.modules import cache
 from resources.lib.modules import control
 from resources.lib.modules import init
 from resources.lib.modules import views
+from resources.lib.modules import domparser as dom
 
 BASEURL = 'https://paidikestainies.online/'
 GAMATO = 'https://gamatokids.com/'
@@ -276,7 +277,7 @@ def Get_links(name, url):#10
     lcookie = cache.get(_Login, 8, BASEURL, username, password)
     name = re.sub('\)\s*\[.+?]', ')', name)
     r = cache.get(client.request, 2, url, True, True, False, None, None, None, False, None, None, lcookie)
-    calidad = client.parseDOM(r, 'span', attrs={'class':'calidad2'})[0]
+    calidad = client.parseDOM(r, 'span', attrs={'class': 'calidad2'})[0]
     calidad = client.replaceHTMLCodes(calidad)
     calidad = calidad.encode('utf-8')
     if 'Προσε' in calidad:
@@ -292,30 +293,107 @@ def Get_links(name, url):#10
             data = client.parseDOM(r, 'div', attrs={'class': 'tabcontent'})
             links = zip(client.parseDOM(data, 'a', ret='href'),
                         client.parseDOM(data, 'a'))
+            xbmc.log('PAIDIKES-LINKs: %s' % set(links))
             description = Sinopsis(url)
             trailer = Trailer(url)
             
             addDir('[B][COLOR white]%s | [B][COLOR lime]Trailer[/COLOR][/B]' % name, trailer, 100, iconimage, back,'')
+
+            check_dup = []
             for url, host in links:
                 host = clear_Title(host).encode('utf-8')
                 url = re.sub('http://adf.ly/\d+/', '', url)
-                
-                if 'buck' in url: continue
-                elif 'adf.ly' in url:
+
+                if 'buck' in url or 'dorea' in url or 'easybytez' in url:
+                    continue
+
+                if 'adf.ly' in url:
                     url = unshortenit.unshorten(str(url))
                     if not url[1] == 200:
                         continue
                     else:
                         url = url[0]
-                        
-                if 'easybytez' in url: continue
-                if 'zippy' in url: continue
-                title = '%s [B][COLOR white]| %s[/COLOR][/B]' % (name, host.capitalize())
-                addDir(title, url, 100, iconimage, back, str(description))
+
+                if 'tenies-online' in url:
+                    xbmc.log('TENIES-LINK: %s' % url)
+                    urls = get_tenies_online_links(url)
+                    xbmc.log('TENIES-LINKs: %s' % urls)
+                    for link, hoster in urls:
+                        if 'paidikestainies' in link:
+                            continue
+                        hoster = clear_Title(hoster).encode('utf-8')
+                        xbmc.log('url-host: %s - %s' % (link, hoster))
+                        title = '%s [B][COLOR white]| %s[/COLOR][/B]' % (name, hoster.capitalize())
+                        addDir(title, link, 100, iconimage, back, str(description))
+
+
+                else:
+                    title = '%s [B][COLOR white]| %s[/COLOR][/B]' % (name, host.capitalize())
+                    addDir(title, url, 100, iconimage, back, str(description))
         except BaseException:
             pass
     views.selectView('movies', 'movie-view')
 
+
+def get_tenies_online_links(url):
+    urls = []
+
+    headers = {'User-Agent': client.randomagent(),
+               'Referer': url}
+    r = client.request(url)
+    try:
+        frames = client.parseDOM(r, 'div', {'id': 'playeroptions'})[0]
+        frames = dom.parse_dom(frames, 'li', attrs={'class': 'dooplay_player_option'},
+                               req=['data-post', 'data-nume', 'data-type'])
+        for frame in frames:
+            post = 'action=doo_player_ajax&post=%s&nume=%s&type=%s' % \
+                   (frame.attrs['data-post'], frame.attrs['data-nume'], frame.attrs['data-type'])
+            if '=trailer' in post: continue
+            p_link = 'https://tenies-online.gr/wp-admin/admin-ajax.php'
+
+            flink = client.request(p_link, post=post, headers=headers)
+            flink = client.parseDOM(flink, 'iframe', ret='src')[0]
+
+            host = __top_domain(flink)
+            urls.append((flink, host))
+        xbmc.log('FRAMES-LINKs: %s' % urls)
+    except BaseException:
+        pass
+
+    try:
+        extra = client.parseDOM(r, 'div', attrs={'class': 'links_table'})[0]
+        extra = dom.parse_dom(extra, 'td')
+        extra = [dom.parse_dom(i.content, 'img', req='src') for i in extra if i]
+        extra = [(i[0].attrs['src'], dom.parse_dom(i[0].content, 'a', req='href')) for i in extra if i]
+        extra = [(re.findall('domain=(.+?)$', i[0])[0], i[1][0].attrs['href']) for i in extra if i]
+        for item in extra:
+            url = item[1]
+            if 'paidikestainies' in url:
+                continue
+            if 'tenies-online' in url:
+                url = client.request(url, output='geturl', redirect=True)
+            else:
+                url = url
+
+            host = item[0]
+
+            urls.append((url, host))
+        xbmc.log('EXTRA-LINKs: %s' % urls)
+    except BaseException:
+        pass
+
+    return urls
+
+def __top_domain(url):
+    import urlparse
+    elements = urlparse.urlparse(url)
+    domain = elements.netloc or elements.path
+    domain = domain.split('@')[-1].split(':')[0]
+    regex = "(?:www\.)?([\w\-]*\.[\w\-]{2,3}(?:\.[\w\-]{2,3})?)$"
+    res = re.search(regex, domain)
+    if res: domain = res.group(1)
+    domain = domain.lower()
+    return domain
 
 def _Login(url):
     url += 'wp-content/plugins/theme-my-login/modules/themed-profiles/themed-profiles.js?ver=4.9.5'
@@ -528,7 +606,7 @@ def Search_gamato(url): #18
 
 
 def gamato_kids(url): #4
-    data = cache.get(client.request, 4, url)
+    data = client.request(url)
     posts = client.parseDOM(data, 'article', attrs={'class': 'item movies'})
     for post in posts:
         try:
@@ -536,16 +614,18 @@ def gamato_kids(url): #4
         except IndexError:
             plot = 'N/A'
         desc = client.replaceHTMLCodes(plot)
-        desc = desc.encode('utf-8', 'ignore')
+        desc = desc.encode('utf-8')
         try:
             title = client.parseDOM(post, 'h4')[0]
         except BaseException:
             title = client.parseDOM(post, 'img', ret='alt')[0]
-        title = clear_Title(title).encode('utf-8')
+        title = clear_Title(title).encode('utf-8', 'ignore')
         link = client.parseDOM(post, 'a', ret='href')[0]
+        link = client.replaceHTMLCodes(link).encode('utf-8', 'ignore')
         poster = client.parseDOM(post, 'img', ret='src')[0]
+        poster = client.replaceHTMLCodes(poster).encode('utf-8', 'ignore')
 
-        addDir('[B][COLOR white]{0}[/COLOR][/B]'.format(title), link, 12, poster, FANART, str(desc))
+        addDir('[B][COLOR white]%s[/COLOR][/B]' % (title), link, 12, poster, FANART, desc)
     try:
         np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'arrow_pag'})[-1]
         page = np[-2] if np.endswith('/') else re.findall('page/(\d+)/', np)[0]
@@ -574,7 +654,7 @@ def gamatokids_top(url):
 
 
 def gamato_links(url, name, poster): #12
-    try:
+    # try:
         data = cache.get(client.request, 4, url)
         desc = client.parseDOM(data, 'div', attrs={'itemprop': 'description'})[0]
         desc = re.sub('<.+?>', '', desc)
@@ -582,26 +662,34 @@ def gamato_links(url, name, poster): #12
         try:
             match = re.findall('''file\s*:\s*['"](.+?)['"],poster\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
             link, _poster = match[0], match[1]
-        except BaseException:
-            match = re.findall('''file\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
+        except IndexError:
+            frame = client.parseDOM(data, 'div', attrs={'class': 'playex'})[0]
+            frame = client.parseDOM(frame, 'iframe', ret='src')[0]
+            if 'cloud' in frame:
+                match = client.request(frame)
+            #sources: ["http://cloudb.me/4fogdt6l4qprgjzd2j6hymoifdsky3tfskthk76ewqbtgq4aml3ior7bdjda/v.mp4"],
+                match = re.findall('sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
+                match += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), frame)
+            else:
+                match = frame
             link, _poster = match, poster
 
         try:
             fanart = client.parseDOM(data, 'div', attrs={'class': 'g-item'})[0]
             fanart = client.parseDOM(fanart, 'a', ret='href')[0]
-        except BaseException:
+        except IndexError:
             fanart = FANART
         try:
-            trailer = client.parseDOM(data, 'div', attrs={'id': 'trailer'})[0]
-            trailer = client.parseDOM(trailer, 'iframe', ret='src')[0]
+            trailer = client.parseDOM(data, 'iframe', ret='src')
+            trailer = [i for i in trailer if 'youtube' in i][0]
             addDir('[B][COLOR lime]Trailer[/COLOR][/B]', trailer, 100, iconimage, fanart, str(desc))
         except BaseException:
             pass
 
         addDir(name, link, 100, poster, fanart, str(desc))
-    except BaseException:
-        return
-    views.selectView('movies', 'movie-view')
+    # except BaseException:
+    #     return
+        views.selectView('movies', 'movie-view')
 
 
 ########################################
@@ -641,10 +729,11 @@ def addDir(name, url, mode, iconimage, fanart, description):
     if mode == 6:
         u = '%s?url=%s&mode=%s&name=%s&iconimage=%s&description=%s' % \
             (sys.argv[0], urllib.quote_plus(url), str(mode), urllib.unquote(name),
-             urllib.quote_plus(iconimage), urllib.quote_plus(description))
+             urllib.quote_plus(iconimage), urllib.quote_plus(description.encode('utf-8', 'ignore')))
 
     else:
-        u = sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&iconimage="+urllib.quote_plus(iconimage)+"&description="+urllib.quote_plus(description)
+        u = sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+\
+            "&iconimage="+urllib.quote_plus(iconimage)+"&description="+urllib.quote_plus(description)
     ok = True
     liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
     liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
