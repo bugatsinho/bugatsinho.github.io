@@ -196,14 +196,14 @@ def Get_links(name, url):#10
         if len(links) == 0: addDir('[B][COLOR white]No Hay Enlace[/COLOR][/B]', url, 'BUG', poster, FANART, '')
 
     try:
-        desc = client.parseDOM(r, 'p', attrs={'class': 'read-more-wrap'})[0].encode('utf-8')
+        desc = client.parseDOM(r, 'div', attrs={'class': 'text-large'})[0].encode('utf-8')
         desc = clear_Title(desc).encode('latin-1')
     except:
         desc = 'N/A'
 
     try:
         trailer = Trailer(r)
-        if re.search('/emded/\w+', trailer):
+        if trailer:
             addDir('[B][COLORlime]Trailer[/B][/COLOR]', trailer, 100, poster, fanart, str(desc))
     except:
         pass
@@ -222,10 +222,11 @@ def Get_links(name, url):#10
 
 
 def Trailer(html):
-    trailer = client.parseDOM(html, 'iframe', ret='src')[-1].encode('utf-8')
+    trailer = client.parseDOM(html, 'iframe', ret='src')
+    trailer = [i for i in trailer if 'youtu' in i][0]
     #xbmc.log('@#@tr-links:%s' % trailer, xbmc.LOGNOTICE)
     #.replace('ú', u'\xbf')
-    trailer = urllib.quote(trailer.encode('latin-1'), ':/')
+    #trailer = urllib.quote(trailer.encode('latin-1'), ':/')
     #xbmc.log('@#@TRAILER:%s' % trailer, xbmc.LOGNOTICE)
     return trailer
 
