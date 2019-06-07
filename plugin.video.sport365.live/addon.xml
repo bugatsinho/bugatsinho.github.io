@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.sport365.live" name="Sport365" version="2.6.0" provider-name="Bugatsinho">
+<addon id="plugin.video.sport365.live" name="Sport365" version="2.6.1" provider-name="Bugatsinho">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -23,9 +23,7 @@
     <icon>icon.png</icon>
     <fanart>fanart.png</fanart>
   </assets>
-  <news>2.6.0 17-05-2019
-- Add as default playback method Streamlink thanks to Twilight and Devilsport
-- Add News-Updates on menu
-- Show version and by click it you force update addons!</news>
+  <news>2.6.1 07-06-2019
+- Fix links resolver</news>
   </extension>
 </addon>

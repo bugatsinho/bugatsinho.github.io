@@ -133,11 +133,11 @@ def getChannelVideo(item):
     header = {'User-Agent': UA,
               'Referer': item.get('url')}
     content = s.get(item['url'], headers=header).content
-    import uuid
-    hash = uuid.uuid4().hex
-    url = re.findall(r'location.replace\(\'([^\']+)', content)[0]
-    uri = url + hash
-    content = s.get(uri, headers=header).content
+    # import uuid
+    # hash = uuid.uuid4().hex
+    # url = re.findall(r'location.replace\(\'([^\']+)', content)[0]
+    # uri = url + hash
+    # content = s.get(uri, headers=header).content
     links = re.compile('(http://www.[^\.]+.pw/(?!&#)[^"]+)',
                        re.IGNORECASE + re.DOTALL + re.MULTILINE + re.UNICODE).findall(content)
     link = [x for x in links if '&#' in x]
@@ -148,11 +148,12 @@ def getChannelVideo(item):
         f = re.compile('.*?name="f"\s*value=["\']([^"\']+)["\']').findall(data)
         d = re.compile('.*?name="d"\s*value=["\']([^"\']+)["\']').findall(data)
         r = re.compile('.*?name="r"\s*value=["\']([^"\']+)["\']').findall(data)
-        b = re.compile('.*?name="b"\s*value=["\']([^"\']+)["\']').findall(data)
+        # b = re.compile('.*?name="b"\s*value=["\']([^"\']+)["\']').findall(data)
         action = re.compile('[\'"]action[\'"][,\s]*[\'"](http.*?)[\'"]').findall(data)
         srcs = re.compile('src=[\'"](.*?)[\'"]').findall(data)
         if f and r and d and action:
-            payload = urllib.urlencode({'b': b[0], 'd': d[0], 'f': f[0], 'r': r[0]})
+            # payload = urllib.urlencode({'b': b[0], 'd': d[0], 'f': f[0], 'r': r[0]})
+            payload = urllib.urlencode({'f': f[0], 'd': d[0], 'r': r[0]})
             data2, c = getUrlc(action[0], payload, header=header, usecookies=True)
             try:
                 #######ads banners#########
