@@ -12,6 +12,7 @@ from resources.lib.modules import domparser as dom
 
 BASEURL = 'https://paidikestainies.online/'
 GAMATO = 'https://gamatokids.com/'
+METAGLOTISMENO = 'https://metaglotismeno.online/'
 
 ADDON       = xbmcaddon.Addon()
 ADDON_DATA  = ADDON.getAddonInfo('profile')
@@ -29,14 +30,16 @@ ART = ADDON_PATH + "/resources/icons/"
 
 
 def Main_addDir():
-    addDir('[B][COLOR yellow]' + Lang(32022).encode('utf-8') + '[/COLOR][/B]', BASEURL, 19, ART + 'mas.jpg', FANART, '')
+    # addDir('[B][COLOR yellow]' + Lang(32022).encode('utf-8') + '[/COLOR][/B]', BASEURL, 19, ART + 'mas.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32005).encode('utf-8') + '[/COLOR][/B]', BASEURL, 8, ART + 'random.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32008).encode('utf-8') + '[/COLOR][/B]', BASEURL, 5, ART + 'latest.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]', BASEURL+'quality/metaglotismeno/',
+    addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]', BASEURL + 'quality/metaglotismeno/',
            5, ART + 'dub.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32003).encode('utf-8') + '[/COLOR][/B]', BASEURL+'quality/ellinikoi-ypotitloi/',
            5, ART + 'sub.jpg', FANART, '')
     addDir('[B][COLOR yellow]Gamato ' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 20, ART + 'gam.png',
+           FANART, '')
+    addDir('[B][COLOR yellow]Metaglotismeno ' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 30, ART + 'gam.png',
            FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 13, ART + 'movies.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32001).encode('utf-8') + '[/COLOR][/B]', '', 14, ART + 'tvshows.jpg', FANART, '')
@@ -49,7 +52,7 @@ def Main_addDir():
 
 
 def gamatokids():
-    addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]', GAMATO + 'genre/μεταγλωτισμένα/',
+    addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]', GAMATO + 'paidikes-tainies/',
            4, ART + 'dub.jpg', FANART, '')
     addDir('[B][COLOR yellow]TOP 100[/COLOR][/B]', GAMATO + 'top-imdb', 21, ART + 'top.png', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002).encode('utf-8') + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
@@ -592,7 +595,7 @@ def Search_gamato(url): #18
             year = 'N/A'
             desc = 'N/A'
 
-        addDir('[B][COLOR white]{0} [{1}][/COLOR][/B]'.format(title, year), link, 18, poster, FANART, str(desc))
+        addDir('[B][COLOR white]{0} [{1}][/COLOR][/B]'.format(title, year), link, 12, poster, FANART, str(desc))
 
     try:
         np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'arrow_pag'})[-1]
@@ -654,8 +657,8 @@ def gamatokids_top(url):
 
 
 def gamato_links(url, name, poster): #12
-    # try:
-        data = cache.get(client.request, 4, url)
+    try:
+        data = client.request(url)
         desc = client.parseDOM(data, 'div', attrs={'itemprop': 'description'})[0]
         desc = re.sub('<.+?>', '', desc)
         desc = desc.encode('utf-8', 'ignore')
@@ -687,9 +690,9 @@ def gamato_links(url, name, poster): #12
             pass
 
         addDir(name, link, 100, poster, fanart, str(desc))
-    # except BaseException:
-    #     return
-        views.selectView('movies', 'movie-view')
+    except BaseException:
+        return
+    views.selectView('movies', 'movie-view')
 
 
 ########################################
@@ -848,12 +851,47 @@ elif mode == 4:
 elif mode == 12:
     gamato_links(url, name, iconimage)
 elif mode == 18:
-    Search_gamato(url)
+    keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
+    keyb.doModal()
+    if keyb.isConfirmed():
+        search = urllib.quote_plus(keyb.getText())
+        term = urllib.unquote_plus(search).decode('utf-8')
+        url = "https://gamatokids.com/?s=%s" % term
+        Search_gamato(url)
+    else:
+        pass
 elif mode == 20:
     gamatokids()
 elif mode == 21:
     gamatokids_top(url)
 ##########################################
+
+###############METAGLOTISMENO#################
+elif mode == 30:
+    from resources.lib.indexers import metaglotismeno
+    metaglotismeno.menu()
+elif mode == 32:
+    from resources.lib.indexers import metaglotismeno
+    metaglotismeno.years()
+elif mode == 33:
+    from resources.lib.indexers import metaglotismeno
+    metaglotismeno.get_links(name, url, iconimage, description)
+elif mode == 34:
+    from resources.lib.indexers import metaglotismeno
+    metaglotismeno.metaglotismeno(url)
+elif mode == 35:
+    from resources.lib.indexers import metaglotismeno
+    keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
+    keyb.doModal()
+    if keyb.isConfirmed():
+        search = urllib.quote_plus(keyb.getText())
+        term = urllib.unquote_plus(search).decode('utf-8')
+        url = "https://metaglotismeno.online/?s=%s" % term
+        metaglotismeno.search(url)
+    else:
+        pass
+
+##############################################
 
 elif mode == 3:
     Get_Genres(url)
