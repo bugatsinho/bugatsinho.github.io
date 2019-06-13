@@ -35,7 +35,7 @@ class s4f:
         try:
             query, imdb = query.split('/imdb=')
             match = re.findall('^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
-            #xbmc.log('$#$MATCH-S4F: %s' % match, xbmc.LOGNOTICE)
+            # xbmc.log('$#$MATCH-S4F: %s' % match, xbmc.LOGNOTICE)
 
             if len(match) > 0:
                 hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
@@ -69,7 +69,7 @@ class s4f:
                 hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
                        'Referer':'https://www.subs4series.com/'}
                 title, hdlr = re.findall('^(?P<title>.+)\s+(?P<hdlr>S\d+E\d+)', query, re.I)[0]
-                #xbmc.log('$#$MATCH-S4F: %s | %s' % (title, hdlr), xbmc.LOGNOTICE)
+                xbmc.log('$#$MATCH-S4F: %s | %s' % (title, hdlr), xbmc.LOGNOTICE)
 
                 #hdlr = 'S%02dE%02d' % (int(season), int(episode))
 

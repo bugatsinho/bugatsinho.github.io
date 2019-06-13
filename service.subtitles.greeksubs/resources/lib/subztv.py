@@ -67,34 +67,48 @@ class subztv:
 
             else:
                 title, season, episode = re.findall('^(?P<title>.+)\s+S(\d+)E(\d+)', query, re.I)[0]
-                #xbmc.log('$#$MATCH-SUBZ: %s | %s | %s' % (title, season, episode), xbmc.LOGNOTICE)
+                xbmc.log('$#$MATCH-SUBZ: %s | %s | %s' % (title, season, episode), xbmc.LOGNOTICE)
     
                 season, episode = '%01d' % int(season), '%01d' % int(episode)
                 hdlr = 'season-%s-episode-%s' % (season, episode)
-                url = 'https://subztv.online/search/%s/tv' % urllib.quote(title)
-                data = requests.get(url, headers=self.hdr).content
-                data = client.parseDOM(data, 'span', attrs={'class':'h5'})
-                data = [(client.parseDOM(i, 'a')[0],
-                         client.parseDOM(i, 'a', ret='href')[0])for i in data if i]
-                try:
-                    url = [i[1] for i in data if hdlr in i[1]][0]
-                except BaseException:
+                cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
+                xbmc.log('$#$MATCH-SUBZ-ΨΟΟΚΙΕΣ: %s' % hdlr)
+                xbmc.log('$#$MATCH-SUBZ-IMDB: %s' % imdb)
+                if imdb.startswith('tt'):
+                    xbmc.log('$#$MALAKASSSSSS')
+                    r = requests.get('https://subztv.online/view/%s' % imdb, headers=self.hdr).content
+                    # xbmc.log('$#$MATCH-SUBZ-RRR-source: %s' % r)
+                    r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                    frames = client.parseDOM(r, 'a', ret='href')
+                    frame = [i for i in frames if hdlr in i][0]
+                    xbmc.log('$#$MATCH-SUBZ-IMDB: %s' % frame)
+                else:
+                    url = 'https://subztv.online/search/%s/tv' % urllib.quote(title)
+                    data = requests.get(url, headers=self.hdr).text
+                    data = re.sub(r'[^\x00-\x7F]+', ' ', data)
+                    # xbmc.log('$#$MATCH-SUBZ-DATA-source: %s' % data)
+                    data = client.parseDOM(data, 'span', attrs={'class':'h5'})
+                    data = [(client.parseDOM(i, 'a')[0],
+                             client.parseDOM(i, 'a', ret='href')[0])for i in data if i]
+                    xbmc.log('$#$MATCH-SUBZ-DATA-list: %s' % data)
+                    try:
+                        frame = [i[1] for i in data if hdlr in i[1]][0]
+                        xbmc.log('$#$MATCH-SUBZ-TRYYYY: %s' % frame)
+                    except BaseException:
                         link = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
-    
-                        cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
-                        r = requests.get(link, headers=self.hdr, cookies=cj).content
+                        xbmc.log('$#$MATCH-SUBZ-EXCEPT: %s' % link)
+                        r = requests.get(link, headers=self.hdr, cookies=cj).text
                         r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-    
+
                         url = client.parseDOM(r, 'section',)
                         url = [i for i in url if 'sessaon' in i][0]
                         url = client.parseDOM(url, 'a', ret='href')
-                        url = [i for i in url if hdlr in i][0]
-                imdb = re.findall('(tt\d+)', url)[0]
-                cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
-    
-                r = requests.get(url, headers=self.hdr, cookies=cj).content
+                        frame = [i for i in url if hdlr in i][0]
+                        xbmc.log('$#$MATCH-SUBZ-LINKKK: %s' % frame)
+
+                r = requests.get(frame, headers=self.hdr).content
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-                secCode = client.parseDOM(r,'input', ret='value', attrs={'id':'secCode'})[0]
+                secCode = client.parseDOM(r, 'input', ret='value', attrs={'id': 'secCode'})[0]
                 items = client.parseDOM(r, 'tbody')[0]
                 items = client.parseDOM(items, 'tr')
 
@@ -103,10 +117,10 @@ class subztv:
 
         for item in items:
             try:
-                
+
                 data = re.compile('''downloadMe\(['"](\w+\-\w+).+?label.+?>(\d+).+?<td>(.+?)</td''', re.I|re.DOTALL).findall(str(item))[0]
                 name = data[2]
-                
+
                 name = client.replaceHTMLCodes(name)
                 name = name.encode('utf-8')
 
@@ -118,7 +132,7 @@ class subztv:
                 rating = self._rating(down)
 
                 self.list.append({'name': name, 'url': '%s|%s|%s|%s' % (url, name, cj['PHPSESSID'], imdb), 'source': 'subztv', 'rating': rating})
-                
+
             except BaseException:
                 pass
 
@@ -132,11 +146,11 @@ class subztv:
 
         if rating < 10:
             rating = 1
-        elif rating >= 10 and rating < 20:
+        elif 10 >= rating < 20:
             rating = 2
-        elif rating >= 20 and rating < 30:
+        elif 20 >= rating < 30:
             rating = 3
-        elif rating >= 30 and rating < 40:
+        elif 30 >= rating < 40:
             rating = 4
         elif rating >= 40:
             rating = 5
@@ -163,7 +177,7 @@ class subztv:
             r = requests.get(url, headers=headers, cookies=cj)
             result = requests.post(url, headers=headers, data=post, cookies=cj).content
 
-            f = os.path.join(path, sub_ + '.srt')
+            f = os.path.join(path, urllib.quote(sub_) + '.srt')
 
             with open(f, 'wb') as subFile:
                 subFile.write(result)

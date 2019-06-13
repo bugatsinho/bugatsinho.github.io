@@ -80,6 +80,7 @@ class Search:
                 #labelType = xbmc.getInfoLabel("ListItem.DBTYPE")
                 try:
                     imdb = control.infoLabel('ListItem.IMDBNumber')
+                    # xbmc.log('$#$QUERY-NONE-IMDB: %s' % imdb, xbmc.LOGNOTICE)
                     if not imdb:
                         imdb = '0'
                 except BaseException:
@@ -101,14 +102,14 @@ class Search:
                 query, year = getCleanMovieTitle(title)
                 if not year == '':
                     query = '%s (%s)/imdb=%s' % (query, year, str(imdb))
-            #xbmc.log('$#$QUERY-NONE-FINAL: %s' % query, xbmc.LOGNOTICE)
+            # xbmc.log('$#$QUERY-NONE-FINAL: %s' % query, xbmc.LOGNOTICE)
 
         else:
             query = '%s/imdb=0' % re.sub('[\(|\)]', '', query)
-            #xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
+            # xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
 
         self.query = query
-        #xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
+        # xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
 
         threads = []
 
@@ -116,19 +117,19 @@ class Search:
         threads.append(workers.Thread(self.s4f))
         threads.append(workers.Thread(self.yifi))
 
-
         [i.start() for i in threads]
+        [i.join() for i in threads]
 
-        for i in range(0, 10 * 2):
-            try:
-                is_alive = [x.is_alive() for x in threads]
-                if all(x is False for x in is_alive):
-                    break
-                if control.aborted is True:
-                    break
-                control.sleep(500)
-            except BaseException:
-                pass
+        # for i in range(0, 10 * 2):
+        #     try:
+        #         is_alive = [x.is_alive() for x in threads]
+        #         if all(x is False for x in is_alive):
+        #             break
+        #         if control.aborted is True:
+        #             break
+        #         control.sleep(500)
+        #     except BaseException:
+        #         pass
 
         if len(self.list) == 0:
             control.directory(syshandle)
@@ -194,9 +195,13 @@ class Download:
     def run(self, url, source):
 
         path = os.path.join(control.dataPath, 'temp')
-        path = path.decode('utf-8')
+        try:
+            path = path.decode('utf-8')
+        except Exception:
 
-        control.deleteDir(os.path.join(path, ''), force=True)
+            pass
+
+        control.deleteDir(control.join(path, ''), force=True)
 
         control.makeFile(control.dataPath)
 
