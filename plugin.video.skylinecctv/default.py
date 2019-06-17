@@ -27,6 +27,8 @@ new_url = 'https://www.skylinewebcams.com/skyline/morewebcams.php?w=new&l={0}&b=
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 def get_lang():
     lang = ADDON.getSetting('lang').encode('utf-8')

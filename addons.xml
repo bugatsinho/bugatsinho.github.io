@@ -182,7 +182,7 @@
 	  </extension>
 	</addon>
 
-    <addon id="plugin.video.skylinecctv" name="Skyline WebCams" version="0.0.2" provider-name="Bugatsinho">
+    <addon id="plugin.video.skylinecctv" name="Skyline WebCams" version="0.0.3" provider-name="Bugatsinho">
 	  <requires>
 	    <import addon="xbmc.python" version="2.25.0"/>
 	    <import addon="script.module.kodi-six" version="0.0.2"/>
