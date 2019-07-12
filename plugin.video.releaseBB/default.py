@@ -58,6 +58,12 @@ tested_links = []
 
 
 def MainMenu():  # homescreen
+    addon.add_directory({'mode': 'open_news'},
+                        {'title': '[COLOR lime][B]News - Updates[/COLOR][/B]'},
+                        [(control.lang(32008).encode('utf-8'),
+                          'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
+                        img=ICON, fanart=FANART, is_folder=False)
+
     addon.add_directory({'mode': 'Categories', 'section': 'movies'},
                         {'title': control.lang(32000).encode('utf-8')},
                         [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
@@ -86,9 +92,9 @@ def MainMenu():  # homescreen
                         [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
                         img=IconPath + 'set_view.png', fanart=FANART)
    
-    addon.add_directory({'mode': 'help'}, {'title': control.lang(32006).encode('utf-8')},
-                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
-                        img=IconPath + 'github.png', fanart=FANART, is_folder=False)
+    # addon.add_directory({'mode': 'help'}, {'title': control.lang(32006).encode('utf-8')},
+    #                     [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
+    #                     img=IconPath + 'github.png', fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'forceupdate'},
                         {'title': '[COLOR gold][B]Version: [COLOR lime]%s[/COLOR][/B]' % version},
                         [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
@@ -96,7 +102,7 @@ def MainMenu():  # homescreen
     
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
-    view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+    view.setView('addons', {})
 
 
 def downloads_root():
@@ -119,12 +125,14 @@ def downloads_root():
 
     control.content(int(sys.argv[1]), 'videos')
     control.directory(int(sys.argv[1]))
-    view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+    view.setView('addons', {})
 
 
 def Categories(section):  # categories
     sec = '/category/%s' % section
     html = response_html(BASE_URL, '96')
+    # html = cloudflare_mode(BASE_URL)
+    # xbmc.log('HTMLLLLL: %s' % html)
     match = client.parseDOM(html, 'li', attrs={'id': 'categories-2'})[0]
     items = zip(client.parseDOM(match, 'a'),
                 client.parseDOM(match, 'a', ret='href'))
@@ -154,13 +162,14 @@ def Categories(section):  # categories
     
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
-    view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+    view.setView('addons', {})
 
 
 def recommended_movies(url):
     try:
         r = response_html(url, '8')
-        r = client.parseDOM(r, 'li', attrs={'id': 'text-7'})[0]
+        # r = cloudflare_mode(url)
+        r = client.parseDOM(r, 'li', attrs={'id': 'text-8'})[0]
         items = zip(client.parseDOM(r, 'a', ret='href'),
                     client.parseDOM(r, 'img', ret='src'))
 
@@ -191,7 +200,8 @@ def recommended_movies(url):
 
     control.content(int(sys.argv[1]), 'movies')
     control.directory(int(sys.argv[1]))
-    view.setView('movies', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+    view.setView('movies', {})
+
 
 def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
     try:
@@ -201,12 +211,14 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
             pageUrl = url
 
         html = response_html(pageUrl, '3')
+        # html = cloudflare_mode(pageUrl)
         start = int(startPage)
         end = start + int(numOfPages)
         for page in range(start, end):
             if page != start:
                 pageUrl = urlparse.urljoin(url, 'page/%s' % page)
                 html = response_html(pageUrl, '3')
+                # html = cloudflare_mode(pageUrl)
             match = client.parseDOM(html, 'div', attrs={'class': 'post'})
             for item in match:
                 movieUrl = client.parseDOM(item, 'a', ret='href')[0]
@@ -250,12 +262,13 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
     
     control.content(int(sys.argv[1]), 'movies')
     control.directory(int(sys.argv[1]))
-    view.setView('movies', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+    view.setView('movies', {})
 
 
 def GetPack(section, url, img, plot): # TV packs links
     try:
         html = response_html(url, '3')
+        # html = cloudflare_mode(url)
         main = client.parseDOM(html, 'div', {'class': 'postContent'})[0]
         data = client.parseDOM(main, 'p')
         data = [i for i in data if 'nfo1.' in i]
@@ -280,7 +293,7 @@ def GetPack(section, url, img, plot): # TV packs links
             NAME, ICON, 5000)
     control.content(int(sys.argv[1]), 'videos')
     control.directory(int(sys.argv[1]))
-    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+    view.setView('videos', {})
 
 
 def GetLinksPack(section, url, img, plot):
@@ -289,6 +302,7 @@ def GetLinksPack(section, url, img, plot):
         frames = []
         for u in urls:
             html = response_html(u, '72')
+            # html = cloudflare_mode(u)
             data = client.parseDOM(html, 'ol')[0]
             frames += client.parseDOM(data, 'div')
             try:
@@ -336,13 +350,15 @@ def GetLinksPack(section, url, img, plot):
 
     control.content(int(sys.argv[1]), 'videos')
     control.directory(int(sys.argv[1]))
-    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+    view.setView('videos', {})
+
 
 def GetLinks(section, url, img, plot):  # Get Links
     try:
         import resolveurl
         from resources.lib.modules import init
         html = response_html(url, '3')
+        # html = cloudflare_mode(url)
         listitem = GetMediaInfo(html)
         name = '%s (%s)' % (listitem[0], listitem[1])
         main = client.parseDOM(html, 'div', {'class': 'postContent'})
@@ -449,15 +465,14 @@ def GetLinks(section, url, img, plot):  # Get Links
     
     control.content(int(sys.argv[1]), 'videos')
     control.directory(int(sys.argv[1]))
-    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+    view.setView('videos', {})
 
 
 def cloudflare_mode(url):
     from resources.lib.modules import cfscrape
     scraper = cfscrape.create_scraper()
-    headers = {'User-Agent': client.agent(),
-               'Referer': BASE_URL}
-    result = scraper.get(url, headers=headers).content
+    result = scraper.get(url).text
+    # xbmc.log('RESULTTTTT: %s' % result)
     return result
 
 
@@ -526,11 +541,13 @@ def response_html(url, cachetime):
             html = cache.get(cloudflare_mode, int(cachetime), url)
         else:
             html = cache.get(client.request, int(cachetime), url)
+
+        if html is None:
+            control.infoDialog(control.lang(32011).encode('utf-8'), NAME, ICON, 5000)
+
         return html
     except BaseException:
-        control.infoDialog(
-            control.lang(32012).encode('utf-8'),
-            NAME, ICON, 5000)
+        control.infoDialog(control.lang(32011).encode('utf-8'), NAME, ICON, 5000)
 
 
 def link_tester(item):
@@ -577,7 +594,6 @@ def link_tester(item):
 
     except BaseException:
         addon.log('URL ERROR: [%s]: URL: %s ' % (host.upper(), link))
-
 
 
 def PlayVideo(url, title, img, plot):
@@ -693,7 +709,7 @@ def search_menu():
 
     control.content(int(sys.argv[1]), 'videos')
     control.directory(int(sys.argv[1]))
-    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+    view.setView('videos', {})
 
 
 def clear_Title(txt):
@@ -785,8 +801,8 @@ elif mode == 'ClearCache':
 elif mode == 'forceupdate':
     control.infoDialog(control.lang(32021).encode('utf-8'))
     control.execute('UpdateAddonRepos')
-elif mode == 'help':
-    control.open_git()
+# elif mode == 'help':
+#     control.open_git()
 elif mode == 'addView':
     view.addView(content)
 elif mode == 'setviews':
@@ -799,3 +815,6 @@ elif mode == 'download':
     download(title, img, url)
 elif mode == 'recom':
     recommended_movies(url)
+elif mode == 'open_news':
+    from resources.lib.modules import newsbox
+    newsbox.welcome()

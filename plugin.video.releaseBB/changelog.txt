@@ -1,3 +1,14 @@
++ [B][COLOR lime]1.8.1[/B][/COLOR] [COLOR gold](12-07-2019)[/COLOR]
+- Fix View Mode by removing any default mode for skins
+
++ [B][COLOR lime]1.8.0[/B][/COLOR] [COLOR gold](15-05-2019)[/COLOR]
+- Update cfscrape.py
+- Fix search function
+- Add support for TV PACKS on search
+- Fix menus
+- Until the website is transfered totally to the new server add-on will have issues so be patient!
+- For support join https://bit.ly/bug_telegram or https://bugatsinho.github.io
+
 + [B][COLOR lime]1.7.5[/B][/COLOR] [COLOR gold](20-03-2019)[/COLOR]
 - Update cfscrape.py
 
