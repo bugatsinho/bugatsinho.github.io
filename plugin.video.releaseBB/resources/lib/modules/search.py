@@ -23,6 +23,7 @@ import json
 import random
 import urlparse
 import sys
+import re
 from resources.lib.modules import control
 from resources.lib.modules import cache
 from resources.lib.modules import client
@@ -47,7 +48,9 @@ except ImportError:
 
 
 def Search_bb(url):
-    if 'new' in url:
+    from resources.lib.modules import cfscrape
+    scraper = cfscrape.create_scraper()
+    if 'new' == url:
         keyboard = xbmc.Keyboard()
         keyboard.setHeading(control.lang(32002).encode('utf-8'))
         keyboard.doModal()
@@ -55,20 +58,11 @@ def Search_bb(url):
             _query = keyboard.getText()
             query = _query.encode('utf-8')
             try:
-
-                from resources.lib.modules import cfscrape
-                scraper = cfscrape.create_scraper()
-
                 query = urllib.quote_plus(query)
-                referer_link = 'http://search.rlsbb.ru/search/{0}'.format(query)
-                headers = {'User-Agent': client.randomagent(),
-                           'Referer': referer_link}
+                referer_link = 'http://search.rlsbb.ru?s=/search/{0}'.format(query)
 
-                code = scraper.get(referer_link, headers=headers).content
-                code = client.parseDOM(code, 'script', ret='data-code-rlsbb')[0]
-
-                url = 'http://search.rlsbb.ru/lib/search45224149886049641.php?phrase={0}&pindex=1&code={1}&radit=0.{2}'
-                url = url.format(query.replace('+', '%2B'), code, random.randint(00000000000000001, 99999999999999999))
+                url = 'http://search.rlsbb.ru/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&radit=0.{1}'
+                url = url.format(query.replace('+', '%2B'), random.randint(0o000000000000001, 99999999999999999))
                 #########save in Database#########
                 term = urllib.unquote_plus(query).decode('utf-8')
                 dbcon = database.connect(control.searchFile)
@@ -79,40 +73,163 @@ def Search_bb(url):
                 dbcur.close()
 
                 #########search in website#########
-                html = scraper.get(url, headers=headers).content
+                headers = {'Referer': referer_link,
+                           'X-Requested-With': 'XMLHttpRequest'}
+                html = scraper.get(url, headers=headers).text
                 posts = json.loads(html)['results']
-                posts = [(i['post_name'], i['post_title']) for i in posts if i]
-                for movieUrl, title in posts:
-                    movieUrl = urlparse.urljoin(BASE_URL, movieUrl)
+                posts = [(i['post_name'], i['post_title'], i['post_content']) for i in posts if i]
+                for movieUrl, title, infos in posts:
+                    movieUrl = urlparse.urljoin(BASE_URL, movieUrl) if not movieUrl.startswith('http') else movieUrl
                     title = title.encode('utf-8')
-                    addon.add_directory({'mode': 'GetLinks', 'url': movieUrl},
-                                        {'title': title}, img=IconPath + 'search.png', fanart=FANART)
+                    infos = infos.replace('\\', '')
+                    try:
+                        img = client.parseDOM(infos, 'img', ret='src')[0]
+                        img = img.replace('.ru', '.to')
+                    except:
+                        img = ICON
+
+                    try:
+                        fan = client.parseDOM(infos, 'img', ret='src')[1]
+                    except:
+                        fan = FANART
+
+                    try:
+                        desc = re.search(r'Plot:(.+?)</p><p> <img', infos, re.DOTALL).group(0)
+                    except:
+                        desc = 'N/A'
+
+                    desc = Sinopsis(desc)
+                    name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
+
+                    mode = 'GetPack' if re.search(r'\s+S\d+\s+', name) else 'GetLinks'
+                    addon.add_directory(
+                        {'mode': mode, 'url': movieUrl, 'img': img, 'plot': desc},
+                        {'title': name, 'plot': desc},
+                        [(control.lang(32007).encode('utf-8'),
+                          'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                         (control.lang(32008).encode('utf-8'),
+                          'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                         (control.lang(32009).encode('utf-8'),
+                          'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                        img=img, fanart=fan)
+
+                # if 'olderEntries' in ref_html:
+                pindex = int(re.search('pindex=(\d+)&', url).group(1)) + 1
+                np_url = re.sub('&pindex=\d+&', '&pindex={0}&'.format(pindex), url)
+                addon.add_directory(
+                    {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},
+                    {'title': control.lang(32010).encode('utf-8')},
+                    img=IconPath + 'next_page.png', fanart=FANART)
+
 
             except BaseException:
                 control.infoDialog(control.lang(32022).encode('utf-8'), NAME, ICON, 5000)
+
+    elif '|nextpage' in url:
+        url, referer_link, np = url.split('|')
+        headers = {'Referer': referer_link,
+                   'X-Requested-With': 'XMLHttpRequest'}
+        html = scraper.get(url, headers=headers).content
+
+        posts = json.loads(html)['results']
+        posts = [(i['post_name'], i['post_title'], i['post_content']) for i in posts if i]
+        for movieUrl, title, infos in posts:
+            movieUrl = urlparse.urljoin(BASE_URL, movieUrl) if not movieUrl.startswith('http') else movieUrl
+            title = title.encode('utf-8')
+            infos = infos.replace('\\', '')
+            try:
+                img = client.parseDOM(infos, 'img', ret='src')[0]
+                img = img.replace('.ru', '.to')
+            except:
+                img = ICON
+
+            try:
+                fan = client.parseDOM(infos, 'img', ret='src')[1]
+            except:
+                fan = FANART
+
+            try:
+                desc = re.search(r'Plot:(.+?)</p><p> <img', infos, re.DOTALL).group(0)
+            except:
+                desc = 'N/A'
+
+            desc = Sinopsis(desc)
+            name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
+            mode = 'GetPack' if re.search(r'\s+S\d+\s+', name) else 'GetLinks'
+            addon.add_directory(
+                {'mode': mode, 'url': movieUrl, 'img': img, 'plot': desc},
+                {'title': name, 'plot': desc},
+                [(control.lang(32007).encode('utf-8'),
+                  'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                 (control.lang(32008).encode('utf-8'),
+                  'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                 (control.lang(32009).encode('utf-8'),
+                  'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                img=img, fanart=fan)
+
+        # if 'olderEntries' in ref_html:
+        pindex = int(re.search('pindex=(\d+)&', url).groups()[0]) + 1
+        np_url = re.sub('&pindex=\d+&', '&pindex={0}&'.format(pindex), url)
+        addon.add_directory(
+            {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},
+            {'title': control.lang(32010).encode('utf-8')},
+            img=IconPath + 'next_page.png', fanart=FANART)
+
     else:
         try:
             from resources.lib.modules import cfscrape
             scraper = cfscrape.create_scraper()
-            referer_link = 'http://search.rlsbb.ru/search/{0}'.format(url)
-            headers = {'User-Agent': client.randomagent(),
-                       'Referer': referer_link}
+            url = urllib.quote_plus(url)
+            referer_link = 'http://search.rlsbb.ru?s=/search/{0}'.format(url)
+            headers = {'Referer': referer_link,
+                       'X-Requested-With': 'XMLHttpRequest'}
 
-            code = scraper.get(referer_link, headers=headers).content
-            code = client.parseDOM(code, 'script', ret='data-code-rlsbb')[0]
-
-            s_url = 'http://search.rlsbb.ru/lib/search45224149886049641.php?phrase={0}&pindex=1&code={1}&radit=0.{2}'
-            s_url = s_url.format(url.replace('+', '%2B'), code, random.randint(00000000000000001, 99999999999999999))
-            html = scraper.get(s_url, headers=headers).content
-            #xbmc.log('$#$HTML:%s' % html, xbmc.LOGNOTICE)
+            s_url = 'http://search.rlsbb.ru/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&radit=0.{1}'
+            s_url = s_url.format(url.replace('+', '%2B'), random.randint(0o000000000000001, 99999999999999999))
+            html = scraper.get(s_url, headers=headers).text
             posts = json.loads(html)['results']
-            posts = [(i['post_name'], i['post_title']) for i in posts if i]
-            for movieUrl, title in posts:
-                movieUrl = urlparse.urljoin(BASE_URL, movieUrl)
+            posts = [(i['post_name'], i['post_title'], i['post_content']) for i in posts if i]
+            for movieUrl, title, infos in posts:
+                movieUrl = urlparse.urljoin(BASE_URL, movieUrl) if not movieUrl.startswith('http') else movieUrl
                 title = title.encode('utf-8')
-                addon.add_directory({'mode': 'GetLinks', 'url': movieUrl},
-                                    {'title': title}, img=IconPath + 'search.png', fanart=FANART)
+                infos = infos.replace('\\', '')
+                try:
+                    img = client.parseDOM(infos, 'img', ret='src')[0]
+                    img = img.replace('.ru', '.to')
+                except:
+                    img = ICON
 
+                try:
+                    fan = client.parseDOM(infos, 'img', ret='src')[1]
+                except:
+                    fan = FANART
+
+                try:
+                    desc = re.search(r'Plot:(.+?)</p><p> <img', infos, re.DOTALL).group(0)
+                except:
+                    desc = 'N/A'
+
+                desc = Sinopsis(desc)
+                name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
+
+                mode = 'GetPack' if re.search(r'\s+S\d+\s+', name) else 'GetLinks'
+                addon.add_directory(
+                    {'mode': mode, 'url': movieUrl, 'img': img, 'plot': desc},
+                    {'title': name, 'plot': desc},
+                    [(control.lang(32007).encode('utf-8'),
+                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                     (control.lang(32008).encode('utf-8'),
+                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                     (control.lang(32009).encode('utf-8'),
+                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                    img=img, fanart=fan)
+
+            pindex = int(re.search('pindex=(\d+)&', s_url).groups()[0]) + 1
+            np_url = re.sub('&pindex=\d+&', '&pindex={0}&'.format(pindex), s_url)
+            addon.add_directory(
+                {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},
+                {'title': control.lang(32010).encode('utf-8')},
+                img=IconPath + 'next_page.png', fanart=FANART)
 
         except BaseException:
             control.infoDialog(control.lang(32022).encode('utf-8'), NAME, ICON, 5000)
@@ -140,3 +257,31 @@ def search_clear():
     cache.delete(control.searchFile, withyes=False)
     control.refresh()
     control.idle()
+
+
+def Sinopsis(txt):
+    OPEN = txt.encode('utf8')
+    try:
+        try:
+            if 'Plot:' in OPEN:
+                Sinopsis = re.findall('(Plot:.+?)</p>', OPEN, re.DOTALL)[0]
+            else:
+                Sinopsis = re.findall('</p>\n<p>(.+?)</p><p>', OPEN, re.DOTALL)[0]
+
+        except:
+            Sinopsis = re.findall('</p>\n<p>(.+?)</p>\n<p style', OPEN, re.DOTALL)[0]
+        part = re.sub('<.*?>', '', Sinopsis)
+        part = re.sub('\.\s+', '.', part)
+        desc = clear_Title(part)
+        desc = desc.decode('ascii', errors='ignore')
+        return desc
+    except BaseException:
+        return 'N/A'
+
+def clear_Title(txt):
+    txt = re.sub('<.+?>', '', txt)
+    txt = txt.replace("&quot;", "\"").replace('()', '').replace("&#038;", "&").replace('&#8211;', ':')
+    txt = txt.replace("&amp;", "&").replace('&#8217;', "'").replace('&#039;', ':').replace('&#;', '\'')
+    txt = txt.replace("&#38;", "&").replace('&#8221;', '"').replace('&#8216;', '"').replace('&#160;', '')
+    txt = txt.replace("&nbsp;", "").replace('&#8220;', '"').replace('\t', ' ').replace('\n', ' ')
+    return txt
