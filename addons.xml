@@ -113,6 +113,43 @@
 	  </extension>
 	</addon>
 
+	
+	<addon id="plugin.video.releaseBB" version="1.8.2" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
+	  <requires>
+	    <import addon="xbmc.python" version="2.1.0"/>
+	    <import addon="script.module.t0mm0.common" version="2.1.1"/>
+	    <import addon="script.module.resolveurl" version="5.0.1"/>
+	    <import addon="script.module.simplejson" version="3.3.0"/>
+	    <import addon="script.module.requests" version="2.19.1"/>
+	    <import addon="script.module.pyxbmct" version="1.2.0"/>
+	  </requires>
+	  <extension point="xbmc.python.pluginsource" library="default.py">
+	    <provides>video</provides>
+	  </extension>
+	  <extension point="xbmc.addon.metadata">
+	    <summary>Browse Release[COLOR orange][B]BB[/B][/COLOR]</summary>
+	    <description>Stream a wide selection of scene release movies and Tv shows from releaseBB....
+	      [COLOR red][B][I]YOU will need a Real-Debrid / Premiumize / Alldebrid account for this add-on[/B][/I][/COLOR]
+	      [COLOR gold][B][I]YOU can find FREE links also!!![/B][/I][/COLOR]
+	      CREDITS to @MrEntertainRepo original dev of the add-on</description>
+	    <platform>all</platform>
+	    <disclaimer lang="en">All the movies on this add-on are hosted on the third party sites and uploaded by other people. We are not responsible for any content that hosted on on the third-party sites. If you have any legal issues please contact appropriate video owners hosters.</disclaimer>
+	    <website>https://bugatsinho.github.io/</website>
+	    <twitter>https://twitter.com/bugatsinho</twitter>
+	    <repo>https://bugatsinho.github.io/repo/</repo>
+	    <email>bugatsinho@protonmail.com</email>
+	    <news>+ [B][COLOR lime]1.8.2[/B][/COLOR] [COLOR gold](21-07-2019)[/COLOR]
+	- Update cfscrape.py
+	- Fix search function
+	- For support join https://bit.ly/bug_telegram or https://bugatsinho.github.io</news>
+	    <assets>
+	        <icon>icon.png</icon>
+	        <fanart>fanart.jpg</fanart>
+	    </assets>
+	  </extension>
+	</addon>
+
+
 	<addon id="plugin.video.releaseBB" version="1.8.1.1" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
 	  <requires>
 	    <import addon="xbmc.python" version="2.1.0"/>
