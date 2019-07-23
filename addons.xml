@@ -323,4 +323,22 @@
 		</extension>
 	</addon>
 
+	<addon id="repository.magicoGR" name="Magico GR repository" version="3.0" provider-name="Magico GR">
+        <extension point="xbmc.addon.repository" name="Filmnet repository">
+            <info compressed="false">https://bitbucket.org/bugatsinho/magicogr/raw/HEAD/_zips/addons.xml</info>
+            <checksum>https://bitbucket.org/bugatsinho/magicogr/raw/HEAD/_zips/addons.xml.md5</checksum>
+            <datadir zip="true">https://bitbucket.org/bugatsinho/magicogr/raw/HEAD/_zips/</datadir>
+            <hashes>false</hashes>
+            <dir>
+                <info compressed="false">http://romanvm.github.io/kodi_repo/repo/addons.xml</info>
+                <checksum>http://romanvm.github.io/kodi_repo/repo/addons.xml.md5</checksum>
+                <datadir zip="true">http://romanvm.github.io/kodi_repo/repo</datadir>
+            </dir>
+        </extension>
+        <extension point="xbmc.addon.metadata">
+            <summary>Magico GR repository</summary>
+            <description></description>
+            <platform>all</platform>
+        </extension>
+    </addon>
 </addons>
