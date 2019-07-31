@@ -6,6 +6,15 @@
         <setting id="menu-view" type="labelenum" label="32032" values="List|WideList|Info|Info2|Info3|Fanart|Big list|Low List|Poster Wrap" default="List" enable="!eq(-1,false)"/>
         <setting id="movie-view" type="labelenum" label="32033" values="List|Info|Info2|Info3|Fanart|Big list|Low List|WideList|Poster Wrap" default="List" enable="!eq(-2,false)"/>
     </category>
+    <category label="32041">
+        <setting id="downloads" type="bool" label="Enable Downloads" default="false" />
+        <setting type="sep" />
+        <setting id="movie.download.path" type="folder" label="Movies Path"  default="" />
+        <setting id="tv.download.path" type="folder" label="Episodes Path"  default="" />
+        <setting type="lsep" label="[CR]" />
+		<setting type="lsep" label="32042" />
+		<setting type="lsep" label="32043" />
+    </category>
 	<category label="32034">
         <setting type="lsep" label="32037" />
         <setting id="username" type="text" label="32035" default="" />

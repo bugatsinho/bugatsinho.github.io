@@ -1,3 +1,10 @@
+[B]v0.6.0[/B] (31/07/2019)
+  - Διόρθωση του resolver για ταινίες γαματο
+  - Προσθήκη Κατεβάσματος ταινιών/επεισοδίων
+
+[B]v0.5.1[/B] (20/07/2019)
+  - Αλλαγή domain paidikestainiesonline.gr
+
 [B]v0.5.0[/B] (11/06/2019)
   - Διόρθωση αναζήτησης του Gamatomovies
   - Δημιουργία κατηγοριας metaglotismeno από metaglotismeno.online

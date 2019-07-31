@@ -17,10 +17,12 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import sys
+import urllib
 
-
+import init
 import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
-import os, json
+import os, json, re
 from init import syshandle
 
 
@@ -351,3 +353,49 @@ def enable_addon(addon_id, enable=True):
     }
 
     json_rpc(command)
+
+
+def addDir(name, url, mode, iconimage, fanart, description):
+    Lang = lang
+    if mode == 6:
+        u = '%s?url=%s&mode=%s&name=%s&iconimage=%s&description=%s' % \
+            (sys.argv[0], urllib.quote_plus(url), str(mode), urllib.unquote(name),
+             urllib.quote_plus(iconimage), urllib.quote_plus(description.encode('utf-8', 'ignore')))
+
+    else:
+        u = sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+\
+            "&iconimage="+urllib.quote_plus(iconimage)+"&description="+urllib.quote_plus(description)
+    ok = True
+    liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
+    liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
+    liz.setProperty('fanart_image', fanart)
+    cm = []
+    cm.append((Lang(32020).encode('utf-8'), "RunPlugin(%s?mode=17)" % init.sysaddon))
+    cm.append((Lang(32021).encode('utf-8'), "RunPlugin(%s?mode=9)" % init.sysaddon))
+
+    if mode == 100:
+        name = re.sub('\[.+?\]', '', name)
+        liz.setProperty("IsPlayable", "true")
+        cm.append(('GRecoTM Pair Tool', 'RunAddon(script.grecotm.pair)'))
+        downloads = setting('downloads') == 'true' and not\
+            (setting('movie.download.path') == '' or setting('tv.download.path') == '')
+        if downloads:
+            _url = 'RunPlugin({0}?mode=41&name={1}&iconimage={2}&url={3})'.format(init.sysaddon,
+                                                                                  urllib.quote_plus(name),
+                                                                                  urllib.quote_plus(iconimage),
+                                                                                  urllib.quote_plus(url))
+            cm.append((lang(32040).encode('utf-8'), _url))
+        liz.addContextMenuItems(cm)
+        ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
+    elif mode == 9 or mode == 17 or mode == 'bug' or mode == 29:
+        ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
+
+    elif mode == 26:
+        cm.append((Lang(32039).encode('utf-8'), "RunPlugin(%s?mode=%s&url=%s)" % (init.sysaddon, 28, url)))
+        liz.addContextMenuItems(cm)
+        ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=True)
+
+    else:
+        liz.addContextMenuItems(cm)
+        ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=True)
+    return ok

@@ -148,3 +148,19 @@ msgstr ""
 msgctxt "#32039"
 msgid "Delete Search item"
 msgstr ""
+
+msgctxt "#32040"
+msgid "Download File"
+msgstr ""
+
+msgctxt "#32041"
+msgid "Downloads"
+msgstr ""
+
+msgctxt "#32042"
+msgid "Downloading features are disabled by default"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Set up your download folders in order to enable them"
+msgstr ""

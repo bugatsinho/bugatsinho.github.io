@@ -146,3 +146,19 @@ msgstr "ΠΑΤΗΣΤΕ ΕΔΩ ΓΙΑ ΝΑ ΑΠΟΘΗΚΕΥΤΕΙ Η ΠΡΟΒΟΛ
 msgctxt "#32039"
 msgid "Delete Search item"
 msgstr "Διαγραφή στοιχείου αναζήτησης"
+
+msgctxt "#32040"
+msgid "Download File"
+msgstr "Λήψη Αρχείου"
+
+msgctxt "#32041"
+msgid "Downloads"
+msgstr "Λήψεις"
+
+msgctxt "#32042"
+msgid "Downloading features are disabled by default"
+msgstr ""
+
+msgctxt "#32043"
+msgid "Set up your download folders in order to enable them"
+msgstr "Σετάρετε φάκελο λήψεων για ταινίες ΚΑΙ σειρές για να λειτουργήσει!!"

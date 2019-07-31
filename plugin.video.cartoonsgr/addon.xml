@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.5.0" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="0.6.0" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.python" version="2.19.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
@@ -26,8 +26,8 @@
     <forum>https://www.facebook.com/groups/GRecoTM/</forum>
     <source>http://grecotm.com/repo/</source>
     <website>http://grecotm.com</website>
-    <news>[B]v0.5.0[/B] (11/06/2019)
-  - Διόρθωση αναζήτησης του Gamatomovies
-  - Δημιουργία κατηγοριας metaglotismeno από metaglotismeno.online</news>
+    <news>[B]v0.6.0[/B] (31/07/2019)
+  - Διόρθωση του resolver για ταινίες γαματο
+  - Προσθήκη Κατεβάσματος ταινιών/επεισοδίων</news>
   </extension>
 </addon>
