@@ -48,7 +48,11 @@ except ImportError:
 
 
 def Search_bb(url):
-    from resources.lib.modules import cfscrape
+    kodi_ver = float(xbmc.getInfoLabel("System.BuildVersion")[:4])
+    if kodi_ver >= 18:
+        from resources.lib.modules import cfscrape as cfscrape
+    else:
+        from resources.lib.modules import cfscrape17 as cfscrape
     scraper = cfscrape.create_scraper()
     if 'new' == url:
         keyboard = xbmc.Keyboard()
@@ -236,7 +240,7 @@ def Search_bb(url):
 
     control.content(int(sys.argv[1]), 'videos')
     control.directory(int(sys.argv[1]))
-    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500, 'skin.xonfluence': 500})
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500})
 
 
 def del_search(query):
