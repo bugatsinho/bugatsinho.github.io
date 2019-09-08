@@ -73,6 +73,43 @@ def get_streams_play(params):
             # addDir(frame.get('title', ''), json.dumps(frame), params=params,
             #        mode='take_stream', iconImage=ICON, fanart=FANART)
 
+def enable_silent_inputstream():
+    # xbmc_path_rtmp = os.path.join('special://xbmc', 'addons', 'inputstream.rtmp')
+    # home_path_rtmp = os.path.join('special://home', 'addons', 'inputstream.rtmp')
+    # xbmc_path = os.path.join('special://xbmc', 'addons', 'inputstream.adaptive')
+    # home_path = os.path.join('special://home', 'addons', 'inputstream.adaptive')
+    isa_enable()
+    rtmp_enable()
+
+
+
+# def enable_rtmp(xbmc_path_rtmp, home_path_rtmp):
+#     if os.path.exists(xbmc.translatePath(xbmc_path_rtmp)) or os.path.exists(xbmc.translatePath(home_path_rtmp)):
+#         enable_addon('inputstream.rtmp')
+#         dialog.notification(addonName, 'inputstream.rtmp enabled')
+#
+#     else:
+#         try:
+#             xbmc.executebuiltin('InstallAddon(inputstream.rtmp)')
+#             dialog.notification(addonName, 'inputstream.rtmp installed')
+#
+#         except Exception:
+#             pass
+#
+# def enable_adap(xbmc_path, home_path):
+#     if os.path.exists(xbmc.translatePath(xbmc_path)) or os.path.exists(xbmc.translatePath(home_path)):
+#         enable_addon('inputstream.adaptive')
+#         dialog.notification(addonName, 'inputstream.adaptive enabled')
+#
+#     else:
+#         try:
+#             xbmc.executebuiltin('InstallAddon(inputstream.adaptive)')
+#             dialog.notification(addonName, 'inputstream.adaptive installed')
+#
+#         except Exception:
+#             pass
+
+
 
 
 def take_stream(params):
@@ -81,6 +118,11 @@ def take_stream(params):
     import sport365 as mod
     busy()
     stream_url, url, header, title = mod.getChannelVideo(json.loads(ex_link))
+    xbmc.log(stream_url, level=xbmc.LOGNOTICE)
+    # xbmc.log(url, level=xbmc.LOGNOTICE)
+    # xbmc.log(str(header), level=xbmc.LOGNOTICE)
+    # xbmc.log(title, level=xbmc.LOGNOTICE)
+
     if stream_url:
         liz = xbmcgui.ListItem(label=orig_title)
         liz.setArt({"fanart": FANART, "icon": ICON})
@@ -103,9 +145,8 @@ def take_stream(params):
                 import threading
                 thread = threading.Thread(name='sport356Thread', target=sport356Thread2, args=[url, header])
                 thread.start()
-                #xbmc.Player().play(stream_url, liz)
-                #addLinkItem(orig_title, stream_url, '', '', ICON, liz, True, FANART)
-                ok = xbmcplugin.setResolvedUrl(addon_handle, False, liz)
+                # xbmc.Player().play(stream_url, liz)
+                ok = xbmcplugin.setResolvedUrl(addon_handle, True, liz)
                 #ok = xbmcplugin.addDirectoryItem(handle=addon_handle, url=stream_url, listitem=liz, isFolder=False)
                 return ok
             except BaseException:
@@ -125,6 +166,10 @@ def take_stream(params):
 
             liz.setPath(stream_url)
             idle()
+
+            import threading
+            thread = threading.Thread(name='sport356Thread', target=sport356Thread2, args=[url, header])
+            thread.start()
             ok = xbmcplugin.setResolvedUrl(addon_handle, False, liz)
             return ok
 
@@ -180,22 +225,26 @@ def resolve_stream(name, url, description):
 
 def sport356Thread2(url, header):
     import re, sport365 as s
-
+    xbmc.log("sport356Thread2", level=xbmc.LOGNOTICE)
     player = xbmc.Player()
-    xbmc.sleep(20000) #3minutes
+    xbmc.sleep(2000) #3minutes
     player.pause()
     while player.isPlaying():
         ##########################
-        print 'sport356Thread: KODI IS PLAYING, sleeping ...'
+        #print 'sport356Thread: KODI IS PLAYING, sleeping ...'
+        xbmc.log("sport356Thread: KODI IS PLAYING, sleeping ...", level=xbmc.LOGNOTICE)
         a, c = s.getUrlc(url, header=header, usecookies=True)
         banner = re.compile('url:["\'](.*?)[\'"]').findall(a)[0]
-        xbmc.log(banner)
-        xbmc.sleep(20000)
-        data, c = s.getUrlc(banner)
-        banner = re.findall(r'window.location.replace\("([^"]+)"\);\s*}\)<\/script><div', data)[0]
-        s.getUrlc(urllib.quote(banner, ':/()!@#$%^&;><?'))
-        xbmc.sleep(20000)
-    print 'sport356Thread: KODI STOPED, OUTSIDE WHILE LOOP ... EXITING'
+        xbmc.log(banner, level=xbmc.LOGNOTICE)
+        xbmc.sleep(2000)
+        s.getUrlc(banner)
+        xbmc.sleep(2000)
+        # data, c = s.getUrlc(banner)
+        # banner = re.findall(r'window.location.replace\("([^"]+)"\);\s*}\)<\/script><div', data)[0]
+        # s.getUrlc(urllib.quote(banner, ':/()!@#$%^&;><?'))
+        # xbmc.sleep(20000)
+    #print 'sport356Thread: KODI STOPED, OUTSIDE WHILE LOOP ... EXITING'
+    xbmc.log("sport356Thread: KODI STOPED, OUTSIDE WHILE LOOP ... EXITING", level=xbmc.LOGNOTICE)
 
 
 ## COMMON Functions
@@ -418,6 +467,7 @@ def rtmp_enable():
 
 
 if mode is None:
+    enable_silent_inputstream()
     # domain = my_addon.getSetting('domain')
     # if 'livesport' in domain:
     #     url = 'http://www.livesportstreams.tv/'
