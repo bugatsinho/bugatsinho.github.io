@@ -8,7 +8,7 @@
         <setting type="lsep" label="Select Method" />
         <setting type="lsep." label="To use Inputstream as method you have to enable both Inputstream addons" />
         <setting type="sep" />
-        <setting id="play" label="Playback with..." type="select" values="Streamlink|Inputstream|F4M" default="Streamlink"/>
+        <setting id="play" label="Playback with..." type="select" values="Streamlink|Inputstream|F4M" default="Inputstream"/>
         <setting label="Enable Inputstream adaptive" type="action"  action="RunPlugin(plugin://plugin.video.sport365.live/?mode=enable_adaptive)"
                  enable="String.StartsWith(System.AddonVersion(xbmc.python),2.25) | String.StartsWith(System.AddonVersion(xbmc.python),2.26)" option="close"/>
         <setting label="Enable Inputstream RTMP" type="action"  action="RunPlugin(plugin://plugin.video.sport365.live/?mode=enable_rtmp)"

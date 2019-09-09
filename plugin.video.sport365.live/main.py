@@ -74,40 +74,12 @@ def get_streams_play(params):
             #        mode='take_stream', iconImage=ICON, fanart=FANART)
 
 def enable_silent_inputstream():
-    # xbmc_path_rtmp = os.path.join('special://xbmc', 'addons', 'inputstream.rtmp')
-    # home_path_rtmp = os.path.join('special://home', 'addons', 'inputstream.rtmp')
-    # xbmc_path = os.path.join('special://xbmc', 'addons', 'inputstream.adaptive')
-    # home_path = os.path.join('special://home', 'addons', 'inputstream.adaptive')
-    isa_enable()
-    rtmp_enable()
+    try:
+        isa_enable()
+        rtmp_enable()
+    except BaseException:
+        return
 
-
-
-# def enable_rtmp(xbmc_path_rtmp, home_path_rtmp):
-#     if os.path.exists(xbmc.translatePath(xbmc_path_rtmp)) or os.path.exists(xbmc.translatePath(home_path_rtmp)):
-#         enable_addon('inputstream.rtmp')
-#         dialog.notification(addonName, 'inputstream.rtmp enabled')
-#
-#     else:
-#         try:
-#             xbmc.executebuiltin('InstallAddon(inputstream.rtmp)')
-#             dialog.notification(addonName, 'inputstream.rtmp installed')
-#
-#         except Exception:
-#             pass
-#
-# def enable_adap(xbmc_path, home_path):
-#     if os.path.exists(xbmc.translatePath(xbmc_path)) or os.path.exists(xbmc.translatePath(home_path)):
-#         enable_addon('inputstream.adaptive')
-#         dialog.notification(addonName, 'inputstream.adaptive enabled')
-#
-#     else:
-#         try:
-#             xbmc.executebuiltin('InstallAddon(inputstream.adaptive)')
-#             dialog.notification(addonName, 'inputstream.adaptive installed')
-#
-#         except Exception:
-#             pass
 
 
 
@@ -396,7 +368,7 @@ def isa_enable():
 
     try:
         if enabled:
-            dialog.notification(addonName, 'Inputstream adaptive addon is already enabled')
+            #dialog.notification(addonName, 'Inputstream adaptive addon is already enabled')
             return
 
         else:
@@ -438,7 +410,7 @@ def rtmp_enable():
 
     try:
         if enabled:
-            dialog.notification(addonName, 'Inputstream RTMP addon is already enabled')
+            #dialog.notification(addonName, 'Inputstream RTMP addon is already enabled')
             return
         else:
             xbmc_path = os.path.join('special://xbmc', 'addons', 'inputstream.rtmp')
@@ -467,7 +439,10 @@ def rtmp_enable():
 
 
 if mode is None:
-    enable_silent_inputstream()
+    if addon_version('xbmc.python') < 2250:
+        my_addon.setSetting('play', 'F4M')
+    else:
+        enable_silent_inputstream()
     # domain = my_addon.getSetting('domain')
     # if 'livesport' in domain:
     #     url = 'http://www.livesportstreams.tv/'
@@ -481,9 +456,9 @@ if mode is None:
     # addDir('[COLORcyan]Alternative Domains[/COLOR]', ex_link='', mode='opensettings',
     #        iconImage=ICON, fanart=FANART)
 
-    # addDir('Sport247 LIVE', ex_link='',
-    #        params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.sport247.live/'}, mode='site2',
-    #        iconImage=ICON, fanart=FANART)
+    addDir('Sport247 LIVE', ex_link='',
+           params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.sport247.live/'}, mode='site2',
+           iconImage=ICON, fanart=FANART)
     addDir('s365 LIVE(alt)', ex_link='',
            params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.s365.live/'}, mode='site2',
            iconImage=ICON, fanart=FANART)
