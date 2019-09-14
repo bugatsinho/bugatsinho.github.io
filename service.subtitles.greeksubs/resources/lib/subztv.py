@@ -14,99 +14,107 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
-
+import json
 import urllib, re, os, xbmc
 import urlparse
 from resources.modules import cleantitle, client, control
+
 '''''''''
 Disables InsecureRequestWarning: Unverified HTTPS request is being made warnings.
 '''''''''
 import requests
+
 '''
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 '''
 
+
 class subztv:
     def __init__(self):
         self.list = []
-        self.hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'}
+        self.hdr = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36'}
+
+        self.s = requests.Session()
+        self.s.headers.update(self.hdr)
 
     def get(self, query):
         try:
             query, imdb = query.split('/imdb=')
             match = re.findall('^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
-            #xbmc.log('$#$MATCH-SUBZ: %s' % match, xbmc.LOGNOTICE)
+
+            cookie = self.s.get('https://subztv.online/', headers=self.hdr).cookies
+            cj = requests.utils.dict_from_cookiejar(cookie)
 
             if len(match) > 0:
-    
+
                 title, year = match[0][0], match[0][1]
-                cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
-                
+
                 if imdb.startswith('tt'):
-                    r = requests.get('https://subztv.online/view/%s' % imdb, headers=self.hdr, cookies=cj).content
-                    r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                    frame = 'https://subztv.online/view/%s' % imdb
+                    r = self.s.get(frame)
+                    r = re.sub(r'[^\x00-\x7F]+', ' ', r.content)
                 else:
                     url = 'https://subztv.online/search/%s/movies' % urllib.quote(title)
-                    
-                    data = requests.get(url, headers=self.hdr).content
+
+                    data = self.s.get(url).content
                     data = client.parseDOM(data, 'span', attrs={'class': 'h5'})
                     data = [(client.parseDOM(i, 'a')[0],
                              client.parseDOM(i, 'a', ret='href')[0]) for i in data if i]
-    
-                    link = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
-    
-                    cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
-                    
-                    r = requests.get(link, headers=self.hdr, cookies=cj).content
+
+                    frame = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
+
+                    r = self.s.get(frame).text
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
 
-                secCode = client.parseDOM(r,'input', ret='value', attrs={'id':'secCode'})[0]
+                secCode = client.parseDOM(r, 'input', ret='value', attrs={'id': 'secCode'})[0]
                 items = client.parseDOM(r, 'tbody')[0]
                 items = client.parseDOM(items, 'tr')
 
             else:
                 title, season, episode = re.findall('^(?P<title>.+)\s+S(\d+)E(\d+)', query, re.I)[0]
-                xbmc.log('$#$MATCH-SUBZ: %s | %s | %s' % (title, season, episode), xbmc.LOGNOTICE)
-    
+                #xbmc.log('$#$MATCH-SUBZ: %s | %s | %s' % (title, season, episode), xbmc.LOGNOTICE)
+
                 season, episode = '%01d' % int(season), '%01d' % int(episode)
                 hdlr = 'season-%s-episode-%s' % (season, episode)
-                cj = requests.get('https://subztv.online/rainbow/master-js', headers=self.hdr).cookies
-                xbmc.log('$#$MATCH-SUBZ-ΨΟΟΚΙΕΣ: %s' % hdlr)
-                xbmc.log('$#$MATCH-SUBZ-IMDB: %s' % imdb)
+
                 if imdb.startswith('tt'):
-                    xbmc.log('$#$MALAKASSSSSS')
-                    r = requests.get('https://subztv.online/view/%s' % imdb, headers=self.hdr).content
+                    r = self.s.get('https://subztv.online/view/%s' % imdb).content
                     # xbmc.log('$#$MATCH-SUBZ-RRR-source: %s' % r)
-                    r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                    #r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                     frames = client.parseDOM(r, 'a', ret='href')
                     frame = [i for i in frames if hdlr in i][0]
-                    xbmc.log('$#$MATCH-SUBZ-IMDB: %s' % frame)
                 else:
-                    url = 'https://subztv.online/search/%s/tv' % urllib.quote(title)
-                    data = requests.get(url, headers=self.hdr).text
-                    data = re.sub(r'[^\x00-\x7F]+', ' ', data)
-                    # xbmc.log('$#$MATCH-SUBZ-DATA-source: %s' % data)
-                    data = client.parseDOM(data, 'span', attrs={'class':'h5'})
-                    data = [(client.parseDOM(i, 'a')[0],
-                             client.parseDOM(i, 'a', ret='href')[0])for i in data if i]
-                    xbmc.log('$#$MATCH-SUBZ-DATA-list: %s' % data)
-                    try:
-                        frame = [i[1] for i in data if hdlr in i[1]][0]
-                        xbmc.log('$#$MATCH-SUBZ-TRYYYY: %s' % frame)
-                    except BaseException:
-                        link = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
-                        xbmc.log('$#$MATCH-SUBZ-EXCEPT: %s' % link)
-                        r = requests.get(link, headers=self.hdr, cookies=cj).text
-                        r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                    baseurl = ' https://api.thetvdb.com/login'
+                    series_url = 'https://api.thetvdb.com/series/%s'
+                    greek_api = 'CAYAM6RT1K2SERUE'
+                    user_key = '7F5420E18BAD7762'
+                    username = 'filmnet'
 
-                        url = client.parseDOM(r, 'section',)
-                        url = [i for i in url if 'sessaon' in i][0]
-                        url = client.parseDOM(url, 'a', ret='href')
-                        frame = [i for i in url if hdlr in i][0]
-                        xbmc.log('$#$MATCH-SUBZ-LINKKK: %s' % frame)
+                    _headers = {'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'Connection': 'close'}
 
-                r = requests.get(frame, headers=self.hdr).content
+                    post = {"apikey": greek_api, "username": username, "userkey": user_key}
+
+                    # data = requests.post(baseurl, data=json.dumps(post), headers=_headers).json()
+                    data = client.request(baseurl, post=json.dumps(post), headers=_headers)
+
+                    auth = 'Bearer %s' % urllib.unquote_plus(json.loads(data)['token'])
+                    _headers['Authorization'] = auth
+
+                    series_data = client.request(series_url % imdb, headers=_headers)
+                    imdb = json.loads(series_data)['data']['imdbId']
+                    #xbmc.log('$#$MATCH-SUBZ-RRR-IMDB: %s' % imdb)
+                    r = self.s.get('https://subztv.online/view/%s' % imdb).content
+                    # xbmc.log('$#$MATCH-SUBZ-RRR-source: %s' % r)
+                    #r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                    frames = client.parseDOM(r, 'a', ret='href')
+                    frame = [i for i in frames if hdlr in i][0]
+
+                #xbmc.log('$#$MATCH-SUBZ-λινκ: %s' % frame)
+                r = self.s.get(frame).text
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 secCode = client.parseDOM(r, 'input', ret='value', attrs={'id': 'secCode'})[0]
                 items = client.parseDOM(r, 'tbody')[0]
@@ -118,20 +126,28 @@ class subztv:
         for item in items:
             try:
 
-                data = re.compile('''downloadMe\(['"](\w+\-\w+).+?label.+?>(\d+).+?<td>(.+?)</td''', re.I|re.DOTALL).findall(str(item))[0]
-                name = data[2]
+                try:
+                    imdb = re.search('\/(tt\d+)\/', frame).groups()[0]
+                except BaseException:
+                    imdb = re.search('\/(tt\d+)', frame).groups()[0]
 
+                data = re.findall('''downloadMe\(['"](\w+\-\w+).+?label.+?>(\d+).+?<td>(.+?)</td''',
+                                  str(item), re.I | re.DOTALL)[0]
+
+                name = data[2]
                 name = client.replaceHTMLCodes(name)
                 name = name.encode('utf-8')
 
-                url = 'https://subztv.online/' + 'dll/' + data[0] + '/0/' + secCode
+                url = 'https://subztv.online/dll/{}/0/{}'.format(data[0], secCode)
                 url = client.replaceHTMLCodes(url)
                 url = url.encode('utf-8')
 
                 down = data[1]
                 rating = self._rating(down)
 
-                self.list.append({'name': name, 'url': '%s|%s|%s|%s' % (url, name, cj['PHPSESSID'], imdb), 'source': 'subztv', 'rating': rating})
+                self.list.append(
+                    {'name': name, 'url': '%s|%s|%s|%s|%s|%s' % (frame.encode('utf-8'), url, cj['__cfduid'], cj['PHPSESSID'], name, imdb),
+                     'source': 'subztv', 'rating': rating})
 
             except BaseException:
                 pass
@@ -157,30 +173,43 @@ class subztv:
 
         return rating
 
-
     def download(self, path, url):
 
         try:
-            url, sub_, php, imdb = url.split('|')
+            frame, url, cjcfduid, cjphp, sub_, imdb_ = url.split('|')
+            # xbmc.log('$#$ FRAME: %s | URL: %s | COOKIE: %s | SUB: %s | imdb: %s | ' % (frame, url, cjcfduid, sub_, imdb_))
 
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3', 
-                       'Referer': url}
+            sub_ = urllib.unquote_plus(sub_)
 
-            cj = {'PHPSESSID': php,
-                  'share_show_hide_status':'active'}   
-            
-            post = {'langcode': 'el',
-                    'uid': imdb,
-                    'output': '%s.srt' % sub_,
-                    'dll': '1'}
-            
-            r = requests.get(url, headers=headers, cookies=cj)
-            result = requests.post(url, headers=headers, data=post, cookies=cj).content
+            self.s.cookies.update({'__cfduid': cjcfduid, 'PHPSESSID': cjphp})
+            # xbmc.log('$#$ FRAME-COOKIES: %s' % self.s.cookies)
 
+            self.s.headers['Referer'] = frame
+            init = self.s.get(url).text
+            try:
+                imdb = client.parseDOM(init, 'input', ret='value', attrs={'name': 'uid'})[0]
+            except IndexError:
+                imdb = imdb_
+            try:
+                sub_name = client.parseDOM(init, 'input', ret='value', attrs={'name': 'output'})[0]
+            except IndexError:
+                sub_name = '{}.srt'.format(sub_)
+
+            self.s.headers.update({'Referer': url, 'Origin': 'https://subztv.online'})
+
+            # xbmc.log('$#$ FRAME-HEADERS: %s' % self.s.headers, xbmc.LOGNOTICE)
+            post = {"langcode": "el",
+                    "uid": imdb,
+                    "output": sub_name.lower(),
+                    "dll": "1"}
+            # post = urllib.urlencode(post)
+            # xbmc.log('$#$ FRAME-POST: %s' % post)
+
+            result = self.s.post(url, data=post)
+            #xbmc.log('$#$POST-RESUL: %s' % result.content)
             f = os.path.join(path, urllib.quote(sub_) + '.srt')
-
             with open(f, 'wb') as subFile:
-                subFile.write(result)
+                subFile.write(result.content)
 
             dirs, files = control.listDir(path)
 
@@ -227,8 +256,10 @@ class subztv:
                 return subtitle
 
             else:
-                
+
                 return subtitle
 
         except BaseException:
             pass
+
+  

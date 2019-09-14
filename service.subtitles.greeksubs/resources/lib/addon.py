@@ -109,36 +109,25 @@ class Search:
             # xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
 
         self.query = query
-        # xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
+        #xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
 
         threads = []
-
-        threads.append(workers.Thread(self.subztv))
-        threads.append(workers.Thread(self.s4f))
-        threads.append(workers.Thread(self.yifi))
+        if control.setting('provider.subztv.club'):
+            threads.append(workers.Thread(self.subztv))
+        if control.setting('provider.s4f'):
+            threads.append(workers.Thread(self.s4f))
+        if control.setting('provider.yifi'):
+            threads.append(workers.Thread(self.yifi))
 
         [i.start() for i in threads]
         [i.join() for i in threads]
 
-        # for i in range(0, 10 * 2):
-        #     try:
-        #         is_alive = [x.is_alive() for x in threads]
-        #         if all(x is False for x in is_alive):
-        #             break
-        #         if control.aborted is True:
-        #             break
-        #         control.sleep(500)
-        #     except BaseException:
-        #         pass
-
-        if len(self.list) == 0:
-            control.directory(syshandle)
-            return
-
         f = []
 
         f += [i for i in self.list if i['source'] == 'subztv']
+
         f += [i for i in self.list if i['source'] == 's4f']
+
         f += [i for i in self.list if i['source'] == 'yifi']
 
         self.list = sorted(f, key=lambda k: k['rating'], reverse=True)
@@ -163,7 +152,7 @@ class Search:
             try:
                 name, url, source, rating = i['name'], i['url'], i['source'], i['rating']
 
-                u = {'action': 'download', 'url': url, 'source': source}
+                u = {'action': 'download', 'url': url.encode('utf8'), 'source': source}
                 u = '%s?%s' % (sysaddon, urllib.urlencode(u))
 
                 item = control.item(label='Greek', label2=name, iconImage=str(rating), thumbnailImage='el')
