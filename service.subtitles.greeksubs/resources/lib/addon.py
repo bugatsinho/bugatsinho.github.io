@@ -106,10 +106,10 @@ class Search:
 
         else:
             query = '%s/imdb=0' % re.sub('[\(|\)]', '', query)
-            # xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
+            # xbmc.log('$#$QUERY-ELSE: %s' % query, xbmc.LOGNOTICE)
 
         self.query = query
-        #xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
+        # xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
 
         threads = []
         if control.setting('provider.subztv.club'):

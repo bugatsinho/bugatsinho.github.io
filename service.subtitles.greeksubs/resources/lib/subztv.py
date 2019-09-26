@@ -68,50 +68,71 @@ class subztv:
                     r = self.s.get(frame).text
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
 
+
                 secCode = client.parseDOM(r, 'input', ret='value', attrs={'id': 'secCode'})[0]
                 items = client.parseDOM(r, 'tbody')[0]
                 items = client.parseDOM(items, 'tr')
 
             else:
                 title, season, episode = re.findall('^(?P<title>.+)\s+S(\d+)E(\d+)', query, re.I)[0]
-                #xbmc.log('$#$MATCH-SUBZ: %s | %s | %s' % (title, season, episode), xbmc.LOGNOTICE)
+                xbmc.log('$#$MATCH-SUBZ: %s | %s | %s' % (title, season, episode), xbmc.LOGNOTICE)
 
                 season, episode = '%01d' % int(season), '%01d' % int(episode)
                 hdlr = 'season-%s-episode-%s' % (season, episode)
 
                 if imdb.startswith('tt'):
-                    r = self.s.get('https://subztv.online/view/%s' % imdb).content
-                    # xbmc.log('$#$MATCH-SUBZ-RRR-source: %s' % r)
-                    #r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                    r = self.s.get('https://subztv.online/view/%s' % imdb).text
+                    # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                     frames = client.parseDOM(r, 'a', ret='href')
-                    frame = [i for i in frames if hdlr in i][0]
+                    link = [i for i in frames if hdlr in i]
+
+                    if not link:
+                        frame = 'https://subztv.online/view/%s' % imdb
+                    else:
+                        frame = link[0]
                 else:
-                    baseurl = ' https://api.thetvdb.com/login'
-                    series_url = 'https://api.thetvdb.com/series/%s'
-                    greek_api = 'CAYAM6RT1K2SERUE'
-                    user_key = '7F5420E18BAD7762'
-                    username = 'filmnet'
 
-                    _headers = {'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'Connection': 'close'}
+                    if len(imdb) > 1:
+                        baseurl = ' https://api.thetvdb.com/login'
+                        series_url = 'https://api.thetvdb.com/series/%s'
+                        greek_api = 'CAYAM6RT1K2SERUE'
+                        user_key = '7F5420E18BAD7762'
+                        username = 'filmnet'
 
-                    post = {"apikey": greek_api, "username": username, "userkey": user_key}
+                        _headers = {'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'Connection': 'close'}
 
-                    # data = requests.post(baseurl, data=json.dumps(post), headers=_headers).json()
-                    data = client.request(baseurl, post=json.dumps(post), headers=_headers)
+                        post = {"apikey": greek_api, "username": username, "userkey": user_key}
 
-                    auth = 'Bearer %s' % urllib.unquote_plus(json.loads(data)['token'])
-                    _headers['Authorization'] = auth
+                        # data = requests.post(baseurl, data=json.dumps(post), headers=_headers).json()
+                        data = client.request(baseurl, post=json.dumps(post), headers=_headers)
 
-                    series_data = client.request(series_url % imdb, headers=_headers)
-                    imdb = json.loads(series_data)['data']['imdbId']
-                    #xbmc.log('$#$MATCH-SUBZ-RRR-IMDB: %s' % imdb)
-                    r = self.s.get('https://subztv.online/view/%s' % imdb).content
-                    # xbmc.log('$#$MATCH-SUBZ-RRR-source: %s' % r)
-                    #r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-                    frames = client.parseDOM(r, 'a', ret='href')
-                    frame = [i for i in frames if hdlr in i][0]
+                        auth = 'Bearer %s' % urllib.unquote_plus(json.loads(data)['token'])
+                        _headers['Authorization'] = auth
+
+                        series_data = client.request(series_url % imdb, headers=_headers)
+                        imdb = json.loads(series_data)['data']['imdbId']
+                        #xbmc.log('$#$MATCH-SUBZ-RRR-IMDB: %s' % imdb)
+                        r = self.s.get('https://subztv.online/view/%s' % imdb).content
+                        # xbmc.log('$#$MATCH-SUBZ-RRR-source: %s' % r)
+                        #r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                        frames = client.parseDOM(r, 'a', ret='href')
+                        frame = [i for i in frames if hdlr in i][0]
+                    else:
+                        url = 'https://subztv.online/search/%s/tv' % urllib.quote(title)
+
+                        data = self.s.get(url).content
+                        data = client.parseDOM(data, 'span', attrs={'class': 'h5'})
+                        data = [(client.parseDOM(i, 'a')[0],
+                                 client.parseDOM(i, 'a', ret='href')[0]) for i in data if i]
+
+                        serie_link = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
+                        # xbmc.log('$#$SERIE-LINK: %s' % serie_link)
+                        imdbid = re.findall('\/(tt\d+)\/', serie_link)[0]
+                        r = self.s.get('https://subztv.online/view/%s' % imdbid).content
+                        frames = client.parseDOM(r, 'a', ret='href')
+                        frame = [i for i in frames if hdlr in i][0]
 
                 #xbmc.log('$#$MATCH-SUBZ-λινκ: %s' % frame)
                 r = self.s.get(frame).text
