@@ -171,7 +171,7 @@ def evaluate(host):
             #xbmc.log('@#@GAMO-UNPACK:%s' % data, xbmc.LOGNOTICE)
             link = re.findall('''file:['"](http.+?v.mp4)['"]''', data, re.DOTALL)[0]
             #xbmc.log('@#@GAMO-link:%s' % link, xbmc.LOGNOTICE)
-            return link
+            return link.replace('https:', 'http:')
 
         elif 'hqq' in host or 'waaw' in host:
             #xbmc.log('@#@#-HQQ', xbmc.LOGNOTICE)

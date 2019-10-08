@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.sport365.live" name="Sport365" version="2.6.3.1" provider-name="Bugatsinho">
+<addon id="plugin.video.sport365.live" name="Sport365" version="2.6.4" provider-name="Bugatsinho">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
-        <import addon="plugin.video.f4mTester" />
-        <import addon="script.module.streamlink.base" />
+        <import addon="plugin.video.f4mTester" version="2.7.2"/>
+        <import addon="script.module.streamlink.base" version="2019.06.23"/>
         <import addon="script.module.pyxbmct" version="1.2.0"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="main.py">
@@ -23,9 +23,9 @@
     <icon>icon.png</icon>
     <fanart>fanart.png</fanart>
   </assets>
-  <news>2.6.3 09-09-2019
+  <news>2.6.4 08-10-2019
 - Add new Alternative source
 - Default playback method INPUTSTREAM and F4M for older kodi versions
-- Auto enable-install inputstream addons</news>
+- Fix regex for the events and get key for decrypt website streams</news>
   </extension>
 </addon>
