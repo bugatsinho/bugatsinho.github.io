@@ -4,6 +4,22 @@
 # Only Include these specific directories and subdirectories:
 !_zips/
 !_zips/*/
+!plugin.audio.mp3streams/
+!plugin.video.freevl/
+!plugin.video.pelisplus/
+!plugin.video.skylinecctv/
+!repository.bugatsinho/
+!script.module.mutagen/
+!script.module.unshortenit/
+!service.subtitles.greeksubs/
+!plugin.video.cartoonsgr/
+!plugin.video.iNovelas/
+!plugin.video.releaseBB/
+!plugin.video.sport365.live/
+!repo/
+!test/
+
+
 
 # Windows image file caches
 Thumbs.db
