@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="YOUTUBE">
+        <setting id="yt_in" type="action" option="close" enable="true" label="SIGN IN" visible="System.HasAddon(plugin.video.youtube)" action="RunPlugin(plugin://plugin.video.youtube/sign/in/)"/>
+        <setting id="yt_out" type="action" option="close" enable="true" label="SIGN OUT" visible="System.HasAddon(plugin.video.youtube)" action="RunPlugin(plugin://plugin.video.youtube/sign/out/)"/>
+    </category>
+</settings>
