@@ -1,0 +1,46 @@
+2.6.4 08-10-2019
+- Add new Alternative source
+- Default playback method INPUTSTREAM and F4M for older kodi versions
+- Fix regex for the events and get key for decrypt website streams
+
+2.6.3 09-09-2019
+- Add new Alternative source
+- Default playback method INPUTSTREAM and F4M for older kodi versions
+- Auto enable-install inputstream addons
+
+2.6.2 08-09-2019
+- Default playback method INPUTSTREAM
+
+2.6.1 07-06-2019
+- Fix links resolver
+
+2.6.0 17-05-2019
+- Add as default playback method Streamlink thanks to Twilight and Devilsport
+- Add News-Updates on menu
+- Show version and by click it you force update addons!
+
+2.5.3 27-04-2019
+- Remove Alt Domains that dont work
+- Fix banners issue
+
+2.5.2 23-03-2019
+- add inputstream option for playback(settings)
+- add alternatives domains and language support
+      (https://github.com/bugatsinho/bugatsinho.github.io/pull/15)
+
+2.5.0 09-03-2019
+- add f4mtester dependency
+- re-organize addon
+- view links in folder mode(to avoid multi-requests)
+- disable ads threads
+- use of f4m to play the streams
+
+
+
+
+
+
+
+
+
+ 
