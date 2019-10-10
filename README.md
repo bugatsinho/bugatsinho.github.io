@@ -36,3 +36,6 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 
 ![](images/sport.png)       
 [**Sport365 source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.sport365.live) 
+
+![](images/flv.png)       
+[**Free Video Lectures source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.freevl)
