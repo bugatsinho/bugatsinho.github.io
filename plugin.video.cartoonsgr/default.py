@@ -34,6 +34,8 @@ ART = ADDON_PATH + "/resources/icons/"
 
 
 def Main_addDir():
+    addDir('[B][COLOR yellow]Gamato ' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 20, ART + 'gam.png',
+           FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32022).encode('utf-8') + '[/COLOR][/B]', BASEURL, 19, ART + 'mas.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32005).encode('utf-8') + '[/COLOR][/B]', BASEURL, 8, ART + 'random.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32008).encode('utf-8') + '[/COLOR][/B]', BASEURL, 5, ART + 'latest.jpg', FANART, '')
@@ -41,8 +43,7 @@ def Main_addDir():
            5, ART + 'dub.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32003).encode('utf-8') + '[/COLOR][/B]', BASEURL+'quality/ellinikoi-ypotitloi/',
            5, ART + 'sub.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Gamato ' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 20, ART + 'gam.png',
-           FANART, '')
+
     addDir('[B][COLOR yellow]Metaglotismeno ' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 30, ART + 'gam.png',
            FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 13, ART + 'movies.jpg', FANART, '')
@@ -586,13 +587,14 @@ def download(name, iconimage, url):
     from resources.lib.modules import control
     control.busy()
     import json
-
     if url is None:
         control.idle()
         return
 
     try:
+
         url = evaluate(url)
+        xbmc.log('URL-EVALUATE: %s' % url)
     except Exception:
         control.idle()
         xbmcgui.Dialog().ok(NAME, 'Download failed', 'Your service can\'t resolve this hoster', 'or Link is down')
@@ -631,10 +633,13 @@ def download(name, iconimage, url):
         control.makeFile(dest)
     control.idle()
     # ext = os.path.splitext(urlparse.urlparse(url).path)[1]
+
     ext = os.path.splitext(urlparse.urlparse(url).path)[1][1:]
+    xbmc.log('URL-EXT: %s' % ext)
     if not ext in ['mp4', 'mkv', 'flv', 'avi', 'mpg']: ext = 'mp4'
     dest = os.path.join(dest, transname + '.' + ext)
     headers = urllib.quote_plus(json.dumps(headers))
+    xbmc.log('URL-HEADERS: %s' % headers)
 
     from resources.lib.modules import downloader
     control.idle()
@@ -762,6 +767,9 @@ def gamato_links(url, name, poster): #12
                 #sources: ["http://cloudb.me/4fogdt6l4qprgjzd2j6hymoifdsky3tfskthk76ewqbtgq4aml3ior7bdjda/v.mp4"],
                 match = client.request(frame)
                 try:
+                    from resources.lib.modules import jsunpack
+                    if jsunpack.detect(match):
+                        match = jsunpack.unpack(match)
                     match = re.findall('sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
                     match += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), frame)
                 except IndexError:
@@ -782,9 +790,7 @@ def gamato_links(url, name, poster): #12
             fanart = FANART
         try:
             trailer = client.parseDOM(data, 'iframe', ret='src')
-            xbmc.log('TREILER-LINKS: %s' % trailer)
             trailer = [i for i in trailer if 'youtube' in i][0]
-            print 'TREILERRRR:  '+trailer
             addDir('[B][COLOR lime]Trailer[/COLOR][/B]', trailer, 100, iconimage, fanart, str(desc))
         except BaseException:
             pass
@@ -919,7 +925,7 @@ elif mode == 18:
     if keyb.isConfirmed():
         search = urllib.quote_plus(keyb.getText())
         term = urllib.unquote_plus(search).decode('utf-8')
-        url = "https://gamatokids.com/?s=%s" % term
+        url = GAMATO + "?s=%s" % term
         Search_gamato(url)
     else:
         pass
