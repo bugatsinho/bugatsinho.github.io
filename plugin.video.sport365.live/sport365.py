@@ -89,7 +89,7 @@ def getChannels(addheader=False, BASEURL='http://www.sport365.live/en'):
         title = '%s%s: [COLOR blue]%s[/COLOR] %s, %s' % (online, hora, title, qualang, league)
         code = quality + lang
         out.append({"title": title, "url": url, "code": code})
-    xbmc.log('HTMLCODE-OUT: %s' % str(out), level=xbmc.LOGNOTICE)
+    # xbmc.log('HTMLCODE-OUT: %s' % str(out), level=xbmc.LOGNOTICE)
     return out
 
 

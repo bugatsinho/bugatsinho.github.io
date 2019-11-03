@@ -43,7 +43,7 @@ def Main_addDir():
            5, ART + 'dub.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32003).encode('utf-8') + '[/COLOR][/B]', BASEURL+'quality/ellinikoi-ypotitloi/',
            5, ART + 'sub.jpg', FANART, '')
-
+    
     addDir('[B][COLOR yellow]Metaglotismeno ' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 30, ART + 'gam.png',
            FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 13, ART + 'movies.jpg', FANART, '')
