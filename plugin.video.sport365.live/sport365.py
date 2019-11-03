@@ -11,7 +11,8 @@ Credits to original dev GalAnonim!
 ╱╱╱╱╱╱╱╰━━╯
 '''
 
-
+import sys
+import traceback
 import urllib2
 import urllib
 import re
@@ -73,7 +74,7 @@ def getChannels(addheader=False, BASEURL='http://www.sport365.live/en'):
     minutes = int(utc_offset) / 60
     url = BASEURL + '/events/-/1/-/-/' + str(minutes)
 
-    content = getUrl(url)
+    content = getUrl(url) #'https://friendpaste.com/4r2G20fkfwSQrAT5rm0kSQ/raw'
     content = re.sub(r"\n|\r|\t|\s{2}", "", content)
     # regex = '''<tr\s+style=["']background:\s+#EEEBDA;["']\s+title=["']Live['"]\s+onClick=.*?&quot;(http:\/\/dpaste.com\/.*?.txt).*?img\s+alt="([^"]+).*?>(\d+:\d+)<'''
     # regex = 'onclick=.*?"event_\w+"\,\s*"(.+?)"\,.*?<td rowspan="2".*?src="([^"]+)".*?<td rowspan="2".*?>(\d+:\d+)<.*?<td.*?>([^<]+)<.*?<td.*?>(.*?)/td>.*?<tr.*?<td colspan="2".*?>([^<]+)</td><[^>]+>([^<]*)'
@@ -95,17 +96,20 @@ def getChannels(addheader=False, BASEURL='http://www.sport365.live/en'):
 
 def getStreams(url):
 
-    try:
-        from resources.lib import cache
+    # try:
+    from resources.lib import cache
 
-        past = 'U2FsdGVkX19RORocDuzsf3mC//zvGb1w/UUkHUrCD84DXjJhUL0uFz2Z0liO8m7SYfVZMy8YsWNw1WeRDpTTMvIB6bqwAr1jownf6virclY='
-        # xbmc.log('PAST IS: %s' % past, level=xbmc.LOGNOTICE)
-        pastes = cache.get(getUrl, 3, jscrypto.decode(past, base64.b64decode('b25seSBidWdhdHNpbmhv')))
-        ret = base64.b64decode(pastes)
-        ret = json.loads(ret)
-        info, key = ret['i7'], ret['k7']
-    except BaseException:
-        raise Exception()
+    past = 'U2FsdGVkX19RORocDuzsf3mC//zvGb1w/UUkHUrCD84DXjJhUL0uFz2Z0liO8m7SYfVZMy8YsWNw1WeRDpTTMvIB6bqwAr1jownf6virclY='
+    xbmc.log('PAST IS: %s' % past, level=xbmc.LOGNOTICE)
+    pastes = cache.get(getUrl, 3, jscrypto.decode(past, base64.b64decode('b25seSBidWdhdHNpbmhv')))
+    # '{"k7":"2428156923074915","i7":"3998369833323094"}'
+    ret = base64.b64decode(pastes)
+    xbmc.log('RET-DATA IS: %s' % ret, level=xbmc.LOGNOTICE)
+    ret = json.loads(ret)
+    xbmc.log('RET-JSON IS: %s' % ret, level=xbmc.LOGNOTICE)
+    info, key = ret['i7'], ret['k7']
+    # except BaseException:
+    #     raise Exception()
     xbmc.log('RET IS: %s' % str(ret), level=xbmc.LOGNOTICE)
 
     myurl = url
@@ -116,9 +120,14 @@ def getStreams(url):
     for i, s in enumerate(set(sources)):
         data = aes.AESModeOfOperationCBC(key, info).decrypt(s.replace(' ', '').decode('hex'))
         s = re.findall('([a-f0-9]+)', data)[0].decode('hex')
+        # enc_data = json.loads(base64.b64decode(s))
+        # # ciphertext = 'Salted__' + enc_data['s'].decode('hex') + base64.b64decode(enc_data['ct'])
+        # # src= magic_aes.decrypt(ret, base64.b64encode(ciphertext))
+        # src = jscrypto.decode(enc_data["ct"], ret, enc_data["s"].decode("hex"))
+        # src=src.strip('"').replace('\\','')
         title = 'Link {}'.format(i + 1)
         out.append({"title": title, "tvid": title, "url": '{}@{}@{}'.format(s, info, key), "refurl": url})
-    # xbmc.log('HTMLSTREAMS-OUT: %s' % str(out), level=xbmc.LOGNOTICE)
+    xbmc.log('HTMLSTREAMS-OUT: %s' % str(out), level=xbmc.LOGNOTICE)
     return out
 
 
@@ -130,9 +139,15 @@ def getChannelVideo(item):
     header = {'User-Agent': UA,
               'Referer': myurl}
     content = s.get(myurl, headers=header)
-
+    # xbmc.log('@#@CHANNEL-VIDEO-CONT: %s' % content.text, xbmc.LOGNOTICE)
+    # import uuid
+    # hash = uuid.uuid4().hex
+    # url = re.findall(r'location.replace\(\'([^\']+)', content)[0]
+    # uri = url + hash
+    # content = s.get(uri, headers=header).content
     link = re.compile('src="(http://www.[^\.]+.pw/(?!&#)[^"]+)"',
                        re.IGNORECASE + re.DOTALL + re.MULTILINE + re.UNICODE).findall(content.text)
+    # link = [x for x in links if '&#' in x]
     # xbmc.log('@#@CHANNEL-VIDEO-LINK: %s' % str(link), xbmc.LOGNOTICE)
     if link:
         header['Referer'] = item.get('url')
@@ -181,6 +196,7 @@ def getChannelVideo(item):
 
             if fstream.startswith('http'):
                 href = fstream
+                # print href
                 return href, srcs[-1], header, item['title'], myurl
 
     return ''
