@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="Website Settings">
-        <!--setting id="domain" label="Select Domain" type="select" values="sport365|sport247|s365|livesportstreams" default="sport365" sort="yes" /-->
-        <setting id="language" label="Select Language" type="select" values="cn|de|en|es|fr|hu|il|it|jp|nl|no|pl|pt|ru|se" default="en" sort="yes" />
-    </category>
     <category label="PLAYBACK">
         <setting type="lsep" label="Select Method" />
         <setting type="lsep." label="To use Inputstream as method you have to enable both Inputstream addons" />
@@ -15,5 +11,9 @@
                  enable="String.StartsWith(System.AddonVersion(xbmc.python),2.25) | String.StartsWith(System.AddonVersion(xbmc.python),2.26)" option="close"/>
         <setting type="sep" />
         <!--setting id="enable_input" type="action" label="Enable Inputstream add-ons" enable="true" action="RunPlugin(plugin://plugin.video.sport365.live/?mode=enable_input)" /-->
+    </category>
+    <category label="Website Settings">
+        <setting id="domain" label="Show Extra Domains" type="bool" default="false" />>
+        <setting id="language" label="Select Language" type="select" values="cn|de|en|es|fr|hu|il|it|jp|nl|no|pl|pt|ru|se" default="en" sort="yes" />
     </category>
 </settings>

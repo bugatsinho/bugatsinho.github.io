@@ -97,8 +97,8 @@ def take_stream(params):
     # xbmc.log(title, level=xbmc.LOGNOTICE)
 
     if stream_url:
-        ua = header['User-Agent']
-        hdrs = 'User-Agent={}&Referer={}'.format(urllib.quote(ua), urllib.quote('http://h5.adshell.net/peer5'))
+        UA = 'Mozilla/5.0 (Linux; Android 8.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.121 Mobile Safari/537.36'
+        hdrs = 'User-Agent={}&Referer={}'.format(urllib.quote(UA), urllib.quote('http://h5.adshell.net/peer5'))
         liz = xbmcgui.ListItem(label=orig_title)
         liz.setArt({"fanart": FANART, "icon": ICON})
         liz.setInfo(type="Video", infoLabels={"title": orig_title,
@@ -106,6 +106,7 @@ def take_stream(params):
         liz.setProperty("IsPlayable", "true")
         idle()
         if my_addon.getSetting('play') == 'Inputstream':
+
             stream_url = stream_url.replace('/i', '/index.m3u8') if stream_url.endswith('/i') else stream_url
             stream_url += '|' + hdrs
             liz.setPath(stream_url)
@@ -123,9 +124,8 @@ def take_stream(params):
                 # thread = threading.Thread(name='sport356Thread', target=sport356Thread2, args=[url, header])
                 # thread.start()
                 # xbmc.Player().play(stream_url, liz)
-                ok = xbmcplugin.setResolvedUrl(addon_handle, True, liz)
+                xbmcplugin.setResolvedUrl(addon_handle, True, liz)
                 #ok = xbmcplugin.addDirectoryItem(handle=addon_handle, url=stream_url, listitem=liz, isFolder=False)
-                return ok
             except BaseException:
                 pass
 
@@ -147,8 +147,7 @@ def take_stream(params):
             # import threading
             # thread = threading.Thread(name='sport356Thread', target=sport356Thread2, args=[url, header])
             # thread.start()
-            ok = xbmcplugin.setResolvedUrl(addon_handle, False, liz)
-            return ok
+            xbmcplugin.setResolvedUrl(addon_handle, False, liz)
 
         else:
             try:
@@ -203,7 +202,7 @@ def addDir(name, ex_link=None, params=1, mode='folder', iconImage='DefaultFolder
            contextmenu=None):
     url = build_url({'mode': mode, 'foldername': name, 'ex_link': ex_link, 'params': params})
 
-    nofolders = ['take_stream', 'opensettings', 'enable_input', 'forceupdate', 'open_news']
+    nofolders = ['take_stream', 'opensettings', 'enable_input', 'forceupdate', 'open_news', 'ccache', 'showalts']
     folder = False if mode in nofolders else True
 
     li = xbmcgui.ListItem(name)
@@ -387,6 +386,14 @@ def rtmp_enable():
     except Exception:
         dialog.notification(addonName, 'Inputstream RTMP addon could not be enabled')
 
+def show_alt():
+    if my_addon.getSetting('domain') == 'false':
+        my_addon.setSetting('domain', 'true')
+    else:
+        my_addon.setSetting('domain', 'false')
+    xbmc.sleep(100)
+    xbmc.executebuiltin('Container.Refresh')
+
 
 if mode is None:
     if addon_version('xbmc.python') < 2250:
@@ -403,27 +410,30 @@ if mode is None:
     addDir('Sport365 LIVE', ex_link='',
            params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.sport365.live/'}, mode='site2',
            iconImage=ICON, fanart=FANART)
-    addDir('Sport365 SX', ex_link='',
-           params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.sport365.sx/'}, mode='site2',
-           iconImage=ICON, fanart=FANART)
-    # addDir('[COLORcyan]Alternative Domains[/COLOR]', ex_link='', mode='opensettings',
-    #        iconImage=ICON, fanart=FANART)
 
-    addDir('Sport247 LIVE', ex_link='',
-           params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.sport247.live/'}, mode='site2',
+    addDir('[COLORcyan]Alternative Domains[/COLOR]', ex_link='', mode='showalts',
            iconImage=ICON, fanart=FANART)
-    addDir('s365 LIVE(alt)', ex_link='',
-           params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.s365.live/'}, mode='site2',
-           iconImage=ICON, fanart=FANART)
+    if my_addon.getSetting('domain') == 'true':
+        addDir('Sport365 SX', ex_link='',
+               params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.sport365.sx/'}, mode='site2',
+               iconImage=ICON, fanart=FANART)
+        addDir('Sport247 LIVE', ex_link='',
+               params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.sport247.live/'}, mode='site2',
+               iconImage=ICON, fanart=FANART)
+        addDir('s365 LIVE(alt)', ex_link='',
+               params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.s365.live/'}, mode='site2',
+               iconImage=ICON, fanart=FANART)
     # addDir('LiveSportStreams', ex_link='',
     #        params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.livesportstreams.tv/'},
     #        mode='site2', iconImage=ICON, fanart=FANART)
 
     addDir('Settings', ex_link='', mode='opensettings', iconImage=ICON, fanart=FANART)
+    addDir('Clear Cache', ex_link='', mode='ccache', iconImage=ICON, fanart=FANART)
     addDir('[COLOR gold][B]Version: [COLOR lime]%s[/COLOR][/B]' % VERSION, ex_link='', mode='forceupdate',
            iconImage=ICON, fanart=FANART)
     #li = xbmcgui.ListItem(label = '[COLOR blue]aktywuj PVR Live TV[/COLOR]', iconImage=RESOURCES+'PVR.png')
     #xbmcplugin.addDirectoryItem(handle=addon_handle, url=build_url({'mode': 'Opcje'}) ,listitem=li)
+
 
 elif mode[0] == 'site2':
     play_stream(params)
@@ -439,7 +449,9 @@ elif mode[0] == 'get_streams_play':
 
 elif mode[0] == 'opensettings':
     Settings()
-
+elif mode[0] == 'ccache':
+    from resources.lib import cache
+    cache.delete()
 elif mode[0] == 'enable_adaptive':
    isa_enable()
    Settings()
@@ -451,6 +463,9 @@ elif mode[0] == 'enable_rtmp':
 elif mode[0] == 'open_news':
     import newsbox
     newsbox.welcome()
+
+elif mode[0] == 'showalts':
+    show_alt()
 
 elif mode[0] == 'forceupdate':
     dialog = xbmcgui.Dialog()

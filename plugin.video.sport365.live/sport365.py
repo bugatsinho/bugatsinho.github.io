@@ -11,8 +11,7 @@ Credits to original dev GalAnonim!
 ╱╱╱╱╱╱╱╰━━╯
 '''
 
-import sys
-import traceback
+
 import urllib2
 import urllib
 import re
@@ -22,7 +21,7 @@ import base64
 import cookielib
 import requests
 import xbmc
-from resources.lib import jscrypto
+from resources.lib import jscrypto, aes
 
 UA = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
 # UA = 'Mozilla/5.0 (Linux; Android 8.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.121 Mobile Safari/537.36'
@@ -65,15 +64,6 @@ def getUrlc(url, data=None, header={}, usecookies=True):
 
 
 def getChannels(addheader=False, BASEURL='http://www.sport365.live/en'):
-    try:
-        from resources.lib import cache
-        past = 'U2FsdGVkX1/An+J04HAddmZ1Tx8wuxdMw2cEafXxcEfvhF525zf8rtxahA11NNgJzn4Jilk45XkLJsPGxPRH7Q=='
-        pastes = cache.get(getUrl, 2, jscrypto.decode(past, 'b25seSBidWdhdHNpbmhv'.decode('base64')))
-
-        ret = re.findall('''\:['"](\d+)["']''', pastes)[0]
-    except BaseException:
-        ret = ''
-    xbmc.log('PAST IS: %s' % ret, level=xbmc.LOGNOTICE)
 
     from datetime import datetime
     ts = time.time()
@@ -85,61 +75,70 @@ def getChannels(addheader=False, BASEURL='http://www.sport365.live/en'):
 
     content = getUrl(url)
     content = re.sub(r"\n|\r|\t|\s{2}", "", content)
-    # xbmc.log('HTML: %s' % content, level=xbmc.LOGNOTICE)
-    # regex = '''title='Live'\s+onClick=\'\w+\("(\w+)",\s*"([^"]+)".+?img alt="([^"]+)".+?.*?dot-(\w+)-big.png.+?>(\d+:\d+)</td><td.+?>(.+?)</td>.+?<span.+?>(.+?)</span>.+?title='Live'.+?<td\s+.+?>(\w+)<.+?class='event_links'''
-    regex = 'onClick=.*?"event_([^"]+)".*?<td rowspan=2.*?src="([^"]+)".*?<td rowspan=2.*?>(\d+:\d+)<.*?<td.*?>([^<]+)<.*?<td.*?>(.*?)/td>.*?<tr.*?<td colspan=2.*?>([^<]+)</td><[^>]+>([^<]*)<'
+    # regex = '''<tr\s+style=["']background:\s+#EEEBDA;["']\s+title=["']Live['"]\s+onClick=.*?&quot;(http:\/\/dpaste.com\/.*?.txt).*?img\s+alt="([^"]+).*?>(\d+:\d+)<'''
+    # regex = 'onclick=.*?"event_\w+"\,\s*"(.+?)"\,.*?<td rowspan="2".*?src="([^"]+)".*?<td rowspan="2".*?>(\d+:\d+)<.*?<td.*?>([^<]+)<.*?<td.*?>(.*?)/td>.*?<tr.*?<td colspan="2".*?>([^<]+)</td><[^>]+>([^<]*)'
+    regex = 'onClick=.*?"event_(\w+)".*?<td rowspan=2.*?src="([^"]+)".*?<td rowspan=2.*?>(\d+:\d+)<.*?<td.*?>([^<]+)<.*?<td.*?>(.*?)/td>.*?<tr.*?<td colspan=2.*?>([^<]+)</td><[^>]+>([^<]*)<'
     streams = re.findall(regex, content, re.DOTALL)
-    # xbmc.log('HTMLCODE: %s' % str(streams), level=xbmc.LOGNOTICE)
-
     out = []
     for event, color, hora, title, quality, league, lang in streams:
         online = '[COLOR lightgreen]•[/COLOR]' if '-green-' in color else '[COLOR red]*[/COLOR]'
-        url = BASEURL + '/links/%s/1@%s' % (event.split('_')[-1], ret)
-        # xbmc.log('HTML-QUALITY: %s' % quality, level=xbmc.LOGNOTICE)
+        url = BASEURL + '/links/{}/1'.format(event)
+        xbmc.log('HTML-URL: %s' % url, level=xbmc.LOGNOTICE)
         quality = re.sub('<.+?>', '', quality).split('&')[0] if 'nbsp' in quality else 'SD'
         qualang = '[COLOR gold]%s-%s[/COLOR]' % (lang, quality)
         title = '%s%s: [COLOR blue]%s[/COLOR] %s, %s' % (online, hora, title, qualang, league)
         code = quality + lang
         out.append({"title": title, "url": url, "code": code})
+    xbmc.log('HTMLCODE-OUT: %s' % str(out), level=xbmc.LOGNOTICE)
     return out
 
 
 def getStreams(url):
-    myurl, ret = url.split('@')
+
+    try:
+        from resources.lib import cache
+
+        past = 'U2FsdGVkX19RORocDuzsf3mC//zvGb1w/UUkHUrCD84DXjJhUL0uFz2Z0liO8m7SYfVZMy8YsWNw1WeRDpTTMvIB6bqwAr1jownf6virclY='
+        # xbmc.log('PAST IS: %s' % past, level=xbmc.LOGNOTICE)
+        pastes = cache.get(getUrl, 3, jscrypto.decode(past, base64.b64decode('b25seSBidWdhdHNpbmhv')))
+        ret = base64.b64decode(pastes)
+        ret = json.loads(ret)
+        info, key = ret['i7'], ret['k7']
+    except BaseException:
+        raise Exception()
+    xbmc.log('RET IS: %s' % str(ret), level=xbmc.LOGNOTICE)
+
+    myurl = url
     content = getUrl(myurl)
-    sources=re.compile('<span id=["\']span_link_links[\'"] onClick="\w+\(\'(.*?)\'').findall(content)
+    sources = re.findall(r'''onClick=['"]\w+\(\'(\w+)\'''', content, re.DOTALL)
     out = []
+
     for i, s in enumerate(set(sources)):
-        enc_data=json.loads(base64.b64decode(s))
-        # ciphertext = 'Salted__' + enc_data['s'].decode('hex') + base64.b64decode(enc_data['ct'])
-        # src= magic_aes.decrypt(ret, base64.b64encode(ciphertext))
-        src = jscrypto.decode(enc_data["ct"], ret, enc_data["s"].decode("hex"))
-        src=src.strip('"').replace('\\','')
-        title = 'Link %d' % (i+1)
-        out.append({"title": title, "tvid": title, "key": ret, "url": src, "refurl": myurl})
+        data = aes.AESModeOfOperationCBC(key, info).decrypt(s.replace(' ', '').decode('hex'))
+        s = re.findall('([a-f0-9]+)', data)[0].decode('hex')
+        title = 'Link {}'.format(i + 1)
+        out.append({"title": title, "tvid": title, "url": '{}@{}@{}'.format(s, info, key), "refurl": url})
+    # xbmc.log('HTMLSTREAMS-OUT: %s' % str(out), level=xbmc.LOGNOTICE)
     return out
 
 
 def getChannelVideo(item):
     item = eval(item)
+    myurl, info, key = item['url'].split('@')
     import xbmc
     s = requests.Session()
     header = {'User-Agent': UA,
-              'Referer': item['url']}
-    content = s.get(item['url'], headers=header)
-    # import uuid
-    # hash = uuid.uuid4().hex
-    # url = re.findall(r'location.replace\(\'([^\']+)', content)[0]
-    # uri = url + hash
-    # content = s.get(uri, headers=header).content
-    links = re.compile('(http://www.[^\.]+.pw/(?!&#)[^"]+)',
+              'Referer': myurl}
+    content = s.get(myurl, headers=header)
+
+    link = re.compile('src="(http://www.[^\.]+.pw/(?!&#)[^"]+)"',
                        re.IGNORECASE + re.DOTALL + re.MULTILINE + re.UNICODE).findall(content.text)
-    link = [x for x in links if '&#' in x]
+    # xbmc.log('@#@CHANNEL-VIDEO-LINK: %s' % str(link), xbmc.LOGNOTICE)
     if link:
         header['Referer'] = item.get('url')
         link = re.sub(r'&#(\d+);', lambda x: chr(int(x.group(1))), link[0])
         data = s.get(link, headers=header).content
-        #xbmc.log('@#@CHANNEL-VIDEO-DATA: %s' % data, xbmc.LOGNOTICE)
+        # xbmc.log('@#@CHANNEL-VIDEO-DATA: %s' % data, xbmc.LOGNOTICE)
         f = re.compile('.*?name="f"\s*value=["\']([^"\']+)["\']').findall(data)
         d = re.compile('.*?name="d"\s*value=["\']([^"\']+)["\']').findall(data)
         r = re.compile('.*?name="r"\s*value=["\']([^"\']+)["\']').findall(data)
@@ -170,19 +169,30 @@ def getChannelVideo(item):
                 #     ###########################
             except BaseException:
                 pass
-            link = re.compile('\([\'"][^"\']+[\'"], [\'"][^"\']+[\'"], [\'"]([^"\']+)[\'"], 1\)').findall(data2)
-            enc_data = json.loads(base64.b64decode(link[0]))
-            # ciphertext = 'Salted__' + enc_data['s'].decode('hex') + base64.b64decode(enc_data['ct'])
-            src = jscrypto.decode(enc_data["ct"], item['key'], enc_data["s"].decode("hex"))
-            src = src.replace('"','').replace('\\', '').encode('utf-8')
+            s = re.findall("function\(\)\s*{\s*[a-z0-9]{43}\(.*?,.*?,\s*'([^']+)'", data2)[0]
+            fstream = aes.AESModeOfOperationCBC(key, info).decrypt(s.decode('hex'))
+            # xbmc.log('getStreams-Final-data: %s' % fstream, level=xbmc.LOGNOTICE)
+            fstream = re.findall('([a-f0-9]+)', fstream)[0].decode('hex')
+            # xbmc.log('@#@DAAAATAAA-2---LINK: %s' % fstream, xbmc.LOGNOTICE)
+            # enc_data = json.loads(base64.b64decode(link[0]))
+            # # ciphertext = 'Salted__' + enc_data['s'].decode('hex') + base64.b64decode(enc_data['ct'])
+            # src = jscrypto.decode(enc_data["ct"], item['key'], enc_data["s"].decode("hex"))
+            # src = src.replace('"','').replace('\\', '').encode('utf-8')
 
-            if src.startswith('http'):
-                href = src
-                # print href
-                return href, srcs[-1], header, item['title'], item['url']
+            if fstream.startswith('http'):
+                href = fstream
+                return href, srcs[-1], header, item['title'], myurl
 
     return ''
 
+
+def url_decode(code):
+    pand = int(code[-1])
+    code = code[:-1]
+    code = code[::-1]
+    code = code[:4] + code[8:] + code[4:8] + '=' * pand
+    code = base64.b64decode(code)
+    return code.split('|')
 
 def getUrlrh(url, data=None, header={}, usecookies=True):
     cj = cookielib.LWPCookieJar()
