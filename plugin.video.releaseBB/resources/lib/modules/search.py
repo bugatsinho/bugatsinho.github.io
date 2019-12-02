@@ -65,8 +65,8 @@ def Search_bb(url):
                 query = urllib.quote_plus(query)
                 referer_link = 'http://search.rlsbb.ru?s=/search/{0}'.format(query)
 
-                url = 'http://search.rlsbb.ru/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&radit=0.{1}'
-                url = url.format(query.replace('+', '%2B'), random.randint(0o000000000000001, 99999999999999999))
+                url = 'http://search.rlsbb.ru/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
+                url = url.format(query, random.randint(0o000000000000001, 99999999999999999))
                 #########save in Database#########
                 term = urllib.unquote_plus(query).decode('utf-8')
                 dbcon = database.connect(control.searchFile)
@@ -79,7 +79,10 @@ def Search_bb(url):
                 #########search in website#########
                 headers = {'Referer': referer_link,
                            'X-Requested-With': 'XMLHttpRequest'}
+                first = scraper.get(referer_link, headers=headers).text
+                xbmc.sleep(50)
                 html = scraper.get(url, headers=headers).text
+                xbmc.log('HTMLAAAAAAAAA:' + str(html))
                 posts = json.loads(html)['results']
                 posts = [(i['post_name'], i['post_title'], i['post_content']) for i in posts if i]
                 for movieUrl, title, infos in posts:
@@ -187,9 +190,10 @@ def Search_bb(url):
             referer_link = 'http://search.rlsbb.ru?s=/search/{0}'.format(url)
             headers = {'Referer': referer_link,
                        'X-Requested-With': 'XMLHttpRequest'}
-
-            s_url = 'http://search.rlsbb.ru/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&radit=0.{1}'
-            s_url = s_url.format(url.replace('+', '%2B'), random.randint(0o000000000000001, 99999999999999999))
+            first = scraper.get(referer_link, headers=headers).text
+            xbmc.sleep(50)
+            s_url = 'http://search.rlsbb.ru/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
+            s_url = s_url.format(url, random.randint(0o000000000000001, 99999999999999999))
             html = scraper.get(s_url, headers=headers).text
             posts = json.loads(html)['results']
             posts = [(i['post_name'], i['post_title'], i['post_content']) for i in posts if i]
