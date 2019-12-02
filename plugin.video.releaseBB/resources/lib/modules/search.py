@@ -63,7 +63,7 @@ def Search_bb(url):
             query = _query.encode('utf-8')
             try:
                 query = urllib.quote_plus(query)
-                referer_link = 'http://search.rlsbb.ru?s=/search/{0}'.format(query)
+                referer_link = 'http://search.rlsbb.ru?s={0}'.format(query)
 
                 url = 'http://search.rlsbb.ru/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
                 url = url.format(query, random.randint(0o000000000000001, 99999999999999999))
@@ -80,9 +80,8 @@ def Search_bb(url):
                 headers = {'Referer': referer_link,
                            'X-Requested-With': 'XMLHttpRequest'}
                 first = scraper.get(referer_link, headers=headers).text
-                xbmc.sleep(50)
+                xbmc.sleep(10)
                 html = scraper.get(url, headers=headers).text
-                xbmc.log('HTMLAAAAAAAAA:' + str(html))
                 posts = json.loads(html)['results']
                 posts = [(i['post_name'], i['post_title'], i['post_content']) for i in posts if i]
                 for movieUrl, title, infos in posts:
@@ -122,7 +121,9 @@ def Search_bb(url):
 
                 # if 'olderEntries' in ref_html:
                 pindex = int(re.search('pindex=(\d+)&', url).group(1)) + 1
-                np_url = re.sub('&pindex=\d+&', '&pindex={0}&'.format(pindex), url)
+                np_url = re.sub(r'&pindex=\d+&', '&pindex={0}&'.format(pindex), url)
+                rand = random.randint(0o000000000000001, 99999999999999999)
+                np_url = re.sub(r'&rand=0\.\d+$', '&rand={}'.format(rand), np_url)
                 addon.add_directory(
                     {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},
                     {'title': control.lang(32010).encode('utf-8')},
@@ -134,10 +135,13 @@ def Search_bb(url):
 
     elif '|nextpage' in url:
         url, referer_link, np = url.split('|')
+        referer_link = referer_link.split('=', 1)[1]
         headers = {'Referer': referer_link,
                    'X-Requested-With': 'XMLHttpRequest'}
+        first = scraper.get(referer_link, headers=headers).text
+        xbmc.sleep(10)
         html = scraper.get(url, headers=headers).content
-
+        xbmc.log('NEXT HTMLLLLL: {}'.format(html))
         posts = json.loads(html)['results']
         posts = [(i['post_name'], i['post_title'], i['post_content']) for i in posts if i]
         for movieUrl, title, infos in posts:
@@ -177,6 +181,8 @@ def Search_bb(url):
         # if 'olderEntries' in ref_html:
         pindex = int(re.search('pindex=(\d+)&', url).groups()[0]) + 1
         np_url = re.sub('&pindex=\d+&', '&pindex={0}&'.format(pindex), url)
+        rand = random.randint(0o000000000000001, 99999999999999999)
+        np_url = re.sub(r'&rand=0\.\d+$', '&rand={}'.format(rand), np_url)
         addon.add_directory(
             {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},
             {'title': control.lang(32010).encode('utf-8')},
@@ -187,11 +193,11 @@ def Search_bb(url):
             from resources.lib.modules import cfscrape
             scraper = cfscrape.create_scraper()
             url = urllib.quote_plus(url)
-            referer_link = 'http://search.rlsbb.ru?s=/search/{0}'.format(url)
+            referer_link = 'http://search.rlsbb.ru?s={0}'.format(url)
             headers = {'Referer': referer_link,
                        'X-Requested-With': 'XMLHttpRequest'}
-            first = scraper.get(referer_link, headers=headers).text
-            xbmc.sleep(50)
+            first = scraper.get('http://rlsbb.ru', headers=headers).text
+            xbmc.sleep(10)
             s_url = 'http://search.rlsbb.ru/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
             s_url = s_url.format(url, random.randint(0o000000000000001, 99999999999999999))
             html = scraper.get(s_url, headers=headers).text
@@ -234,6 +240,8 @@ def Search_bb(url):
 
             pindex = int(re.search('pindex=(\d+)&', s_url).groups()[0]) + 1
             np_url = re.sub('&pindex=\d+&', '&pindex={0}&'.format(pindex), s_url)
+            rand = random.randint(0o000000000000001, 99999999999999999)
+            np_url = re.sub(r'&rand=0\.\d+$', '&rand={}'.format(rand), np_url)
             addon.add_directory(
                 {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},
                 {'title': control.lang(32010).encode('utf-8')},
