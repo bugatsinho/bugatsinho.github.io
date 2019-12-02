@@ -98,9 +98,9 @@ def getStreams(url):
     try:
         from resources.lib import cache
 
-        past = 'U2FsdGVkX19RORocDuzsf3mC//zvGb1w/UUkHUrCD84DXjJhUL0uFz2Z0liO8m7SYfVZMy8YsWNw1WeRDpTTMvIB6bqwAr1jownf6virclY='
+        past = 'U2FsdGVkX19q9T+lFjzxG4a0je4b6tI1Uc3HUVnoWBiD/Vw59IpxZ+cJuwDsjszZPsVkradgfXb0sxZVxY2J1h96IuNIpyAHyNS1vUKYpcU='
         # xbmc.log('PAST IS: %s' % past, level=xbmc.LOGNOTICE)
-        pastes = cache.get(getUrl, 3, jscrypto.decode(past, base64.b64decode('b25seSBidWdhdHNpbmhv')))
+        pastes = cache.get(getUrl, 3, jscrypto.decode(past, base64.b64decode('SXMgT25seSBPbmUgQnVnYXRzaW5obw==')))
         # xbmc.log('PASTES IS: %s' % pastes, level=xbmc.LOGNOTICE)
         ret = xor2(base64.b64decode(pastes), 'sly6B89wqxt2N')
         ret = json.loads(ret)
