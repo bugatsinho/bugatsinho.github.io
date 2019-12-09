@@ -62,7 +62,7 @@ class Prompt(pyxbmct.AddonDialogWindow):
         # GitHub button
         self.github_button = pyxbmct.Button('[COLOR gold]GitHub Link[/COLOR]')
         self.placeControl(self.github_button, 6, 4, 1, 1)
-        self.connect(self.github_button, lambda: open_web_browser('https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.releaseBB'))
+        self.connect(self.github_button, lambda: open_web_browser('https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.sport365.live'))
         # Close button
         self.close_button = pyxbmct.Button('[COLOR gold]CLOSE[/COLOR]')
         self.placeControl(self.close_button, 7, 2)
