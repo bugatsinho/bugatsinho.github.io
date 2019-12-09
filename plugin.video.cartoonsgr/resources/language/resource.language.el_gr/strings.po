@@ -153,7 +153,7 @@ msgstr "Λήψη Αρχείου"
 
 msgctxt "#32041"
 msgid "Downloads"
-msgstr ""
+msgstr "Λήψεις"
 
 msgctxt "#32042"
 msgid "Downloading features are disabled by default"
@@ -161,4 +161,4 @@ msgstr ""
 
 msgctxt "#32043"
 msgid "Set up your download folders in order to enable them"
-msgstr ""
+msgstr "Σετάρετε φάκελο λήψεων για ταινίες ΚΑΙ σειρές για να λειτουργήσει!!"

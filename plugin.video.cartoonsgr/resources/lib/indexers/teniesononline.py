@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import urllib, xbmcgui, xbmcaddon, xbmcplugin, xbmc, re, sys, os
+import urllib
+import xbmcgui
+import xbmcaddon
+import xbmcplugin
+import xbmc
+import re
+import sys
+import os
 from resources.lib.modules import client
 from resources.lib.modules import cache
 from resources.lib.modules import control

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import urllib, xbmcgui, xbmcaddon, xbmcplugin, xbmc, re, sys, os
-import urlparse
+import urlparse, base64
 
 import unshortenit
 import resolveurl
@@ -12,11 +12,12 @@ from resources.lib.modules import init
 from resources.lib.modules import views
 from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
+from resources.lib.indexers import teniesonline
 
 
-BASEURL = 'https://paidikestainiesonline.gr/'#'https://paidikestainies.online/'
+BASEURL = 'https://tenies-online.gr/genre/kids/'#'https://paidikestainies.online/'
 GAMATO = 'https://gamatokids.com/'
-METAGLOTISMENO = 'https://metaglotismeno.online/'
+Baseurl = Teniesonline = 'https://tenies-online.gr/'
 
 ADDON       = xbmcaddon.Addon()
 ADDON_DATA  = ADDON.getAddonInfo('profile')
@@ -34,20 +35,20 @@ ART = ADDON_PATH + "/resources/icons/"
 
 
 def Main_addDir():
-    addDir('[B][COLOR yellow]Gamato ' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 20, ART + 'gam.png',
+    addDir('[B][COLOR yellow]' + Lang(32022).encode('utf-8') + '[/COLOR][/B]', Baseurl + 'genre/christmas/', 34, ART + 'mas.jpg', FANART, '')
+    addDir('[B][COLOR yellow]Gamato ' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 20, ART + 'dub.jpg',
            FANART, '')
-    # addDir('[B][COLOR yellow]' + Lang(32022).encode('utf-8') + '[/COLOR][/B]', BASEURL, 19, ART + 'mas.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32005).encode('utf-8') + '[/COLOR][/B]', BASEURL, 8, ART + 'random.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32008).encode('utf-8') + '[/COLOR][/B]', BASEURL, 5, ART + 'latest.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]', BASEURL + 'quality/metaglotismeno/',
-           5, ART + 'dub.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32003).encode('utf-8') + '[/COLOR][/B]', BASEURL+'quality/ellinikoi-ypotitloi/',
-           5, ART + 'sub.jpg', FANART, '')
-    
-    addDir('[B][COLOR yellow]Metaglotismeno ' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 30, ART + 'gam.png',
+    # addDir('[B][COLOR yellow]' + Lang(32005).encode('utf-8') + '[/COLOR][/B]', BASEURL, 8, ART + 'random.jpg', FANART, '')
+    # addDir('[B][COLOR yellow]' + Lang(32008).encode('utf-8') + '[/COLOR][/B]', BASEURL, 5, ART + 'latest.jpg', FANART, '')
+    # addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]', BASEURL + 'quality/metaglotismeno/',
+    #        5, ART + 'dub.jpg', FANART, '')
+    # addDir('[B][COLOR yellow]' + Lang(32003).encode('utf-8') + '[/COLOR][/B]', BASEURL+'quality/ellinikoi-ypotitloi/',
+    #        5, ART + 'sub.jpg', FANART, '')
+
+    addDir('[B][COLOR yellow]Tenies-Online[/COLOR][/B]', '', 30, ART + 'dub.jpg',
            FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 13, ART + 'movies.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32001).encode('utf-8') + '[/COLOR][/B]', '', 14, ART + 'tvshows.jpg', FANART, '')
+    # addDir('[B][COLOR yellow]' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 13, ART + 'movies.jpg', FANART, '')
+    # addDir('[B][COLOR yellow]' + Lang(32001).encode('utf-8') + '[/COLOR][/B]', '', 14, ART + 'tvshows.jpg', FANART, '')
     downloads = True if control.setting('downloads') == 'true' and (
             len(control.listDir(control.setting('movie.download.path'))[0]) > 0 or
             len(control.listDir(control.setting('tv.download.path'))[0]) > 0) else False
@@ -137,7 +138,7 @@ def Get_TV_Genres(url): #7
         try:
             url = client.parseDOM(post, 'a', ret='href')[0]
             name = client.parseDOM(post, 'a')[0]
-            name = re.sub('\d{4}', '', name)
+            name = re.sub(r'\d{4}', '', name)
             items = client.parseDOM(post, 'span')[0].encode('utf-8')
         except BaseException:pass    
         name = clear_Title(name).encode('utf-8') +' ([COLORlime]'+items+'[/COLOR])'
@@ -506,7 +507,7 @@ def search_menu():#6
 
     delete_option = False
     for (url, search) in dbcur.fetchall():
-        domain = 'GAMATOKIDS' if 'gamato' in url else 'PAIDIKESTAINIES'
+        domain = 'GAMATOKIDS' if 'gamato' in url else 'TENIES-ONLINE'
         title = '[B]%s[/B] - [COLORgold][B]%s[/COLOR][/B]' % (search.encode('utf-8'), domain)
         delete_option = True
         addDir(title, url, 26, ICON, FANART, '')
@@ -534,18 +535,18 @@ def Search(url):
             dbcur = dbcon.cursor()
 
             dp = xbmcgui.Dialog()
-            select = dp.select('Select Website', ['[COLORgold][B]Paidikestainies[/COLOR][/B]',
+            select = dp.select('Select Website', ['[COLORgold][B]Tenies-Online[/COLOR][/B]',
                                                   '[COLORgold][B]Gamato-Kids[/COLOR][/B]'])
             if select == 0:
-                url = BASEURL + "?s=" + search
+                url = Teniesonline + "?s={}".format(search)
                 dbcur.execute("DELETE FROM Search WHERE url = ?", (url,))
                 dbcur.execute("INSERT INTO Search VALUES (?,?)", (url, term))
                 dbcon.commit()
                 dbcur.close()
-                Get_content(url)
+                teniesonline.search(url)
 
             elif select == 1:
-                url = GAMATO + "?s=%s" % search
+                url = GAMATO + "?s={}".format(search)
                 dbcur.execute("DELETE FROM Search WHERE url = ?", (url,))
                 dbcur.execute("INSERT INTO Search VALUES (?,?)", (url, term))
                 dbcon.commit()
@@ -561,7 +562,7 @@ def Search(url):
         if 'gamato' in url:
             Search_gamato(url)
         else:
-            Get_content(url)
+            teniesonline.search(url)
     views.selectView('movies', 'movie-view')
 
 
@@ -836,9 +837,13 @@ def search_clear():
 
 def resolve(name, url, iconimage, description):
     host = url
-    if host.endswith('mp4') and 'tainies' in host:
+    if host.split('|')[0].endswith('.mp4') and 'clou' in host:
         stream_url = host + '|User-Agent=%s&Referer=%s' % (urllib.quote_plus(client.agent(), ':/'), GAMATO)
         name = name
+    elif 'tenies-online' in host:
+        stream_url = client.request(host)
+        stream_url = client.parseDOM(stream_url, 'a', {'id': 'link'}, ret='href')[0]
+        stream_url = evaluate(stream_url)
     else:
         stream_url = evaluate(host)
         name = name.split(' [B]|')[0]
@@ -937,26 +942,26 @@ elif mode == 21:
 
 ###############METAGLOTISMENO#################
 elif mode == 30:
-    from resources.lib.indexers import metaglotismeno
-    metaglotismeno.menu()
+    from resources.lib.indexers import teniesonline
+    teniesonline.menu()
 elif mode == 32:
-    from resources.lib.indexers import metaglotismeno
-    metaglotismeno.years()
+    from resources.lib.indexers import teniesonline
+    teniesonline.years()
 elif mode == 33:
-    from resources.lib.indexers import metaglotismeno
-    metaglotismeno.get_links(name, url, iconimage, description)
+    from resources.lib.indexers import teniesonline
+    teniesonline.get_links(name, url, iconimage, description)
 elif mode == 34:
-    from resources.lib.indexers import metaglotismeno
-    metaglotismeno.metaglotismeno(url)
+    from resources.lib.indexers import teniesonline
+    teniesonline.metaglotismeno(url)
 elif mode == 35:
-    from resources.lib.indexers import metaglotismeno
+    from resources.lib.indexers import teniesonline
     keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
     keyb.doModal()
     if keyb.isConfirmed():
         search = urllib.quote_plus(keyb.getText())
-        term = urllib.unquote_plus(search).decode('utf-8')
-        url = METAGLOTISMENO + "?s=%s" % term
-        metaglotismeno.search(url)
+        term = urllib.quote(search)
+        url = Teniesonline + "?s={}".format(term)
+        teniesonline.search(url)
     else:
         pass
 
