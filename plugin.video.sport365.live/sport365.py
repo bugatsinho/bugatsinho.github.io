@@ -21,7 +21,7 @@ import base64
 import cookielib
 import requests
 import xbmc
-from resources.lib import jscrypto, aes
+from resources.lib import jscrypto, aes, pyDes
 
 UA = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
 # UA = 'Mozilla/5.0 (Linux; Android 8.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.121 Mobile Safari/537.36'
@@ -94,7 +94,6 @@ def getChannels(addheader=False, BASEURL='http://www.sport365.live/en'):
 
 
 def getStreams(url):
-
     try:
         from resources.lib import cache
 
@@ -115,8 +114,11 @@ def getStreams(url):
     out = []
 
     for i, s in enumerate(set(sources)):
-        data = aes.AESModeOfOperationCBC(key, info).decrypt(s.replace(' ', '').decode('hex'))
+        decrypter = pyDes.triple_des(str(key), pyDes.CBC, str(info))
+        data = decrypter.decrypt(s.strip().decode('hex'))
         s = re.findall('([a-f0-9]+)', data)[0].decode('hex')
+        # data = aes.AESModeOfOperationCBC(key, info).decrypt(s.replace(' ', '').decode('hex'))
+        # s = re.findall('([a-f0-9]+)', data)[0].decode('hex')
         title = 'Link {}'.format(i + 1)
         out.append({"title": title, "tvid": title, "url": '{}@{}@{}'.format(s, info, key), "refurl": url})
     # xbmc.log('HTMLSTREAMS-OUT: %s' % str(out), level=xbmc.LOGNOTICE)
@@ -171,9 +173,14 @@ def getChannelVideo(item):
             except BaseException:
                 pass
             s = re.findall("function\(\)\s*{\s*[a-z0-9]{43}\(.*?,.*?,\s*'([^']+)'", data2)[0]
-            fstream = aes.AESModeOfOperationCBC(key, info).decrypt(s.decode('hex'))
+
+            decrypter = pyDes.triple_des(str(key), pyDes.CBC, str(info))
+            data = decrypter.decrypt(s.strip().decode('hex'))
+            fstream = re.findall('([a-f0-9]+)', data)[0].decode('hex')
+
+            # fstream = aes.AESModeOfOperationCBC(key, info).decrypt(s.decode('hex'))
             # xbmc.log('getStreams-Final-data: %s' % fstream, level=xbmc.LOGNOTICE)
-            fstream = re.findall('([a-f0-9]+)', fstream)[0].decode('hex')
+            # fstream = re.findall('([a-f0-9]+)', fstream)[0].decode('hex')
             # xbmc.log('@#@DAAAATAAA-2---LINK: %s' % fstream, xbmc.LOGNOTICE)
             # enc_data = json.loads(base64.b64decode(link[0]))
             # # ciphertext = 'Salted__' + enc_data['s'].decode('hex') + base64.b64decode(enc_data['ct'])

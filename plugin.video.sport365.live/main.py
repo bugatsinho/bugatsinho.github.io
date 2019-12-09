@@ -155,8 +155,9 @@ def take_stream(params):
                     urllib.quote_plus(stream_url), urllib.quote_plus(orig_title))
                 liz.setPath(stream_url)
                 idle()
+
+                xbmcplugin.setResolvedUrl(addon_handle, False, liz)
                 xbmcplugin.endOfDirectory(addon_handle, succeeded=False)
-                xbmc.executebuiltin('RunPlugin(' + stream_url + ')')
                 return
             except BaseException:
                 pass
