@@ -1,3 +1,7 @@
+[B]v1.0.2[/B] (10/12/2019)
+  - Διόρθωση teniesonline credits to Host505
+  https://github.com/bugatsinho/bugatsinho.github.io/pull/38
+
 [B]v1.0.1[/B] (08/12/2019)
   - Αφαίρεση paidikestainies κατηγορίες(ΤΑΙΝΙΕΣ-ΣΕΙΡΕΣ-ΠΡΟΣΦΑΤΑ)
   - Προσθήκη gamato movies και tenies-online

@@ -1,17 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import urllib
 import xbmcgui
 import xbmcaddon
-import xbmcplugin
-import xbmc
 import re
-import sys
-import os
 from resources.lib.modules import client
-from resources.lib.modules import cache
 from resources.lib.modules import control
-from resources.lib.modules import init
 from resources.lib.modules import views
 from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
@@ -82,31 +75,16 @@ def metaglotismeno(url): #34
         pass
     views.selectView('movies', 'movie-view')
 
-def years():
-    r = cache.get(client.request, 120, METAGLOTISMENO)
-    r = client.parseDOM(r, 'nav', attrs={'class': 'releases'})[0]
-    r = client.parseDOM(r, 'li')
-    for post in r:
-        try:
-            url = client.parseDOM(post, 'a', ret='href')[0]
-            year = client.parseDOM(post, 'a')[0].encode('utf-8')
-        except BaseException:
-            pass
-
-        addDir('[B][COLOR white]%s[/COLOR][/B]' % year, url, 34, ART + 'movies.jpg', FANART, '')
-    views.selectView('menu', 'menu-view')
-
 
 def get_links(name, url, iconimage, description):
-    # try:
-        data = client.request(url)
-        if 'Τρέιλερ' in data:
-            flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
-            if 'youtu' in flink:
-                addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
-        else:
-            addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
-        # try:
+    data = client.request(url)
+    if 'Τρέιλερ' in data:
+        flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
+        if 'youtu' in flink:
+            addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
+    else:
+        addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
+    try:
         frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
         frames = [(client.parseDOM(i, 'a', ret='href')[0],
                    client.parseDOM(i, 'img', ret='src')[0],
@@ -124,22 +102,16 @@ def get_links(name, url, iconimage, description):
                 info = '[N/A]'
             title = '[COLOR lime]{}[B][COLOR white]{}-({})[/B][/COLOR]'.format(info, host.capitalize(), quality.encode('utf-8'))
             addDir(title, frame, 100, iconimage, FANART, str(description))
-        # except BaseException:
-        #     title = '[B][COLOR white]NO LINKS[/COLOR][/B]'
-        #     addDir(title, '', 'bug', iconimage, FANART, str(description))
-    # except BaseException:
-    #     pass
-        views.selectView('movies', 'movie-view')
+    except BaseException:
+        title = '[B][COLOR white]NO LINKS[/COLOR][/B]'
+        addDir(title, '', 'bug', iconimage, FANART, str(description))
+    views.selectView('movies', 'movie-view')
 
 
 def search(url): #35
     control.busy()
-    xbmc.log('TERM==== {}'.format(url))
-
     data = client.request(url)
-    xbmc.log('DATA==== {}'.format(data))
     posts = client.parseDOM(data, 'div', attrs={'class': 'result-item'})
-    xbmc.log('PORSTS==== {}'.format(posts))
     for post in posts:
         link = client.parseDOM(post, 'a', ret='href')[0]
         poster = client.parseDOM(post, 'img', ret='src')[0]
