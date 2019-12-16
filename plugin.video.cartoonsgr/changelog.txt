@@ -1,3 +1,6 @@
+[B]v1.0.3[/B] (15/12/2019)
+  - Διόρθωση gamatokids domain
+
 [B]v1.0.2[/B] (10/12/2019)
   - Διόρθωση teniesonline credits to Host505
   https://github.com/bugatsinho/bugatsinho.github.io/pull/38

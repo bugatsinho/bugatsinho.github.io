@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import urllib, xbmcgui, xbmcaddon, xbmcplugin, xbmc, re, sys, os
-import urlparse, base64
+import urlparse
 
-import unshortenit
-import resolveurl
 from resources.lib.modules import client
 from resources.lib.modules import cache
 from resources.lib.modules import control
@@ -12,11 +10,10 @@ from resources.lib.modules import init
 from resources.lib.modules import views
 from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
-from resources.lib.indexers import teniesonline
 
 
 BASEURL = 'https://tenies-online.gr/genre/kids/'#'https://paidikestainies.online/'
-GAMATO = 'https://gamatokids.com/'
+GAMATO = 'https://gamatokid.com/'
 Baseurl = Teniesonline = 'https://tenies-online.gr/'
 
 ADDON       = xbmcaddon.Addon()
@@ -287,69 +284,6 @@ def Get_content(url): #5
     views.selectView('movies', 'movie-view')
 
 
-def Get_links(name, url):#10
-    username = control.setting('username')
-    password = control.setting('password')
-    lcookie = cache.get(_Login, 8, BASEURL, username, password)
-    name = re.sub('\)\s*\[.+?]', ')', name)
-    r = cache.get(client.request, 2, url, True, True, False, None, None, None, False, None, None, lcookie)
-    calidad = client.parseDOM(r, 'span', attrs={'class': 'calidad2'})[0]
-    calidad = client.replaceHTMLCodes(calidad)
-    calidad = calidad.encode('utf-8')
-    if 'Προσε' in calidad:
-        trailer = Trailer(url)
-        addDir('[B][COLOR white]%s | [B][COLOR lime]Trailer[/COLOR][/B]' % name, trailer, 100, iconimage, FANART,'')
-    else:
-        try:
-            back = client.parseDOM(r, 'img', ret='src',attrs={'class': 'cover'})[0]
-        except BaseException:
-            back = client.parseDOM(r, 'img', ret='src', attrs={'itemprop': 'image'})[0]
-
-        try:
-            data = client.parseDOM(r, 'div', attrs={'class': 'tabcontent'})
-            links = zip(client.parseDOM(data, 'a', ret='href'),
-                        client.parseDOM(data, 'a'))
-            description = Sinopsis(url)
-            trailer = Trailer(url)
-            
-            addDir('[B][COLOR white]%s | [B][COLOR lime]Trailer[/COLOR][/B]' % name, trailer, 100, iconimage, back,'')
-
-            check_dup = []
-            for url, host in links:
-                host = clear_Title(host).encode('utf-8')
-                url = re.sub('http://adf.ly/\d+/', '', url)
-
-                if 'buck' in url or 'dorea' in url or 'easybytez' in url:
-                    continue
-
-                if 'adf.ly' in url:
-                    url = unshortenit.unshorten(str(url))
-                    if not url[1] == 200:
-                        continue
-                    else:
-                        url = url[0]
-
-                if 'tenies-online' in url:
-                    xbmc.log('TENIES-LINK: %s' % url)
-                    urls = get_tenies_online_links(url)
-                    xbmc.log('TENIES-LINKs: %s' % urls)
-                    for link, hoster in urls:
-                        if 'paidikestainies' in link:
-                            continue
-                        hoster = clear_Title(hoster).encode('utf-8')
-                        xbmc.log('url-host: %s - %s' % (link, hoster))
-                        title = '%s [B][COLOR white]| %s[/COLOR][/B]' % (name, hoster.capitalize())
-                        addDir(title, link, 100, iconimage, back, str(description))
-
-
-                else:
-                    title = '%s [B][COLOR white]| %s[/COLOR][/B]' % (name, host.capitalize())
-                    addDir(title, url, 100, iconimage, back, str(description))
-        except BaseException:
-            pass
-    views.selectView('movies', 'movie-view')
-
-
 def get_tenies_online_links(url):
     urls = []
 
@@ -422,39 +356,6 @@ def _Login(url):
     pdata = urllib.urlencode(data)
     login_cookie = client.request(lurl, post=pdata, referer=url, output='cookie')
     return login_cookie
-    
-
-def Get_epis_links(name, url):#11
-    lcookie = cache.get(_Login, 4, BASEURL)
-    OPEN = cache.get(client.request, 4, url, True, True, False, None, None, None,False,None,None,lcookie)
-    #Regex2 = re.compile('<a href="(http[s]?://adf.ly.+?|http[s]?://vidlox.+?|http[s]?://openload.+?|http[s]?://vidto.+?|http[s]?://streamin.+?|http[s]?://flashx.+?)".+?target="_blank".*?>(.*?)</a>', re.DOTALL).findall(OPEN)
-    data = client.parseDOM(OPEN, 'td', attrs={'class': 'easySpoilerRow'})
-    links = []
-    for i in data:
-        links += zip(client.parseDOM(i, 'a', ret='href', attrs={'target': '_blank'}),
-                    client.parseDOM(i, 'a'))
-    description = Sinopsis(url)
-    trailer = Trailer(url)
-    addDir('[B][COLOR white]%s | [B][COLOR lime]Trailer[/COLOR][/B]' %name,trailer,100,iconimage,FANART,'')
-    for url, title in links:
-        title = re.sub('\d{4}', '', title)
-        title = clear_Title(title)
-        title = Lang(32018).encode('utf-8') if title == "" else title.encode('utf-8')
-        url = re.sub('http://adf.ly/\d+/', '', url)
-        if 'buck' in url: continue
-        elif 'adf.ly' in url:
-            
-            url = unshortenit.unshorten(url)
-            
-            if not url[1] == 200: continue
-            else:
-                url = url[0]
-                
-        if 'easybytez' in url: continue
-        if 'zippy' in url: continue
-
-        addDir('[B][COLOR white]%s[/COLOR][/B]' %title, url, 100, iconimage, FANART, str(description))
-    views.selectView('movies', 'movie-view')
 
 
 def Sinopsis(url):
@@ -720,7 +621,7 @@ def gamato_kids(url): #4
             title = client.parseDOM(post, 'img', ret='alt')[0]
         title = clear_Title(title).encode('utf-8', 'ignore')
         link = client.parseDOM(post, 'a', ret='href')[0]
-        link = client.replaceHTMLCodes(link).encode('utf-8', 'ignore')
+        link = client.replaceHTMLCodes(link)#.encode('utf-8', 'ignore')
         poster = client.parseDOM(post, 'img', ret='src')[0]
         poster = client.replaceHTMLCodes(poster).encode('utf-8', 'ignore')
 
@@ -741,8 +642,7 @@ def gamatokids_top(url):
     for post in posts:
         try:
             title = client.parseDOM(post, 'a')[-1]
-
-            title = clear_Title(title).encode('utf-8')
+            title = clear_Title(title)
             link = client.parseDOM(post, 'a', ret='href')[0]
             poster = client.parseDOM(post, 'img', ret='src')[0]
 
@@ -754,15 +654,19 @@ def gamatokids_top(url):
 
 def gamato_links(url, name, poster): #12
     try:
+        url = urllib.quote(url, ':/.')
         data = client.request(url)
-        desc = client.parseDOM(data, 'div', attrs={'itemprop': 'description'})[0]
-        desc = re.sub('<.+?>', '', desc)
-        desc = desc.encode('utf-8', 'ignore')
         try:
-            match = re.findall('''file\s*:\s*['"](.+?)['"],poster\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
+            desc = client.parseDOM(data, 'div', attrs={'itemprop': 'description'})[0]
+            desc = clear_Title(desc)
+        except IndexError:
+            desc = 'N/A'
+
+        try:
+            match = re.findall(r'''file\s*:\s*['"](.+?)['"],poster\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
             link, _poster = match[0], match[1]
         except IndexError:
-            frame = client.parseDOM(data, 'div', attrs={'id': 'option-\d+'})[0]
+            frame = client.parseDOM(data, 'div', attrs={'id': r'option-\d+'})[0]
             frame = client.parseDOM(frame, 'iframe', ret='src')[0]
             if 'cloud' in frame:
                 #sources: ["http://cloudb.me/4fogdt6l4qprgjzd2j6hymoifdsky3tfskthk76ewqbtgq4aml3ior7bdjda/v.mp4"],
@@ -813,6 +717,7 @@ def find_single_match(data, patron, index=0):
 
 
 def clear_Title(txt):
+    txt = txt.encode('utf-8', 'ignore')
     txt = re.sub('<.+?>', '', txt)
     txt = txt.replace("&quot;", "\"").replace('()','').replace("&#038;", "&").replace('&#8211;',':').replace('\n',' ')
     txt = txt.replace("&amp;", "&").replace('&#8217;',"'").replace('&#039;',':').replace('&#;','\'')
@@ -858,6 +763,7 @@ def resolve(name, url, iconimage, description):
 
 
 def evaluate(host):
+    import resolveurl
     try:
         if 'openload' in host:
             try:
@@ -944,9 +850,6 @@ elif mode == 21:
 elif mode == 30:
     from resources.lib.indexers import teniesonline
     teniesonline.menu()
-elif mode == 32:
-    from resources.lib.indexers import teniesonline
-    teniesonline.years()
 elif mode == 33:
     from resources.lib.indexers import teniesonline
     teniesonline.get_links(name, url, iconimage, description)
@@ -985,10 +888,6 @@ elif mode == 8:
     Get_random(url)
 elif mode == 9:
     cache_clear()
-elif mode == 10:
-    Get_links(name, url)
-elif mode == 11:
-    Get_epis_links(name, url)
 elif mode == 13:
     Peliculas()
 elif mode == 14:
