@@ -1,3 +1,8 @@
++ [B][COLOR lime]1.8.6[/B][/COLOR] [COLOR gold](03-01-2020)[/COLOR]
+- add foreign movies menu
+- fix search function to point titles link to old2.rlsbb domain
+- add service.py and make function to get the available RLSBB domains
+
 + [B][COLOR lime]1.8.5.2[/B][/COLOR] [COLOR gold](01-12-2019)[/COLOR]
 - fix cfscrape to bypass cloudflare credits to openscrapers team
 - fix search function

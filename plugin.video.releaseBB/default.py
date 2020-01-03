@@ -55,7 +55,11 @@ base = control.setting('domain')
 BASE_URL = 'http://%s' % base.lower()
 
 tested_links = []
-
+allfun = [
+    (control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+    (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+    (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)
+]
 
 def MainMenu():  # homescreen
     addon.add_directory({'mode': 'open_news'},
@@ -139,27 +143,32 @@ def Categories(section):  # categories
     items = [(i[0], i[1]) for i in items if sec in i[1]]
     img = IconPath + 'movies.png' if 'movies' in section else IconPath + 'tv_shows.png'
     if 'movie' in section:
-        addon.add_directory({'mode': 'recom', 'url': BASE_URL},
-                            {'title': control.lang(32038).encode('utf-8')},
-                            [(control.lang(32007).encode('utf-8'),
-                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                             (control.lang(32008).encode('utf-8'),
-                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                             (control.lang(32009).encode('utf-8'),
-                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
-                            img=img,
-                            fanart=FANART)
+        addon.add_directory({'mode': 'recom', 'url': BASE_URL}, {'title': control.lang(32038).encode('utf-8')},
+                            allfun, img=img, fanart=FANART)
+        addon.add_directory({'mode': 'foreign', 'url': BASE_URL}, {'title': '[B][COLORgold]Foreign Movies[/COLOR][/B]'},
+                            allfun, img=img, fanart=FANART)
     for title, link in items:
         title = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
         link = client.replaceHTMLCodes(link)
         addon.add_directory({'mode': 'GetTitles', 'section': section, 'url': link, 'startPage': '1', 'numOfPages': '2'},
-                            {'title': title},
-                            [(control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                             (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                             (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
-                            img=img,
-                            fanart=FANART)
+                            {'title': title}, allfun, img=img, fanart=FANART)
     
+    control.content(int(sys.argv[1]), 'addons')
+    control.directory(int(sys.argv[1]))
+    view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
+
+
+def foreign_movies(url):
+    items = [('Bluray-1080p', '/category/foreign-movies/bluray-1080p-foreign-movies/'),
+             ('Bluray-720p', '/category/foreign-movies/bluray-720p-foreign-movies/'),
+             ('DVDRIP-BDRIP', '/category/foreign-movies/dvdrip-bdrip/'),
+             ('WEBRIP-WEBDL', '/category/foreign-movies/webrip-web-dl/'),
+             ('OLD', 'category/foreign-movies/old-foreign-movies/')]
+    for title, link in items:
+        title = '[B][COLORgold]{0}[/COLOR][/B]'.format(title)
+        addon.add_directory({'mode': 'GetTitles', 'section': section, 'url': BASE_URL + link,
+                             'startPage': '1', 'numOfPages': '2'}, {'title': title}, allfun,
+                            img= IconPath + 'movies.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -186,14 +195,7 @@ def recommended_movies(url):
                 action = {'mode': 'GetLinks', 'section': section, 'url': movieUrl, 'img': item[1], 'plot': 'N/A'}
 
             name = '[B][COLORgold]{0}[/COLOR][/B]'.format(name.encode('utf-8'))
-            addon.add_directory(action, {'title': name, 'plot': 'N/A'},
-                                [(control.lang(32007).encode('utf-8'),
-                                  'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                                 (control.lang(32008).encode('utf-8'),
-                                  'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                                 (control.lang(32009).encode('utf-8'),
-                                  'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
-                                img=item[1], fanart=FANART)
+            addon.add_directory(action, {'title': name, 'plot': 'N/A'}, allfun, img=item[1], fanart=FANART)
 
     except BaseException:
         control.infoDialog(
@@ -244,12 +246,7 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
                 name = '[B][COLORgold]{0}[/COLOR][/B]'.format(name.encode('utf-8'))
                 mode = 'GetPack' if 'tv-packs' in url else 'GetLinks'
                 addon.add_directory({'mode': mode, 'section': section, 'url': movieUrl, 'img': img, 'plot': desc},
-                                    {'title': name, 'plot': desc},
-                                    [(control.lang(32007).encode('utf-8'),
-                                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                                     (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                                     (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
-                                    img=img, fanart=FANART)
+                                    {'title': name, 'plot': desc}, allfun, img=img, fanart=FANART)
             if 'Older Entries' not in html:
                 break
         # keep iterating until the last page is reached
@@ -821,6 +818,8 @@ elif mode == 'download':
     download(title, img, url)
 elif mode == 'recom':
     recommended_movies(url)
+elif mode == 'foreign':
+    foreign_movies(url)
 elif mode == 'open_news':
     from resources.lib.modules import newsbox
     newsbox.welcome()

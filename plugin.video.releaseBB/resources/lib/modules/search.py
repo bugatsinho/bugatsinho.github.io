@@ -83,9 +83,10 @@ def Search_bb(url):
                 xbmc.sleep(10)
                 html = scraper.get(url, headers=headers).text
                 posts = json.loads(html)['results']
-                posts = [(i['post_name'], i['post_title'], i['post_content']) for i in posts if i]
-                for movieUrl, title, infos in posts:
-                    movieUrl = urlparse.urljoin(BASE_URL, movieUrl) if not movieUrl.startswith('http') else movieUrl
+                posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
+                for movieUrl, title, infos, domain in posts:
+                    base = BASE_URL if 'old' not in domain else 'http://old2.rlsbb.ru/'
+                    movieUrl = urlparse.urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
                     title = title.encode('utf-8')
                     infos = infos.replace('\\', '')
                     try:
@@ -143,9 +144,10 @@ def Search_bb(url):
         html = scraper.get(url, headers=headers).content
         xbmc.log('NEXT HTMLLLLL: {}'.format(html))
         posts = json.loads(html)['results']
-        posts = [(i['post_name'], i['post_title'], i['post_content']) for i in posts if i]
-        for movieUrl, title, infos in posts:
-            movieUrl = urlparse.urljoin(BASE_URL, movieUrl) if not movieUrl.startswith('http') else movieUrl
+        posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
+        for movieUrl, title, infos, domain in posts:
+            base = BASE_URL if 'old' not in domain else 'http://old2.rlsbb.ru/'
+            movieUrl = urlparse.urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
             title = title.encode('utf-8')
             infos = infos.replace('\\', '')
             try:
@@ -202,9 +204,10 @@ def Search_bb(url):
             s_url = s_url.format(url, random.randint(0o000000000000001, 99999999999999999))
             html = scraper.get(s_url, headers=headers).text
             posts = json.loads(html)['results']
-            posts = [(i['post_name'], i['post_title'], i['post_content']) for i in posts if i]
-            for movieUrl, title, infos in posts:
-                movieUrl = urlparse.urljoin(BASE_URL, movieUrl) if not movieUrl.startswith('http') else movieUrl
+            posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
+            for movieUrl, title, infos, domain in posts:
+                base = BASE_URL if 'old' not in domain else 'http://old2.rlsbb.ru/'
+                movieUrl = urlparse.urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
                 title = title.encode('utf-8')
                 infos = infos.replace('\\', '')
                 try:
