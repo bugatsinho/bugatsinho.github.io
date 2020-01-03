@@ -29,7 +29,7 @@
 		</extension>
 	</addon>
 
-	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.3" provider-name="Bugatsinho">
+	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.4" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.python" version="2.19.0"/>
 		<import addon="script.module.resolveurl" version="5.0.00"/>
@@ -324,6 +324,35 @@
         <extension point="xbmc.addon.metadata">
             <summary>Magico GR repository</summary>
             <description></description>
+            <platform>all</platform>
+        </extension>
+    </addon>
+
+	<addon id="repository.thgiliwt" name="Thgiliwt Repository" version="1.7.0" provider-name="Thgiliwt">
+        <extension point="xbmc.addon.repository" name="Thgiliwt Repository">
+            <info compressed="false">https://bitbucket.org/thgiliwt/repo.thgiliwt/raw/HEAD/_thgiliwt/addons.xml</info>
+            <checksum>https://bitbucket.org/thgiliwt/repo.thgiliwt/raw/HEAD/_thgiliwt/addons.xml.md5</checksum>
+            <datadir zip="true">https://bitbucket.org/thgiliwt/repo.thgiliwt/raw/HEAD/_thgiliwt/</datadir>
+            <hashes>false</hashes>
+            <dir>
+                <info compressed="false">https://raw.githubusercontent.com/Twilight0/repo.twilight0/master/_zips/addons.xml</info>
+                <checksum>https://raw.githubusercontent.com/Twilight0/repo.twilight0/master/_zips/addons.xml.md5</checksum>
+                <datadir zip="true">https://raw.githubusercontent.com/Twilight0/repo.twilight0/master/_zips/</datadir>
+            </dir>
+            <dir>
+                <info compressed="false">https://raw.githubusercontent.com/Twilight0/repo.twilight0.libs/master/_zips/addons.xml</info>
+                <checksum>https://raw.githubusercontent.com/Twilight0/repo.twilight0.libs/master/_zips/addons.xml.md5</checksum>
+                <datadir zip="true">https://raw.githubusercontent.com/Twilight0/repo.twilight0.libs/master/_zips/</datadir>
+            </dir>
+            <dir>
+                <info compressed="false">https://raw.githubusercontent.com/jsergio123/zips/master/addons.xml</info>
+                <checksum>https://raw.githubusercontent.com/jsergio123/zips/master/addons.xml.md5</checksum>
+                <datadir zip="true">https://raw.githubusercontent.com/jsergio123/zips/master/</datadir>
+            </dir>
+        </extension>
+        <extension point="xbmc.addon.metadata">
+            <summary>Thgiliwt's repository</summary>
+            <description>Repository for AliveGR and other add-ons</description>
             <platform>all</platform>
         </extension>
     </addon>

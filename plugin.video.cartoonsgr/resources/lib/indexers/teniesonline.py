@@ -152,7 +152,7 @@ def __top_domain(url):
 
 
 def clear_Title(txt):
-    txt = txt.encode('utf-8')
+    txt = txt.encode('utf-8', 'ignore')
     txt = re.sub('<.+?>', '', txt)
     txt = txt.replace(' online ελληνικοί υπότιτλοι', '')
     txt = txt.replace("&quot;", "\"").replace('()','').replace("&#038;", "&").replace('&#8211;',':').replace('\n',' ')

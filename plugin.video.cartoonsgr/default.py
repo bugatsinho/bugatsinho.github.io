@@ -13,7 +13,7 @@ from resources.lib.modules.control import addDir
 
 
 BASEURL = 'https://tenies-online.gr/genre/kids/'#'https://paidikestainies.online/'
-GAMATO = 'https://gamatokid.com/'
+GAMATO = 'https://gamatokids.com/'
 Baseurl = Teniesonline = 'https://tenies-online.gr/'
 
 ADDON       = xbmcaddon.Addon()
@@ -619,18 +619,19 @@ def gamato_kids(url): #4
             title = client.parseDOM(post, 'h4')[0]
         except BaseException:
             title = client.parseDOM(post, 'img', ret='alt')[0]
-        title = clear_Title(title).encode('utf-8', 'ignore')
+        title = clear_Title(title)
         link = client.parseDOM(post, 'a', ret='href')[0]
-        link = client.replaceHTMLCodes(link)#.encode('utf-8', 'ignore')
+        link = clear_Title(link)
         poster = client.parseDOM(post, 'img', ret='src')[0]
-        poster = client.replaceHTMLCodes(poster).encode('utf-8', 'ignore')
+        poster = clear_Title(poster)
 
         addDir('[B][COLOR white]%s[/COLOR][/B]' % (title), link, 12, poster, FANART, desc)
     try:
         np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'arrow_pag'})[-1]
+        np = clear_Title(np)
         page = np[-2] if np.endswith('/') else re.findall('page/(\d+)/', np)[0]
         title = '[B][COLORgold]>>>' + Lang(32011).encode('utf-8') + ' [COLORwhite]([COLORlime]%s[/COLOR])[/COLOR][/B]' % page
-        addDir(title, np.encode('utf-8'), 4, ART + 'next.jpg', FANART, '')
+        addDir(title, np, 4, ART + 'next.jpg', FANART, '')
     except BaseException:
         pass
     views.selectView('movies', 'movie-view')
