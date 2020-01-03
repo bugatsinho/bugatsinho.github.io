@@ -12,7 +12,7 @@ from resources.lib.modules import control
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-BASEURL = 'https://www.pelisplus.to/'
+BASEURL = 'https://pelisplushd.tv/'
 
 ADDON       = xbmcaddon.Addon()
 ADDON_DATA  = ADDON.getAddonInfo('profile')
@@ -33,7 +33,7 @@ def Main_addDir():
     addDir('[B][COLOR yellow]' + Lang(32001).encode('utf-8') + '[/COLOR][/B]', '', 14, ART + 'shows.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32002).encode('utf-8') + '[/COLOR][/B]', BASEURL+'documentales/', 5, ART + 'docu.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32003).encode('utf-8') + '[/COLOR][/B]', BASEURL+'kids/', 5, ART + 'kids.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]', '', 15, ART + 'anicon.jpg', ART + 'fanimet.jpg', '')
+    # addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]', '', 15, ART + 'anicon.jpg', ART + 'fanimet.jpg', '')
     addDir('[B][COLOR gold]' + Lang(32020).encode('utf-8') + '[/COLOR][/B]', '', 17, ICON, FANART, '')
     addDir('[B][COLOR gold]' + Lang(32021).encode('utf-8') + '[/COLOR][/B]', '', 9, ICON, FANART, '')
     addDir('[B][COLOR gold]' + Lang(32019).encode('utf-8') + ': [COLOR lime]%s[/COLOR][/B]' % vers, '', 'BUG', ICON, FANART, '')
