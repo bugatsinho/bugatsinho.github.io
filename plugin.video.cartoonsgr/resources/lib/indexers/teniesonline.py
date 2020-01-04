@@ -92,11 +92,11 @@ def get_links(name, url, iconimage, description):
                    client.parseDOM(i, 'td')[-3]) for i in frames if frames]
         for frame, domain, quality, info in frames:
             host = domain.split('=')[-1].encode('utf-8')
-            if 'Μεταγλωτισμένο' in info:
+            if 'Μεταγλωτισμένο' in info.encode('utf-8', 'ignore'):
                 info = '[Μετ]'
-            elif 'Ελληνικοί' in info:
+            elif 'Ελληνικοί' in info.encode('utf-8', 'ignore'):
                 info = '[Υπο]'
-            elif 'Χωρίς' in info:
+            elif 'Χωρίς' in info.encode('utf-8', 'ignore'):
                 info = '[Χωρίς Υπ]'
             else:
                 info = '[N/A]'
