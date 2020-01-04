@@ -103,7 +103,7 @@ def get_links(name, url, iconimage, description):
                 info = '[Χωρίς Υπ]'
             else:
                 info = '[N/A]'
-            title = '[COLOR lime]{}[B][COLOR white]{}-({})[/B][/COLOR]'.format(info, host.capitalize(), quality.encode('utf-8'))
+            title = '[COLOR lime]{}[/COLOR] | [B]{}[/B] | ({})'.format(info, host.capitalize(), quality.encode('utf-8'))
             addDir(title, frame, 100, iconimage, FANART, str(description))
     except BaseException:
         title = '[B][COLOR white]NO LINKS[/COLOR][/B]'
@@ -157,7 +157,7 @@ def __top_domain(url):
 def clear_Title(txt):
     txt = txt.encode('utf-8', 'ignore')
     txt = re.sub('<.+?>', '', txt)
-    txt = txt.replace(' online ελληνικοί υπότιτλοι', '')
+    txt = txt.replace('Δες το ', '').replace(' online', '')
     txt = txt.replace("&quot;", "\"").replace('()','').replace("&#038;", "&").replace('&#8211;',':').replace('\n',' ')
     txt = txt.replace("&amp;", "&").replace('&#8217;',"'").replace('&#039;',':').replace('&#;','\'')
     txt = txt.replace("&#38;", "&").replace('&#8221;','"').replace('&#8216;','"').replace('&#160;','')
