@@ -78,12 +78,15 @@ def metaglotismeno(url): #34
 
 def get_links(name, url, iconimage, description):
     data = client.request(url)
-    if 'Τρέιλερ' in data:
-        flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
-        if 'youtu' in flink:
-            addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
-    else:
-        addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
+    try:
+        if 'Τρέιλερ' in data:
+            flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
+            if 'youtu' in flink:
+                addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
+        else:
+            addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
+    except BaseException:
+        pass
     try:
         frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
         frames = [(client.parseDOM(i, 'a', ret='href')[0],
