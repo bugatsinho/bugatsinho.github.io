@@ -1,3 +1,10 @@
+[B]v1.0.5[/B] (05/01/2020)
+  - Διορθώσεις στον κώδικα by @HOST505
+  https://github.com/bugatsinho/bugatsinho.github.io/pull/39
+
+[B]v1.0.4[/B] (03/01/2020)
+  - Διόρθωση gamatokids domain
+
 [B]v1.0.3[/B] (15/12/2019)
   - Διόρθωση gamatokids domain
 
