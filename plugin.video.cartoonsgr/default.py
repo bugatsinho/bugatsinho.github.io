@@ -583,7 +583,7 @@ def Search_gamato(url): #18
         link = client.parseDOM(post, 'a', ret='href')[0]
         poster = client.parseDOM(post, 'img', ret='src')[0]
         title = client.parseDOM(post, 'img', ret='alt')[0]
-        title = clear_Title(title).encode('utf-8')
+        title = clear_Title(title)
         try:
             year = client.parseDOM(data, 'span', attrs={'class': 'year'})[0]
             desc = client.parseDOM(data, 'div', attrs={'class': 'contenido'})[0]
