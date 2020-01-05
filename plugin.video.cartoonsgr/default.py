@@ -425,6 +425,7 @@ def Search(url):
         from sqlite3 import dbapi2 as database
     except ImportError:
         from pysqlite2 import dbapi2 as database
+    from resources.lib.indexers import teniesonline
     if url == 'new':
         keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
         keyb.doModal()
