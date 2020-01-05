@@ -121,8 +121,8 @@ def search(url): #35
         title = client.parseDOM(post, 'img', ret='alt')[0]
         title = clear_Title(title)
         try:
-            year = client.parseDOM(data, 'span', attrs={'class': 'year'})[0]
-            desc = client.parseDOM(data, 'div', attrs={'class': 'contenido'})[0]
+            year = client.parseDOM(post, 'span', attrs={'class': 'year'})[0]
+            desc = client.parseDOM(post, 'div', attrs={'class': 'contenido'})[0]
             desc = re.sub('<.+?>', '', desc)
             desc = desc.encode('utf-8', 'ignore')
         except BaseException:
