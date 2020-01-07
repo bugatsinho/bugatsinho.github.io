@@ -462,9 +462,9 @@ def Search(url):
 
     else:
         if 'gamato' in url:
-            Search_gamato(url)
+            Search_gamato(url.replace(' ', '+'))
         else:
-            teniesonline.search(url)
+            teniesonline.search(url.replace(' ', '+'))
     views.selectView('movies', 'movie-view')
 
 
@@ -838,8 +838,9 @@ elif mode == 18:
     if keyb.isConfirmed():
         search = urllib.quote_plus(keyb.getText())
         term = urllib.unquote_plus(search).decode('utf-8')
-        url = GAMATO + "?s=%s" % term
-        Search_gamato(url)
+        term = term.replace(' ', '+')
+        url = GAMATO + "?s={}".format(term)
+        Search_gamato(url.encode('utf-8'))
     else:
         pass
 elif mode == 20:
@@ -864,7 +865,8 @@ elif mode == 35:
     keyb.doModal()
     if keyb.isConfirmed():
         search = urllib.quote_plus(keyb.getText())
-        term = urllib.quote(search)
+        term = urllib.unquote_plus(search)
+        term = term.replace(' ', '+')
         url = Teniesonline + "?s={}".format(term)
         teniesonline.search(url)
     else:
