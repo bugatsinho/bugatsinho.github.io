@@ -461,6 +461,7 @@ def Search(url):
 
 
     else:
+        url = url.replace(' ', '+')
         if 'gamato' in url:
             Search_gamato(url)
         else:
@@ -837,8 +838,7 @@ elif mode == 18:
     keyb.doModal()
     if keyb.isConfirmed():
         search = urllib.quote_plus(keyb.getText())
-        term = urllib.unquote_plus(search).decode('utf-8')
-        url = GAMATO + "?s=%s" % term
+        url = GAMATO + "?s={}".format(search)
         Search_gamato(url)
     else:
         pass
@@ -864,8 +864,7 @@ elif mode == 35:
     keyb.doModal()
     if keyb.isConfirmed():
         search = urllib.quote_plus(keyb.getText())
-        term = urllib.quote(search)
-        url = Teniesonline + "?s={}".format(term)
+        url = Teniesonline + "?s={}".format(search)
         teniesonline.search(url)
     else:
         pass
