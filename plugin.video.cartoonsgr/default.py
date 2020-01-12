@@ -14,7 +14,6 @@ from resources.lib.modules import init
 from resources.lib.modules import views
 from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
-from resources.lib.indexers import teniesonline
 
 
 BASEURL = 'https://tenies-online.gr/genre/kids/'#'https://paidikestainies.online/'
@@ -422,6 +421,7 @@ def search_menu():#6
 
 
 def Search(url):#26
+    from resources.lib.indexers import teniesonline
     if url == 'new':
         keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
         keyb.doModal()
@@ -840,12 +840,16 @@ elif mode == 21:
 
 ###############METAGLOTISMENO#################
 elif mode == 30:
+    from resources.lib.indexers import teniesonline
     teniesonline.menu()
 elif mode == 33:
+    from resources.lib.indexers import teniesonline
     teniesonline.get_links(name, url, iconimage, description)
 elif mode == 34:
+    from resources.lib.indexers import teniesonline
     teniesonline.metaglotismeno(url)
 elif mode == 35:
+    from resources.lib.indexers import teniesonline
     keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
     keyb.doModal()
     if keyb.isConfirmed():
