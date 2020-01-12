@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import urllib, xbmcgui, xbmcaddon, xbmcplugin, xbmc, re, sys, os
-import urlparse
+import urllib, urlparse, xbmcgui, xbmcaddon, xbmcplugin, xbmc, re, sys, os
+
+try:
+    from sqlite3 import dbapi2 as database
+except BaseException:
+    from pysqlite2 import dbapi2 as database
 
 from resources.lib.modules import client
 from resources.lib.modules import cache
@@ -10,6 +14,7 @@ from resources.lib.modules import init
 from resources.lib.modules import views
 from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
+from resources.lib.indexers import teniesonline
 
 
 BASEURL = 'https://tenies-online.gr/genre/kids/'#'https://paidikestainies.online/'
@@ -334,7 +339,6 @@ def get_tenies_online_links(url):
     return urls
 
 def __top_domain(url):
-    import urlparse
     elements = urlparse.urlparse(url)
     domain = elements.netloc or elements.path
     domain = domain.split('@')[-1].split(':')[0]
@@ -389,10 +393,6 @@ def Trailer(url):
 
 def search_menu():#6
     addDir(Lang(32024).encode('utf-8'), 'new', 26, ICON, FANART, '')
-    try:
-        from sqlite3 import dbapi2 as database
-    except BaseException:
-        from pysqlite2 import dbapi2 as database
 
     dbcon = database.connect(control.searchFile)
     dbcur = dbcon.cursor()
@@ -422,11 +422,6 @@ def search_menu():#6
 
 
 def Search(url):#26
-    try:
-        from sqlite3 import dbapi2 as database
-    except ImportError:
-        from pysqlite2 import dbapi2 as database
-    from resources.lib.indexers import teniesonline
     if url == 'new':
         keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
         keyb.doModal()
@@ -472,11 +467,6 @@ def Search(url):#26
 def Del_search(url):
     control.busy()
     search = url.split('s=')[1].decode('utf-8')
-
-    try:
-        from sqlite3 import dbapi2 as database
-    except ImportError:
-        from pysqlite2 import dbapi2 as database
 
     dbcon = database.connect(control.searchFile)
     dbcur = dbcon.cursor()
@@ -850,16 +840,12 @@ elif mode == 21:
 
 ###############METAGLOTISMENO#################
 elif mode == 30:
-    from resources.lib.indexers import teniesonline
     teniesonline.menu()
 elif mode == 33:
-    from resources.lib.indexers import teniesonline
     teniesonline.get_links(name, url, iconimage, description)
 elif mode == 34:
-    from resources.lib.indexers import teniesonline
     teniesonline.metaglotismeno(url)
 elif mode == 35:
-    from resources.lib.indexers import teniesonline
     keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
     keyb.doModal()
     if keyb.isConfirmed():
