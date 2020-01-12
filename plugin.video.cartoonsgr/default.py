@@ -408,6 +408,7 @@ def search_menu():#6
 
     delete_option = False
     for (url, search) in dbcur.fetchall():
+        url = urllib.quote_plus(url)
         domain = 'GAMATOKIDS' if 'gamato' in url else 'TENIES-ONLINE'
         title = '[B]%s[/B] - [COLORgold][B]%s[/COLOR][/B]' % (search.encode('utf-8'), domain)
         delete_option = True
@@ -420,7 +421,7 @@ def search_menu():#6
     views.selectView('movies', 'movie-view')
 
 
-def Search(url):
+def Search(url):#26
     try:
         from sqlite3 import dbapi2 as database
     except ImportError:
@@ -461,7 +462,6 @@ def Search(url):
 
 
     else:
-        url = url.replace(' ', '+')
         if 'gamato' in url:
             Search_gamato(url)
         else:
