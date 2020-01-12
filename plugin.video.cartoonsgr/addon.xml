@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.5" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.6" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.python" version="2.19.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
@@ -27,7 +27,7 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>[B]v1.0.5[/B] (05/01/2020)
+    <news>[B]v1.0.6[/B] (12/01/2020)
   - Διορθώσεις στον κώδικα by @HOST505</news>
   </extension>
 </addon>
