@@ -224,52 +224,6 @@
 	  </extension>
 	</addon>
 
-
-	<addon id="plugin.audio.mp3streams" name="MP3 Streams" version="2019.09.30" provider-name="Bugatsinho">
-		<requires>
-			<import addon="xbmc.python" version="2.1.0"/>
-			<import addon="script.module.t0mm0.common" version="1.1.0"/>
-			<import addon="script.module.mutagen"/>
-			<import addon="script.module.requests" version="1.1.0"/>
-		</requires>
-		<extension point="xbmc.python.pluginsource" library="default.py">
-			<provides>audio</provides>
-		</extension>
-		<extension point="xbmc.service" library="playerMP3.py" start="startup" />
-		<extension point="xbmc.addon.metadata">
-			<platform>all</platform>
-			<summary>A music streaming collection</summary>
-			<description>Browse, stream or download your favourite songs and albums</description>
-			<news>Small fixes/fix artwork/next page
-			Credits to qahanik, kinkin, art by Marquerite for original code</news>
-			<assets>
-				<icon>icon.png</icon>
-				<fanart>fanart.jpg</fanart>
-			</assets>
-		</extension>
-	</addon>
-
-	<addon id="script.module.mutagen"
-       name="mutagen"
-       provider-name="quodlibet"
-       version="1.41.1">
-
-		<requires>
-			<import addon="xbmc.python" version="2.19.0"/>
-		</requires>
-
-		<extension library="lib" point="xbmc.python.module"/>
-
-		<extension point="xbmc.addon.metadata">
-			<platform>all</platform>
-			<summary lang="en_GB">Mutagen is a Python module to handle audio metadata.</summary>
-			<description lang="en_GB">Mutagen is a Python module to handle audio metadata</description>
-			<license>GPLv2</license>
-			<website>https://pypi.org/project/mutagen/</website>
-			<source>https://github.com/quodlibet/mutagen</source>
-		</extension>
-	</addon>
-
 	<addon id="script.module.unshortenit" name="Unshortenit Module" version="0.3.1.a" provider-name="Jeff Kehler, Twilight0">
 		<requires>
 			<import addon="xbmc.python" version="2.1.0"/>
@@ -328,7 +282,7 @@
         </extension>
     </addon>
 
-	<addon id="repository.thgiliwt" name="Thgiliwt Repository" version="1.7.0" provider-name="Thgiliwt">
+	<addon id="repository.thgiliwt" name="Thgiliwt Repository" version="1.8" provider-name="Thgiliwt">
         <extension point="xbmc.addon.repository" name="Thgiliwt Repository">
             <info compressed="false">https://bitbucket.org/thgiliwt/repo.thgiliwt/raw/HEAD/_thgiliwt/addons.xml</info>
             <checksum>https://bitbucket.org/thgiliwt/repo.thgiliwt/raw/HEAD/_thgiliwt/addons.xml.md5</checksum>
