@@ -21,9 +21,10 @@ import base64
 import cookielib
 import requests
 import xbmc
-from resources.lib import jscrypto, aes, pyDes
+from resources.lib import client, jscrypto, pyaes_new as pyAES
 
-UA = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
+UA = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:57.0) Gecko/20100101 Firefox/57.0"
+# UA = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
 # UA = 'Mozilla/5.0 (Linux; Android 8.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.121 Mobile Safari/537.36'
 # UA = 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
 
@@ -83,7 +84,6 @@ def getChannels(addheader=False, BASEURL='http://www.sport365.live/en'):
     for event, color, hora, title, quality, league, lang in streams:
         online = '[COLOR lightgreen]•[/COLOR]' if '-green-' in color else '[COLOR red]*[/COLOR]'
         url = BASEURL + '/links/{}/1'.format(event)
-        xbmc.log('HTML-URL: %s' % url, level=xbmc.LOGNOTICE)
         quality = re.sub('<.+?>', '', quality).split('&')[0] if 'nbsp' in quality else 'SD'
         qualang = '[COLOR gold]%s-%s[/COLOR]' % (lang, quality)
         title = '%s%s: [COLOR blue]%s[/COLOR] %s, %s' % (online, hora, title, qualang, league)
@@ -114,11 +114,10 @@ def getStreams(url):
     out = []
 
     for i, s in enumerate(set(sources)):
-        decrypter = pyDes.triple_des(str(key), pyDes.CBC, str(info))
-        data = decrypter.decrypt(s.strip().decode('hex'))
-        s = re.findall('([a-f0-9]+)', data)[0].decode('hex')
-        # data = aes.AESModeOfOperationCBC(key, info).decrypt(s.replace(' ', '').decode('hex'))
-        # s = re.findall('([a-f0-9]+)', data)[0].decode('hex')
+        decrypter = pyAES.Decrypter(pyAES.AESModeOfOperationECB(key))
+        data = decrypter.feed(s.strip().decode('hex'))
+        data += decrypter.feed()
+        s = data.decode('hex')
         title = 'Link {}'.format(i + 1)
         out.append({"title": title, "tvid": title, "url": '{}@{}@{}'.format(s, info, key), "refurl": url})
     # xbmc.log('HTMLSTREAMS-OUT: %s' % str(out), level=xbmc.LOGNOTICE)
@@ -128,30 +127,37 @@ def getStreams(url):
 def getChannelVideo(item):
     item = eval(item)
     myurl, info, key = item['url'].split('@')
-    import xbmc
     s = requests.Session()
     header = {'User-Agent': UA,
               'Referer': myurl}
     content = s.get(myurl, headers=header)
 
-    link = re.compile('src="(http://www.[^\.]+.pw/(?!&#)[^"]+)"',
-                       re.IGNORECASE + re.DOTALL + re.MULTILINE + re.UNICODE).findall(content.text)
-    # xbmc.log('@#@CHANNEL-VIDEO-LINK: %s' % str(link), xbmc.LOGNOTICE)
+    links = client.parseDOM(content.text, 'iframe', ret='src')
+    link = [i for i in links if '.pw' in i][0]
+    # xbmc.log('@#@DEROT-LINK: %s' % link, xbmc.LOGNOTICE)
     if link:
         header['Referer'] = item.get('url')
-        link = re.sub(r'&#(\d+);', lambda x: chr(int(x.group(1))), link[0])
-        data = s.get(link, headers=header).content
-        # xbmc.log('@#@CHANNEL-VIDEO-DATA: %s' % data, xbmc.LOGNOTICE)
-        f = re.compile('.*?name="f"\s*value=["\']([^"\']+)["\']').findall(data)
-        d = re.compile('.*?name="d"\s*value=["\']([^"\']+)["\']').findall(data)
-        r = re.compile('.*?name="r"\s*value=["\']([^"\']+)["\']').findall(data)
+        # link = re.sub(r'&#(\d+);', lambda x: chr(int(x.group(1))), link[0])
+        data = requests.get(link).text
+        f = re.compile(r'.*?name="f"\s*value=["\']([^"\']+)["\']').findall(data)
+        d = re.compile(r'.*?name="d"\s*value=["\']([^"\']+)["\']').findall(data)
+        r = re.compile(r'.*?name="r"\s*value=["\']([^"\']+)["\']').findall(data)
         # b = re.compile('.*?name="b"\s*value=["\']([^"\']+)["\']').findall(data)
-        action = re.compile('[\'"]action[\'"][,\s]*[\'"](http.*?)[\'"]').findall(data)
-        srcs = re.compile('src=[\'"](.*?)[\'"]').findall(data)
+        action = re.compile(r'[\'"]action[\'"][,\s]*[\'"](http.*?)[\'"]').findall(data)
+        srcs = re.compile(r'src=[\'"](.*?)[\'"]').findall(data)
         if f and r and d and action:
+            header['Referer'] = link
             # payload = urllib.urlencode({'b': b[0], 'd': d[0], 'f': f[0], 'r': r[0]})
             payload = urllib.urlencode({'f': f[0], 'd': d[0], 'r': r[0]})
             data2, c = getUrlc(action[0], payload, header=header, usecookies=True)
+            # xbmc.log('@#@DEROT-DATA2: %s' % data2, xbmc.LOGNOTICE)
+            script = re.findall(r'src="(http://s1.medianetworkinternational.com/js/\w+.js\?.+?)">', data2, re.DOTALL)[0]
+            # xbmc.log('@#@DEROT-script: %s' % script, xbmc.LOGNOTICE)
+            html = getUrl(script, header=header)
+            xset = re.findall(r'var\s+xset=(\[[^\]]+\]);', html)[0]
+            # xbmc.log('@#@DEROT-XSET: %s' % xset, xbmc.LOGNOTICE)
+            hset = re.findall(r'var\s+hset=(\[[^\]]+\]);', html)[0]
+            # xbmc.log('@#@DEROT-HSET: %s' % hset, xbmc.LOGNOTICE)
             try:
                 #######ads banners#########
                 bheaders = header
@@ -172,12 +178,15 @@ def getChannelVideo(item):
                 #     ###########################
             except BaseException:
                 pass
-            s = re.findall("function\(\)\s*{\s*[a-z0-9]{43}\(.*?,.*?,\s*'([^']+)'", data2)[0]
+            src = re.findall(r"function\(\)\s*{\s*[a-z0-9]{43}\(.*?,.*?,\s*'([^']+)'", data2)[0]
+            # xbmc.log('@#@FUNCTION: %s' % src, xbmc.LOGNOTICE)
+            s = derot(xset, hset, src)
+            key = key[:32]
 
-            decrypter = pyDes.triple_des(str(key), pyDes.CBC, str(info))
-            data = decrypter.decrypt(s.strip().decode('hex'))
-            fstream = re.findall('([a-f0-9]+)', data)[0].decode('hex')
-
+            decrypter = pyAES.Decrypter(pyAES.AESModeOfOperationECB(key))
+            data = decrypter.feed(s.decode('hex').strip())
+            data += decrypter.feed()
+            fstream = data.decode('hex')
             # fstream = aes.AESModeOfOperationCBC(key, info).decrypt(s.decode('hex'))
             # xbmc.log('getStreams-Final-data: %s' % fstream, level=xbmc.LOGNOTICE)
             # fstream = re.findall('([a-f0-9]+)', fstream)[0].decode('hex')
@@ -192,6 +201,24 @@ def getChannelVideo(item):
                 return href, srcs[-1], header, item['title'], myurl
 
     return ''
+
+
+def derot(xset, hset, src):
+    xset = eval(xset)
+    hset = eval(hset)
+
+    import string
+    o = ''
+    u = ''
+    il = 0
+    for first in hset:
+        u += first
+        o += xset[il]
+        il += 1
+    rot13 = string.maketrans(o, u)
+    link = string.translate(src, rot13)
+    xbmc.log('@#@DEROT-LINK: %s' % link, xbmc.LOGNOTICE)
+    return link
 
 
 def xor2(data, key):

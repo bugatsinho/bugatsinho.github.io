@@ -97,8 +97,9 @@ def take_stream(params):
     # xbmc.log(title, level=xbmc.LOGNOTICE)
 
     if stream_url:
-        UA = 'Mozilla/5.0 (Linux; Android 8.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.121 Mobile Safari/537.36'
-        hdrs = 'User-Agent={}&Referer={}'.format(urllib.quote(UA), urllib.quote('http://h5.adshell.net/peer5'))
+        hdrs = 'User-Agent={}&Referer={}&Origin={}'.format(urllib.quote(header['User-Agent']),
+                                                           urllib.quote('http://h5.adshell.net/peer5'),
+                                                           urllib.quote('http://h5.adshell.net/'))
         liz = xbmcgui.ListItem(label=orig_title)
         liz.setArt({"fanart": FANART, "icon": ICON})
         liz.setInfo(type="Video", infoLabels={"title": orig_title,
@@ -133,7 +134,7 @@ def take_stream(params):
             import streamlink.session
             session = streamlink.session.Streamlink()
 
-            stream_url = 'hls://' + stream_url.replace('/i', '/index.m3u8') if stream_url.endswith('/i') else\
+            stream_url = 'hls://' + stream_url.replace('/i', '/index.m3u8') if stream_url.endswith('/i') else \
                 'hls://' + stream_url
             hdrs += '&Origin=http://h5.adshell.net'
             session.set_option("http-headers", hdrs)
@@ -151,13 +152,16 @@ def take_stream(params):
 
         else:
             try:
-                stream_url = 'plugin://plugin.video.f4mTester/?streamtype=HLSRETRY&url={0}&name={1}'.format(
-                    urllib.quote_plus(stream_url), urllib.quote_plus(orig_title))
+                f4m_url = stream_url + '|' + hdrs
+                f4m_url = 'plugin://plugin.video.f4mTester/?streamtype=HLSRETRY&url={0}&name={1}'.format(
+                    urllib.quote_plus(f4m_url), urllib.quote_plus(orig_title))
+                # stream_url += '&callbackparam={}'.format(stream_url)
                 liz.setPath(stream_url)
                 idle()
+                xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=False)
+                xbmc.executebuiltin('Dialog.Close(all,true)')
+                xbmc.executebuiltin('RunPlugin(' + f4m_url + ')')
 
-                xbmcplugin.setResolvedUrl(addon_handle, False, liz)
-                xbmcplugin.endOfDirectory(addon_handle, succeeded=False)
                 return
             except BaseException:
                 pass
