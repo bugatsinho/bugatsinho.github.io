@@ -421,7 +421,6 @@ def search_menu():#6
 
 
 def Search(url):#26
-    from resources.lib.indexers import teniesonline
     if url == 'new':
         keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
         keyb.doModal()
@@ -436,6 +435,7 @@ def Search(url):#26
             select = dp.select('Select Website', ['[COLORgold][B]Tenies-Online[/COLOR][/B]',
                                                   '[COLORgold][B]Gamato-Kids[/COLOR][/B]'])
             if select == 0:
+                from resources.lib.indexers import teniesonline
                 url = Teniesonline + "?s={}".format(search)
                 dbcur.execute("DELETE FROM Search WHERE url = ?", (url,))
                 dbcur.execute("INSERT INTO Search VALUES (?,?)", (url, term))
@@ -572,7 +572,7 @@ def Search_gamato(url): #18
     posts = client.parseDOM(data, 'div', attrs={'class': 'result-item'})
     for post in posts:
         link = client.parseDOM(post, 'a', ret='href')[0]
-        poster = client.parseDOM(post, 'img', ret='src')[0]
+        poster = client.parseDOM(post, 'img', ret='src')[0].encode('utf-8', 'ignore')
         title = client.parseDOM(post, 'img', ret='alt')[0]
         title = clear_Title(title)
         try:
@@ -609,15 +609,18 @@ def gamato_kids(url): #4
         desc = desc.encode('utf-8')
         try:
             title = client.parseDOM(post, 'h4')[0]
+            year = client.parseDOM(post, 'span')[0]
+            if not (len(year) == 4 and year.isdigit()): year = 'N/A'
         except BaseException:
             title = client.parseDOM(post, 'img', ret='alt')[0]
+            year = 'N/A'
         title = clear_Title(title)
         link = client.parseDOM(post, 'a', ret='href')[0]
         link = clear_Title(link)
         poster = client.parseDOM(post, 'img', ret='src')[0]
         poster = clear_Title(poster)
 
-        addDir('[B][COLOR white]%s[/COLOR][/B]' % (title), link, 12, poster, FANART, desc)
+        addDir('[B][COLOR white]{0} [{1}][/COLOR][/B]'.format(title, year), link, 12, poster, FANART, desc)
     try:
         np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'arrow_pag'})[-1]
         np = clear_Title(np)
