@@ -460,6 +460,7 @@ def Search(url):#26
         if 'gamato' in url:
             Search_gamato(url)
         else:
+            from resources.lib.indexers import teniesonline
             teniesonline.search(url)
     views.selectView('movies', 'movie-view')
 
