@@ -42,7 +42,7 @@ class subztv:
     def get(self, query):
         try:
             query, imdb = query.split('/imdb=')
-            match = re.findall('^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
+            match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
 
             cookie = self.s.get('https://subztv.online/', headers=self.hdr).cookies
             cj = requests.utils.dict_from_cookiejar(cookie)
@@ -68,17 +68,14 @@ class subztv:
                     r = self.s.get(frame).text
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
 
-
                 secCode = client.parseDOM(r, 'input', ret='value', attrs={'id': 'secCode'})[0]
                 items = client.parseDOM(r, 'tbody')[0]
                 items = client.parseDOM(items, 'tr')
 
             else:
-                title, season, episode = re.findall('^(?P<title>.+)\s+S(\d+)E(\d+)', query, re.I)[0]
+                title, season, episode = re.findall(r'^(?P<title>.+)\s+S(\d+)E(\d+)', query, re.I)[0]
                 xbmc.log('$#$MATCH-SUBZ: %s | %s | %s' % (title, season, episode), xbmc.LOGNOTICE)
-
-                season, episode = '%01d' % int(season), '%01d' % int(episode)
-                hdlr = 'season-%s-episode-%s' % (season, episode)
+                hdlr = 'season-{:01d}-episode-{:01d}'.format(int(season), int(episode))
 
                 if imdb.startswith('tt'):
                     r = self.s.get('https://subztv.online/view/%s' % imdb).text
@@ -91,12 +88,11 @@ class subztv:
                     else:
                         frame = link[0]
                 else:
-
                     if len(imdb) > 1:
                         baseurl = ' https://api.thetvdb.com/login'
                         series_url = 'https://api.thetvdb.com/series/%s'
-                        greek_api = 'CAYAM6RT1K2SERUE'
-                        user_key = '7F5420E18BAD7762'
+                        greek_api = '7d4261794838bb48a3122381811ecb42'
+                        user_key = 'TJXB86PGDBYN0818'
                         username = 'filmnet'
 
                         _headers = {'Content-Type': 'application/json',
@@ -107,13 +103,11 @@ class subztv:
 
                         # data = requests.post(baseurl, data=json.dumps(post), headers=_headers).json()
                         data = client.request(baseurl, post=json.dumps(post), headers=_headers)
-
                         auth = 'Bearer %s' % urllib.unquote_plus(json.loads(data)['token'])
                         _headers['Authorization'] = auth
 
                         series_data = client.request(series_url % imdb, headers=_headers)
                         imdb = json.loads(series_data)['data']['imdbId']
-                        #xbmc.log('$#$MATCH-SUBZ-RRR-IMDB: %s' % imdb)
                         r = self.s.get('https://subztv.online/view/%s' % imdb).content
                         # xbmc.log('$#$MATCH-SUBZ-RRR-source: %s' % r)
                         #r = re.sub(r'[^\x00-\x7F]+', ' ', r)
@@ -134,9 +128,10 @@ class subztv:
                         frames = client.parseDOM(r, 'a', ret='href')
                         frame = [i for i in frames if hdlr in i][0]
 
-                #xbmc.log('$#$MATCH-SUBZ-λινκ: %s' % frame)
+                frame = client.replaceHTMLCodes(frame)
+                frame = frame.encode('utf-8')
                 r = self.s.get(frame).text
-                r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 secCode = client.parseDOM(r, 'input', ret='value', attrs={'id': 'secCode'})[0]
                 items = client.parseDOM(r, 'tbody')[0]
                 items = client.parseDOM(items, 'tr')
@@ -146,19 +141,18 @@ class subztv:
 
         for item in items:
             try:
-
+                item = item.encode('utf-8')
+                # xbmc.log('$#$MATCH-SUBZ-ITEM: {}'.format(item))
                 try:
-                    imdb = re.search('\/(tt\d+)\/', frame).groups()[0]
+                    imdb = re.search(r'\/(tt\d+)\/', frame).groups()[0]
                 except BaseException:
-                    imdb = re.search('\/(tt\d+)', frame).groups()[0]
+                    imdb = re.search(r'\/(tt\d+)', frame).groups()[0]
 
-                data = re.findall('''downloadMe\(['"](\w+\-\w+).+?label.+?>(\d+).+?<td>(.+?)</td''',
+                data = re.findall(r'''downloadMe\(['"](\w+\-\w+).+?label.+?>(\d+).+?<td>(.+?)</td''',
                                   str(item), re.I | re.DOTALL)[0]
-
                 name = data[2]
                 name = client.replaceHTMLCodes(name)
                 name = name.encode('utf-8')
-
                 url = 'https://subztv.online/dll/{}/0/{}'.format(data[0], secCode)
                 url = client.replaceHTMLCodes(url)
                 url = url.encode('utf-8')
@@ -167,7 +161,7 @@ class subztv:
                 rating = self._rating(down)
 
                 self.list.append(
-                    {'name': name, 'url': '%s|%s|%s|%s|%s|%s' % (frame.encode('utf-8'), url, cj['__cfduid'], cj['PHPSESSID'], name, imdb),
+                    {'name': name, 'url': '%s|%s|%s|%s|%s|%s' % (frame, url, cj['__cfduid'], cj['PHPSESSID'], name, imdb),
                      'source': 'subztv', 'rating': rating})
 
             except BaseException:

@@ -152,7 +152,7 @@ class Search:
             try:
                 name, url, source, rating = i['name'], i['url'], i['source'], i['rating']
 
-                u = {'action': 'download', 'url': url.encode('utf8'), 'source': source}
+                u = {'action': 'download', 'url': url, 'source': source}
                 u = '%s?%s' % (sysaddon, urllib.urlencode(u))
 
                 item = control.item(label='Greek', label2=name, iconImage=str(rating), thumbnailImage='el')
