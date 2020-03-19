@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import urllib, urlparse, xbmcgui, xbmcaddon, xbmcplugin, xbmc, re, sys, os
-
+import requests
 try:
     from sqlite3 import dbapi2 as database
 except BaseException:
@@ -17,7 +17,7 @@ from resources.lib.modules.control import addDir
 
 
 BASEURL = 'https://tenies-online.gr/genre/kids/'#'https://paidikestainies.online/'
-GAMATO = 'https://gamatokids.com/'
+GAMATO = 'https://www.gamatotv1.com/kids/'
 Baseurl = Teniesonline = 'https://tenies-online.gr/'
 
 ADDON       = xbmcaddon.Addon()
@@ -68,7 +68,9 @@ def gamatokids():
     addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]',
            GAMATO + 'genre/%ce%bc%ce%b5%cf%84%ce%b1%ce%b3%ce%bb%cf%89%cf%84%ce%b9%cf%83%ce%bc%ce%ad%ce%bd%ce%b1/',
            4, ART + 'dub.jpg', FANART, '')
-    addDir('[B][COLOR yellow]TOP 100[/COLOR][/B]', GAMATO + 'top-imdb', 21, ART + 'top.png', FANART, '')
+    addDir('[B][COLOR yellow]' + Lang(32006).encode('utf-8') + '[/COLOR][/B]',
+           GAMATO, 3, ART + 'genre.jpg', FANART, '')
+    addDir('[B][COLOR yellow]TOP 250[/COLOR][/B]', GAMATO + 'top-imdb/', 21, ART + 'top.png', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002).encode('utf-8') + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
     views.selectView('menu', 'menu-view')
 
@@ -91,27 +93,6 @@ def Series():
            BASEURL + 'tvshows-genre/κινούμενα-σχέδια/', 5, ART + 'tvshows.jpg', FANART, '')
     addDir('[B][COLOR orangered]' + Lang(32009).encode('utf-8') + '[/COLOR][/B]',
            BASEURL + 'tvshows/', 5, ART + 'tvshows.jpg', FANART, '')
-    views.selectView('menu', 'menu-view')
-
-
-def Get_Genres(url): #3
-    try:
-        r = cache.get(client.request, 120, url)
-        r = client.parseDOM(r, 'div', attrs={'id': 'moviehome'})[0]
-        r = client.parseDOM(r, 'div', attrs={'class': 'categorias'})[0]
-        r = client.parseDOM(r, 'li', attrs={'class': 'cat-item.+?'})
-        for post in r:
-            try:
-                url = client.parseDOM(post, 'a', ret='href')[0]
-                name = client.parseDOM(post, 'a')[0]
-                name = re.sub('\d{4}', '', name)
-                items = client.parseDOM(post, 'span')[0].encode('utf-8')
-            except BaseException:
-                pass
-            name = clear_Title(name).encode('utf-8') + ' ([COLORlime]' + items + '[/COLOR])'
-            addDir('[B][COLOR white]%s[/COLOR][/B]' %name,url,5,ART + 'movies.jpg',FANART,'')
-    except BaseException:
-        pass
     views.selectView('menu', 'menu-view')
 
 
@@ -567,9 +548,35 @@ def downloads_root():
 ####  GAMATOKIDS  ####
 ######################
 
+def get_gam_genres(url): #3
+    try:
+
+        r = requests.get(url).text
+        r = client.parseDOM(r, 'li', attrs={'id': r'menu-item-\d+'})[1:]
+        xbmc.log('POSTs: {}'.format(r))
+        # r = client.parseDOM(r, 'div', attrs={'class': 'categorias'})[0]
+        # r = client.parseDOM(r, 'li', attrs={'class': 'cat-item.+?'})
+        for post in r:
+            try:
+                xbmc.log('POST: {}'.format(post))
+                url = client.parseDOM(post, 'a', ret='href')[0]
+                name = client.parseDOM(post, 'a')[0]
+                name = clear_Title(name).encode('utf-8')
+                if 'facebook' in url or 'imdb' in url:
+                    continue
+                xbmc.log('NAME: {} | URL: {}'.format(name, url))
+                addDir('[B][COLOR white]%s[/COLOR][/B]' % name, url, 4, ART + 'movies.jpg', FANART, '')
+            except BaseException:
+                pass
+
+    except BaseException:
+        pass
+    views.selectView('menu', 'menu-view')
+
+
 def Search_gamato(url): #18
     control.busy()
-    data = cache.get(client.request, 4, url)
+    data = r = requests.get(url).text
     posts = client.parseDOM(data, 'div', attrs={'class': 'result-item'})
     for post in posts:
         link = client.parseDOM(post, 'a', ret='href')[0]
@@ -599,7 +606,7 @@ def Search_gamato(url): #18
 
 
 def gamato_kids(url): #4
-    data = client.request(url)
+    data = requests.get(url).text
     posts = client.parseDOM(data, 'article', attrs={'class': 'item movies'})
     for post in posts:
         try:
@@ -633,8 +640,8 @@ def gamato_kids(url): #4
     views.selectView('movies', 'movie-view')
 
 
-def gamatokids_top(url):
-    data = cache.get(client.request, 4, url)
+def gamatokids_top(url): #21
+    data = requests.get(url).text
     posts = client.parseDOM(data, 'div', attrs={'class': 'top-imdb-item'})
     for post in posts:
         try:
@@ -643,7 +650,7 @@ def gamatokids_top(url):
             link = client.parseDOM(post, 'a', ret='href')[0]
             poster = client.parseDOM(post, 'img', ret='src')[0]
 
-            addDir('[B][COLOR white]{0}[/COLOR][/B]'.format(title), link, 12, poster, FANART, 'Top 100 IMDB')
+            addDir('[B][COLOR white]{0}[/COLOR][/B]'.format(title), link, 12, poster, FANART, 'Top 250 IMDB')
         except BaseException:
             pass
     views.selectView('movies', 'movie-view')
@@ -652,7 +659,8 @@ def gamatokids_top(url):
 def gamato_links(url, name, poster): #12
     try:
         url = urllib.quote(url, ':/.')
-        data = client.request(url)
+        data = requests.get(url).text
+        # xbmc.log('DATA: {}'.format(str(data)))
         try:
             desc = client.parseDOM(data, 'div', attrs={'itemprop': 'description'})[0]
             desc = clear_Title(desc)
@@ -823,6 +831,8 @@ if mode is None:
     Main_addDir()
 
 ###############GAMATOKIDS#################
+elif mode == 3:
+    get_gam_genres(url)
 elif mode == 4:
     gamato_kids(url)
 elif mode == 12:
@@ -840,6 +850,8 @@ elif mode == 20:
     gamatokids()
 elif mode == 21:
     gamatokids_top(url)
+
+
 ##########################################
 
 ###############METAGLOTISMENO#################
@@ -865,8 +877,7 @@ elif mode == 35:
 
 ##############################################
 
-elif mode == 3:
-    Get_Genres(url)
+
 elif mode == 5:
     Get_content(url)
 elif mode == 6:

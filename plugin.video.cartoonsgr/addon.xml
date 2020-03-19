@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.7" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.8" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.python" version="2.19.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
-    <import addon="script.module.unshortenit"  version="0.3.1"/>
     <import addon="script.module.pyxbmct" version="1.2.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
@@ -27,7 +26,9 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>[B]v1.0.7[/B] (21/01/2020)
-  - Διορθώσεις στον κώδικα by @HOST505</news>
+    <news>[B]v1.0.8[/B] (19/03/2020)
+  - Αλλαγή domain για το gamatokids
+  - Προσθήκη κατηγοριών
+  - Τοπ 250</news>
   </extension>
 </addon>
