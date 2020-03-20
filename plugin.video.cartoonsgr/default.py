@@ -2,6 +2,7 @@
 
 import urllib, urlparse, xbmcgui, xbmcaddon, xbmcplugin, xbmc, re, sys, os
 import requests
+
 try:
     from sqlite3 import dbapi2 as database
 except BaseException:
@@ -15,28 +16,28 @@ from resources.lib.modules import views
 from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
 
-
-BASEURL = 'https://tenies-online.gr/genre/kids/'#'https://paidikestainies.online/'
+BASEURL = 'https://tenies-online.gr/genre/kids/'  # 'https://paidikestainies.online/'
 GAMATO = 'https://www.gamatotv1.com/kids/'
 Baseurl = Teniesonline = 'https://tenies-online.gr/'
 
-ADDON       = xbmcaddon.Addon()
-ADDON_DATA  = ADDON.getAddonInfo('profile')
-ADDON_PATH  = ADDON.getAddonInfo('path')
+ADDON = xbmcaddon.Addon()
+ADDON_DATA = ADDON.getAddonInfo('profile')
+ADDON_PATH = ADDON.getAddonInfo('path')
 DESCRIPTION = ADDON.getAddonInfo('description')
-FANART      = ADDON.getAddonInfo('fanart')
-ICON        = ADDON.getAddonInfo('icon')
-ID          = ADDON.getAddonInfo('id')
-NAME        = ADDON.getAddonInfo('name')
-VERSION     = ADDON.getAddonInfo('version')
-Lang        = ADDON.getLocalizedString
-Dialog      = xbmcgui.Dialog()
+FANART = ADDON.getAddonInfo('fanart')
+ICON = ADDON.getAddonInfo('icon')
+ID = ADDON.getAddonInfo('id')
+NAME = ADDON.getAddonInfo('name')
+VERSION = ADDON.getAddonInfo('version')
+Lang = ADDON.getLocalizedString
+Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
 
 def Main_addDir():
-    addDir('[B][COLOR yellow]' + Lang(32022).encode('utf-8') + '[/COLOR][/B]', Baseurl + 'genre/christmas/', 34, ART + 'mas.jpg', FANART, '')
+    addDir('[B][COLOR yellow]' + Lang(32022).encode('utf-8') + '[/COLOR][/B]', Baseurl + 'genre/christmas/', 34,
+           ART + 'mas.jpg', FANART, '')
     addDir('[B][COLOR yellow]Gamato ' + Lang(32000).encode('utf-8') + '[/COLOR][/B]', '', 20, ART + 'dub.jpg',
            FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32005).encode('utf-8') + '[/COLOR][/B]', BASEURL, 8, ART + 'random.jpg', FANART, '')
@@ -84,6 +85,7 @@ def Peliculas():
            BASEURL, 15, ART + 'etos.jpg', FANART, '')
     views.selectView('menu', 'menu-view')
 
+
 def Series():
     addDir('[B][COLOR orangered]' + Lang(32006).encode('utf-8') + '[/COLOR][/B]',
            BASEURL, 7, ART + 'genre.jpg', FANART, '')
@@ -105,13 +107,14 @@ def year(url):
         try:
             url = client.parseDOM(post, 'a', ret='href')[0]
             year = client.parseDOM(post, 'a')[0].encode('utf-8')
-        except BaseException:pass
-    
-        addDir('[B][COLOR white]%s[/COLOR][/B]' % year,url,5,ART + 'movies.jpg',FANART,'')
+        except IndexError:
+            year = '[N/A]'
+
+        addDir('[B][COLOR white]%s[/COLOR][/B]' % year, url, 5, ART + 'movies.jpg', FANART, '')
     views.selectView('menu', 'menu-view')
 
 
-def Get_TV_Genres(url): #7
+def Get_TV_Genres(url):  # 7
     r = cache.get(client.request, 120, url)
     r = client.parseDOM(r, 'div', attrs={'id': 'serieshome'})[0]
     r = client.parseDOM(r, 'div', attrs={'class': 'categorias'})[0]
@@ -122,9 +125,10 @@ def Get_TV_Genres(url): #7
             name = client.parseDOM(post, 'a')[0]
             name = re.sub(r'\d{4}', '', name)
             items = client.parseDOM(post, 'span')[0].encode('utf-8')
-        except BaseException:pass    
-        name = clear_Title(name).encode('utf-8') +' ([COLORlime]'+items+'[/COLOR])'
-        addDir('[B][COLOR white]%s[/COLOR][/B]' %name,url,5,ART + 'tvshows.jpg',FANART,'')
+        except BaseException:
+            pass
+        name = clear_Title(name).encode('utf-8') + ' ([COLORlime]' + items + '[/COLOR])'
+        addDir('[B][COLOR white]%s[/COLOR][/B]' % name, url, 5, ART + 'tvshows.jpg', FANART, '')
     views.selectView('menu', 'menu-view')
 
 
@@ -137,12 +141,13 @@ def year_TV(url):
         try:
             url = client.parseDOM(post, 'a', ret='href')[0]
             year = client.parseDOM(post, 'a')[0].encode('utf-8')
-        except BaseException:pass
-        addDir('[B][COLOR white]%s[/COLOR][/B]' %year,url,5,ART + 'tvshows.jpg',FANART,'')
+        except BaseException:
+            pass
+        addDir('[B][COLOR white]%s[/COLOR][/B]' % year, url, 5, ART + 'tvshows.jpg', FANART, '')
     views.selectView('menu', 'menu-view')
 
 
-def Get_random(url):#8
+def Get_random(url):  # 8
     r = client.request(url)
     r = client.parseDOM(r, 'div', attrs={'id': 'slider1'})[0]
     r = client.parseDOM(r, 'div', attrs={'class': 'item'})
@@ -162,20 +167,20 @@ def Get_random(url):#8
         name = clear_Title(name)
         if '/ ' in name:
             name = name.split('/ ')
-            name = name[1] + ' ([COLORlime]'+year+'[/COLOR])'
+            name = name[1] + ' ([COLORlime]' + year + '[/COLOR])'
         elif '\ ' in name:
             name = name.split('\ ')
-            name = name[1] + ' ([COLORlime]'+year+'[/COLOR])'
+            name = name[1] + ' ([COLORlime]' + year + '[/COLOR])'
         else:
             name = name + ' ([COLORlime]' + year + '[/COLOR])'
         if 'tvshows' in url or 'syllogh' in url:
-            addDir('[B][COLOR white]%s[/COLOR][/B]' % name,url,11,icon,FANART,'')
+            addDir('[B][COLOR white]%s[/COLOR][/B]' % name, url, 11, icon, FANART, '')
         else:
-            addDir('[B][COLOR white]%s[/COLOR][/B]' % name,url,10,icon,FANART,'')
+            addDir('[B][COLOR white]%s[/COLOR][/B]' % name, url, 10, icon, FANART, '')
     views.selectView('movies', 'movie-view')
 
 
-def Get_epoxiakes(url):#19
+def Get_epoxiakes(url):  # 19
     try:
         r = client.request(url)
         r = client.parseDOM(r, 'div', attrs={'id': 'slider2'})[0]
@@ -202,20 +207,20 @@ def Get_epoxiakes(url):#19
         name = clear_Title(name)
         if '/ ' in name:
             name = name.split('/ ')
-            name = name[1] + ' ([COLORlime]'+year+'[/COLOR])'
+            name = name[1] + ' ([COLORlime]' + year + '[/COLOR])'
         elif '\ ' in name:
             name = name.split('\ ')
-            name = name[1] + ' ([COLORlime]'+year+'[/COLOR])'
+            name = name[1] + ' ([COLORlime]' + year + '[/COLOR])'
         else:
             name = name + ' ([COLORlime]' + year + '[/COLOR])'
         if 'tvshows' in url or 'syllogh' in url:
-            addDir('[B][COLOR white]%s[/COLOR][/B]' % name,url,11,icon,FANART,'')
+            addDir('[B][COLOR white]%s[/COLOR][/B]' % name, url, 11, icon, FANART, '')
         else:
-            addDir('[B][COLOR white]%s[/COLOR][/B]' % name,url,10,icon,FANART,'')
+            addDir('[B][COLOR white]%s[/COLOR][/B]' % name, url, 10, icon, FANART, '')
     views.selectView('movies', 'movie-view')
 
 
-def Get_content(url): #5
+def Get_content(url):  # 5
     r = cache.get(client.request, 4, url)
     data = client.parseDOM(r, 'div', attrs={'id': 'mt-\d+'})
     for post in data:
@@ -249,10 +254,10 @@ def Get_content(url): #5
         name = clear_Title(name).encode('utf-8')
         if '/ ' in name:
             name = name.split('/ ')
-            name = name[1] + ' ([COLORlime]'+year+'[/COLOR])'
+            name = name[1] + ' ([COLORlime]' + year + '[/COLOR])'
         elif '\ ' in name:
             name = name.split('\ ')
-            name = name[1] + ' ([COLORlime]'+year+'[/COLOR])'
+            name = name[1] + ' ([COLORlime]' + year + '[/COLOR])'
         else:
             name = name + ' ([COLORlime]' + year + '[/COLOR])'
         if 'tvshows' in url or 'syllogh' in url:
@@ -260,12 +265,14 @@ def Get_content(url): #5
         else:
             addDir('[B][COLOR white]{0} [{1}][/COLOR][/B]'.format(name, calidad), url, 10, icon, FANART, desc)
     try:
-        np = re.compile('class="pag_b"><a href="(.+?)"',re.DOTALL).findall(r)
+        np = re.compile('class="pag_b"><a href="(.+?)"', re.DOTALL).findall(r)
         for url in np:
-            page = re.compile('page/(\d+)/',re.DOTALL).findall(url)[0]
-            page = '[B][COLORlime]'+page+'[B][COLORwhite])[/B][/COLOR]'
-            addDir('[B][COLORgold]>>>' +Lang(32011).encode('utf-8')+ '[/COLOR] [COLORwhite](%s' % page, url, 5, ART + 'next.jpg', FANART,'')
-    except BaseException: pass
+            page = re.compile('page/(\d+)/', re.DOTALL).findall(url)[0]
+            page = '[B][COLORlime]' + page + '[B][COLORwhite])[/B][/COLOR]'
+            addDir('[B][COLORgold]>>>' + Lang(32011).encode('utf-8') + '[/COLOR] [COLORwhite](%s' % page, url, 5,
+                   ART + 'next.jpg', FANART, '')
+    except BaseException:
+        pass
     views.selectView('movies', 'movie-view')
 
 
@@ -318,6 +325,7 @@ def get_tenies_online_links(url):
 
     return urls
 
+
 def __top_domain(url):
     elements = urlparse.urlparse(url)
     domain = elements.netloc or elements.path
@@ -327,6 +335,7 @@ def __top_domain(url):
     if res: domain = res.group(1)
     domain = domain.lower()
     return domain
+
 
 def _Login(url):
     url += 'wp-content/plugins/theme-my-login/modules/themed-profiles/themed-profiles.js?ver=4.9.5'
@@ -344,8 +353,8 @@ def _Login(url):
 
 def Sinopsis(url):
     lcookie = cache.get(_Login, 4, BASEURL)
-    OPEN = cache.get(client.request, 4, url, True, True, False, None, None, None,False,None,None,lcookie)
-    OPEN = client.parseDOM(OPEN, 'div', attrs={'itemprop':'description'})[0]
+    OPEN = cache.get(client.request, 4, url, True, True, False, None, None, None, False, None, None, lcookie)
+    OPEN = client.parseDOM(OPEN, 'div', attrs={'itemprop': 'description'})[0]
     OPEN = OPEN.encode('utf8')
     pattern = ['<div*?>(.+?responsive-tabs">)',
                '<p.*?>(.+?responsive-tabs">)']
@@ -359,19 +368,20 @@ def Sinopsis(url):
                 part = re.sub('\.\s+', '.', part)
                 desc = clear_Title(part)
                 return desc
-    except BaseException: pass
+    except BaseException:
+        pass
 
 
 def Trailer(url):
     lcookie = cache.get(_Login, 4, BASEURL)
-    OPEN = cache.get(client.request, 4, url, True, True, False, None, None, None,False,None,None,lcookie)
+    OPEN = cache.get(client.request, 4, url, True, True, False, None, None, None, False, None, None, lcookie)
     patron = 'class="youtube_id.+?src="([^"]+)".+?></iframe>'
-    trailer_link = find_single_match(OPEN,patron)
+    trailer_link = find_single_match(OPEN, patron)
     trailer_link = trailer_link.replace('//www.', 'http://')
     return trailer_link
 
 
-def search_menu():#6
+def search_menu():  # 6
     addDir(Lang(32024).encode('utf-8'), 'new', 26, ICON, FANART, '')
 
     dbcon = database.connect(control.searchFile)
@@ -401,7 +411,7 @@ def search_menu():#6
     views.selectView('movies', 'movie-view')
 
 
-def Search(url):#26
+def Search(url):  # 26
     if url == 'new':
         keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
         keyb.doModal()
@@ -484,13 +494,15 @@ def download(name, iconimage, url):
     content = re.compile('(.+?)\s+[\.|\(|\[]S(\d+)E\d+[\.|\)|\]]', re.I).findall(title)
     transname = title.translate(None, '\/:*?"<>|').strip('.')
     transname = re.sub('\[.+?\]', '', transname)
-    levels =['../../../..', '../../..', '../..', '..']
+    levels = ['../../../..', '../../..', '../..', '..']
     if len(content) == 0:
         dest = control.setting('movie.download.path')
         dest = control.transPath(dest)
         for level in levels:
-            try: control.makeFile(os.path.abspath(os.path.join(dest, level)))
-            except: pass
+            try:
+                control.makeFile(os.path.abspath(os.path.join(dest, level)))
+            except:
+                pass
         control.makeFile(dest)
         dest = os.path.join(dest, transname)
         control.makeFile(dest)
@@ -498,8 +510,10 @@ def download(name, iconimage, url):
         dest = control.setting('tv.download.path')
         dest = control.transPath(dest)
         for level in levels:
-            try: control.makeFile(os.path.abspath(os.path.join(dest, level)))
-            except: pass
+            try:
+                control.makeFile(os.path.abspath(os.path.join(dest, level)))
+            except:
+                pass
         control.makeFile(dest)
         tvtitle = re.sub('\[.+?\]', '', content[0])
         transtvshowtitle = tvtitle.translate(None, '\/:*?"<>|').strip('.')
@@ -520,6 +534,7 @@ def download(name, iconimage, url):
     from resources.lib.modules import downloader
     control.idle()
     downloader.doDownload(url, dest, name, iconimage, headers)
+
 
 def downloads_root():
     movie_downloads = control.setting('movie.download.path')
@@ -548,7 +563,7 @@ def downloads_root():
 ####  GAMATOKIDS  ####
 ######################
 
-def get_gam_genres(url): #3
+def get_gam_genres(url):  # 3
     try:
 
         r = requests.get(url).text
@@ -574,7 +589,7 @@ def get_gam_genres(url): #3
     views.selectView('menu', 'menu-view')
 
 
-def Search_gamato(url): #18
+def Search_gamato(url):  # 18
     control.busy()
     data = r = requests.get(url).text
     posts = client.parseDOM(data, 'div', attrs={'class': 'result-item'})
@@ -588,7 +603,7 @@ def Search_gamato(url): #18
             desc = client.parseDOM(post, 'div', attrs={'class': 'contenido'})[0]
             desc = re.sub('<.+?>', '', desc)
             desc = desc.encode('utf-8', 'ignore')
-        except BaseException:
+        except IndexError:
             year = 'N/A'
             desc = 'N/A'
 
@@ -597,15 +612,16 @@ def Search_gamato(url): #18
     try:
         np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'arrow_pag'})[-1]
         page = np.split('/')[-1]
-        title = '[B][COLORgold]>>>' + Lang(32011).encode('utf-8') + ' [COLORwhite]([COLORlime]%s[/COLOR])[/COLOR][/B]' % page
+        title = '[B][COLORgold]>>>' + Lang(32011).encode(
+            'utf-8') + ' [COLORwhite]([COLORlime]%s[/COLOR])[/COLOR][/B]' % page
         addDir(title, np, 4, ART + 'next.jpg', FANART, '')
-    except BaseException:
+    except IndexError:
         pass
     control.idle()
     views.selectView('movies', 'movie-view')
 
 
-def gamato_kids(url): #4
+def gamato_kids(url):  # 4
     data = requests.get(url).text
     posts = client.parseDOM(data, 'article', attrs={'class': 'item movies'})
     for post in posts:
@@ -619,7 +635,7 @@ def gamato_kids(url): #4
             title = client.parseDOM(post, 'h4')[0]
             year = client.parseDOM(post, 'span')[0]
             if not (len(year) == 4 and year.isdigit()): year = 'N/A'
-        except BaseException:
+        except IndexError:
             title = client.parseDOM(post, 'img', ret='alt')[0]
             year = 'N/A'
         title = clear_Title(title)
@@ -633,14 +649,15 @@ def gamato_kids(url): #4
         np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'arrow_pag'})[-1]
         np = clear_Title(np)
         page = np[-2] if np.endswith('/') else re.findall('page/(\d+)/', np)[0]
-        title = '[B][COLORgold]>>>' + Lang(32011).encode('utf-8') + ' [COLORwhite]([COLORlime]%s[/COLOR])[/COLOR][/B]' % page
+        title = '[B][COLORgold]>>>' + Lang(32011).encode(
+            'utf-8') + ' [COLORwhite]([COLORlime]%s[/COLOR])[/COLOR][/B]' % page
         addDir(title, np, 4, ART + 'next.jpg', FANART, '')
-    except BaseException:
+    except IndexError:
         pass
     views.selectView('movies', 'movie-view')
 
 
-def gamatokids_top(url): #21
+def gamatokids_top(url):  # 21
     data = requests.get(url).text
     posts = client.parseDOM(data, 'div', attrs={'class': 'top-imdb-item'})
     for post in posts:
@@ -650,13 +667,13 @@ def gamatokids_top(url): #21
             link = client.parseDOM(post, 'a', ret='href')[0]
             poster = client.parseDOM(post, 'img', ret='src')[0]
 
-            addDir('[B][COLOR white]{0}[/COLOR][/B]'.format(title), link, 12, poster, FANART, 'Top 250 IMDB')
-        except BaseException:
+            addDir('[B][COLOR white]{0}[/COLOR][/B]'.format(title), link, 12, poster, FANART, 'Top 100 IMDB')
+        except IndexError:
             pass
     views.selectView('movies', 'movie-view')
 
 
-def gamato_links(url, name, poster): #12
+def gamato_links(url, name, poster):  # 12
     try:
         url = urllib.quote(url, ':/.')
         data = requests.get(url).text
@@ -668,30 +685,39 @@ def gamato_links(url, name, poster): #12
             desc = 'N/A'
 
         try:
-            match = re.findall(r'''file\s*:\s*['"](.+?)['"],poster\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
-            link, _poster = match[0], match[1]
+            # Playerjs({id:"playerjs14892",file:"https://gamato1.com/s/Aladdin%20and%20the%20King%20of%20Thieves%201996.mp4"})
+            link = re.findall(r'''Playerjs\(\{.+?file\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
+            link = urllib.quote(link, ':/.')
+            link += '|User-Agent={}&Referer={}'.format(urllib.quote(client.agent()), urllib.quote(url))
+            # xbmc.log('FRAME: {}'.format(link))
         except IndexError:
-            frame = client.parseDOM(data, 'div', attrs={'id': r'option-\d+'})[0]
-            frame = client.parseDOM(frame, 'iframe', ret='src')[0]
-            if 'cloud' in frame:
-                #sources: ["http://cloudb.me/4fogdt6l4qprgjzd2j6hymoifdsky3tfskthk76ewqbtgq4aml3ior7bdjda/v.mp4"],
-                match = client.request(frame)
-                try:
-                    from resources.lib.modules import jsunpack
-                    if jsunpack.detect(match):
-                        match = jsunpack.unpack(match)
-                    match = re.findall('sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
-                    match += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), frame)
-                except IndexError:
-                    from resources.lib.modules import jsunpack as jsun
-                    if jsun.detect(match):
-                        match = jsun.unpack(match)
-                        match = re.findall('sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
-                        match += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), frame)
+            try:
+                match = re.findall(r'''file\s*:\s*['"](.+?)['"],poster\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
+                link, _poster = match[0], match[1]
+                # xbmc.log('FRAME: {} | Poster {}'.format(link, _poster))
+            except IndexError:
+                frame = client.parseDOM(data, 'div', attrs={'id': r'option-\d+'})[0]
+                frame = client.parseDOM(frame, 'iframe', ret='src')[0]
+                # xbmc.log('FRAME: {}'.format(frame))
 
-            else:
-                match = frame
-            link, _poster = match, poster
+                if 'cloud' in frame:
+                    # sources: ["http://cloudb.me/4fogdt6l4qprgjzd2j6hymoifdsky3tfskthk76ewqbtgq4aml3ior7bdjda/v.mp4"],
+                    match = client.request(frame)
+                    try:
+                        from resources.lib.modules import jsunpack
+                        if jsunpack.detect(match):
+                            match = jsunpack.unpack(match)
+                        match = re.findall(r'sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
+                        match += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), frame)
+                    except IndexError:
+                        from resources.lib.modules import jsunpack as jsun
+                        if jsun.detect(match):
+                            match = jsun.unpack(match)
+                            match = re.findall(r'sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
+                            match += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), frame)
+                else:
+                    match = frame
+                link, _poster = match, poster
 
         try:
             fanart = client.parseDOM(data, 'div', attrs={'class': 'g-item'})[0]
@@ -702,7 +728,7 @@ def gamato_links(url, name, poster): #12
             trailer = client.parseDOM(data, 'iframe', ret='src')
             trailer = [i for i in trailer if 'youtube' in i][0]
             addDir('[B][COLOR lime]Trailer[/COLOR][/B]', trailer, 100, iconimage, fanart, str(desc))
-        except BaseException:
+        except IndexError:
             pass
 
         addDir(name, link, 100, poster, fanart, str(desc))
@@ -717,17 +743,18 @@ def find_single_match(data, patron, index=0):
     try:
         matches = re.findall(patron, data, flags=re.DOTALL)
         return matches[index]
-    except BaseException:
+    except IndexError:
         return ""
 
 
 def clear_Title(txt):
     txt = txt.encode('utf-8', 'ignore')
     txt = re.sub('<.+?>', '', txt)
-    txt = txt.replace("&quot;", "\"").replace('()','').replace("&#038;", "&").replace('&#8211;',':').replace('\n',' ')
-    txt = txt.replace("&amp;", "&").replace('&#8217;',"'").replace('&#039;',':').replace('&#;','\'')
-    txt = txt.replace("&#38;", "&").replace('&#8221;','"').replace('&#8216;','"').replace('&#160;','')
-    txt = txt.replace("&nbsp;", "").replace('&#8220;','"').replace('&#8216;','"').replace('\t',' ')
+    txt = txt.replace("&quot;", "\"").replace('()', '').replace("&#038;", "&").replace('&#8211;', ':').replace('\n',
+                                                                                                               ' ')
+    txt = txt.replace("&amp;", "&").replace('&#8217;', "'").replace('&#039;', ':').replace('&#;', '\'')
+    txt = txt.replace("&#38;", "&").replace('&#8221;', '"').replace('&#8216;', '"').replace('&#160;', '')
+    txt = txt.replace("&nbsp;", "").replace('&#8220;', '"').replace('&#8216;', '"').replace('\t', ' ')
     return txt
 
 
@@ -760,7 +787,7 @@ def resolve(name, url, iconimage, description):
     try:
         liz = xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
         liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
-        liz.setProperty("IsPlayable","true")
+        liz.setProperty("IsPlayable", "true")
         liz.setPath(str(stream_url))
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
     except BaseException:
@@ -795,36 +822,36 @@ description = params.get('description')
 url = params.get('url')
 
 try:
-        url = urllib.unquote_plus(params["url"])
+    url = urllib.unquote_plus(params["url"])
 except BaseException:
-        pass
+    pass
 try:
-        name = urllib.unquote_plus(params["name"])
+    name = urllib.unquote_plus(params["name"])
 except BaseException:
-        pass
+    pass
 try:
-        iconimage = urllib.unquote_plus(params["iconimage"])
+    iconimage = urllib.unquote_plus(params["iconimage"])
 except BaseException:
-        pass
+    pass
 try:
-        mode = int(params["mode"])
+    mode = int(params["mode"])
 except BaseException:
-        pass
+    pass
 try:
-        fanart = urllib.unquote_plus(params["fanart"])
+    fanart = urllib.unquote_plus(params["fanart"])
 except BaseException:
-        pass
+    pass
 try:
-        description = urllib.unquote_plus(params["description"])
+    description = urllib.unquote_plus(params["description"])
 except BaseException:
-        pass
+    pass
 
+xbmc.log('{}: {}'.format(str(ID), str(VERSION)))
+xbmc.log('{}: {}'.format('Mode', str(mode)))
+xbmc.log('{}: {}'.format('URL', str(url)))
+xbmc.log('{}: {}'.format('Name', str(name)))
+xbmc.log('{}: {}'.format('ICON', str(iconimage)))
 
-print str(ADDON_PATH)+': '+str(VERSION)
-print "Mode: "+str(mode)
-print "URL: "+str(url)
-print "Name: "+str(name)
-print "IconImage: "+str(iconimage)
 #########################################################
 
 if mode is None:
@@ -857,15 +884,19 @@ elif mode == 21:
 ###############METAGLOTISMENO#################
 elif mode == 30:
     from resources.lib.indexers import teniesonline
+
     teniesonline.menu()
 elif mode == 33:
     from resources.lib.indexers import teniesonline
+
     teniesonline.get_links(name, url, iconimage, description)
 elif mode == 34:
     from resources.lib.indexers import teniesonline
+
     teniesonline.metaglotismeno(url)
 elif mode == 35:
     from resources.lib.indexers import teniesonline
+
     keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
     keyb.doModal()
     if keyb.isConfirmed():
@@ -876,7 +907,6 @@ elif mode == 35:
         pass
 
 ##############################################
-
 
 elif mode == 5:
     Get_content(url)
