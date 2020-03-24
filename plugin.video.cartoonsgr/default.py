@@ -17,7 +17,7 @@ from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
 
 BASEURL = 'https://tenies-online.gr/genre/kids/'  # 'https://paidikestainies.online/'
-GAMATO = 'https://www.gamatotv1.com/kids/'
+GAMATO = 'https://gamatokids.com/'
 Baseurl = Teniesonline = 'https://tenies-online.gr/'
 
 ADDON = xbmcaddon.Addon()
