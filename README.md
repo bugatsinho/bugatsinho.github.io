@@ -10,7 +10,7 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 
 [Follow me on Twitter](https://twitter.com/bugatsinho)
 
-[Repository v2.3](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.3.zip?raw=true)
+[Repository v2.4](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.4.zip?raw=true)
 
 
 **ADD-ONS:**

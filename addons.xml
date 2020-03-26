@@ -1,5 +1,5 @@
 <addons>
-	<addon id="repository.bugatsinho" name=" Bugatsinho repository" version="2.3" provider-name="Bugatsinho">
+	<addon id="repository.bugatsinho" name=" Bugatsinho repository" version="2.4" provider-name="Bugatsinho">
 		<extension point="xbmc.addon.repository" name="Bugatsinho repository">
 			<info compressed="false">https://raw.githubusercontent.com/bugatsinho/bugatsinho.github.io/master/addons.xml</info>
 			<checksum>https://raw.githubusercontent.com/bugatsinho/bugatsinho.github.io/master/addons.xml.md5</checksum>
@@ -20,6 +20,11 @@
 				<info compressed="false">https://raw.githubusercontent.com/Twilight0/repo.twilight0.libs/master/_zips/addons.xml</info>
 				<checksum>https://raw.githubusercontent.com/Twilight0/repo.twilight0.libs/master/_zips/addons.xml.md5</checksum>
 				<datadir zip="true">https://raw.githubusercontent.com/Twilight0/repo.twilight0.libs/master/_zips/</datadir>
+			</dir>
+			<dir>
+				<info compressed="false">https://raw.githubusercontent.com/Gujal00/smrzips/master/addons.xml</info>
+				<checksum>https://raw.githubusercontent.com/Gujal00/smrzips/master/addons.xml.md5</checksum>
+				<datadir zip="true">https://raw.githubusercontent.com/Gujal00/smrzips/master/zips/</datadir>
 			</dir>
 		</extension>
 		<extension point="xbmc.addon.metadata">
