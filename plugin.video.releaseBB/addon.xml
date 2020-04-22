@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.releaseBB" version="1.8.6" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
+<addon id="plugin.video.releaseBB" version="1.9.0" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
   <requires>
+    <import addon="script.module.cloudscraper" version="1.2.34"/>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.t0mm0.common" version="2.1.1"/>
     <import addon="script.module.resolveurl" version="5.0.1"/>
@@ -24,10 +25,8 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>++ [B][COLOR lime]1.8.6[/B][/COLOR] [COLOR gold](03-01-2020)[/COLOR]
-- add foreign movies menu
-- fix search function to point titles link to old2.rlsbb domain
-- add service.py and make function to get the available RLSBB domains</news>
+    <news>+ [B][COLOR lime]1.9.0[/B][/COLOR] [COLOR gold](22-04-2020)[/COLOR]
+- add cloudscraper module to bypass cloudflare</news>
     <assets>
         <icon>icon.png</icon>
         <fanart>fanart.jpg</fanart>

@@ -1,3 +1,6 @@
++ [B][COLOR lime]1.9.0[/B][/COLOR] [COLOR gold](22-04-2020)[/COLOR]
+- add cloudscraper module to bypass cloudflare
+
 + [B][COLOR lime]1.8.6[/B][/COLOR] [COLOR gold](03-01-2020)[/COLOR]
 - add foreign movies menu
 - fix search function to point titles link to old2.rlsbb domain

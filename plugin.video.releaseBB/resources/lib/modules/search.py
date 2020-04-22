@@ -48,11 +48,7 @@ except ImportError:
 
 
 def Search_bb(url):
-    kodi_ver = float(xbmc.getInfoLabel("System.BuildVersion")[:4])
-    if kodi_ver >= 18:
-        from resources.lib.modules import cfscrape as cfscrape
-    else:
-        from resources.lib.modules import cfscrape17 as cfscrape
+    from cloudscraper2 import CloudScraper as cfscrape
     scraper = cfscrape.create_scraper()
     if 'new' == url:
         keyboard = xbmc.Keyboard()
@@ -192,7 +188,7 @@ def Search_bb(url):
 
     else:
         try:
-            from resources.lib.modules import cfscrape
+            from cloudscraper2 import CloudScraper as cfscrape
             scraper = cfscrape.create_scraper()
             url = urllib.quote_plus(url)
             referer_link = 'http://search.rlsbb.ru?s={0}'.format(url)

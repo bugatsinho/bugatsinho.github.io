@@ -467,12 +467,7 @@ def GetLinks(section, url, img, plot):  # Get Links
 
 
 def cloudflare_mode(url):
-    kodi_ver = float(xbmc.getInfoLabel("System.BuildVersion")[:4])
-    if kodi_ver >= 18:
-        from resources.lib.modules import cfscrape as cfscrape
-    else:
-        from resources.lib.modules import cfscrape17 as cfscrape
-
+    from cloudscraper2 import CloudScraper as cfscrape
     scraper = cfscrape.create_scraper()
     result = scraper.get(url).text
     # xbmc.log('RESULTTTTT: %s' % result)
@@ -499,7 +494,7 @@ def download(title, img, url):
     except:
         headers = dict('')
 
-    content = re.compile('(.+?)\s+[\.|\(|\[]S(\d+)E\d+[\.|\)|\]]', re.I).findall(title)
+    content = re.compile(r'(.+?)\s+[\.|\(|\[]S(\d+)E\d+[\.|\)|\]]', re.I).findall(title)
     transname = title.translate(None, '\/:*?"<>|').strip('.')
     transname = re.sub('\[.+?\]', '', transname)
     levels =['../../../..', '../../..', '../..', '..']
@@ -617,7 +612,7 @@ def PlayVideo(url, title, img, plot):
 def get_size(text):
     try:
         text = text.upper()
-        size = re.findall('((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+) (?:GB|GiB|Gb|MB|MiB|Mb))', text)[-1]
+        size = re.findall(r'((?:\d+\,\d+\.\d+|\d+\.\d+|\d+\,\d+|\d+) (?:GB|GiB|Gb|MB|MiB|Mb))', text)[-1]
         div = 1 if size.endswith(('GB', 'GiB', 'Gb')) else 1024
         size = float(re.sub('[^0-9|/.|/,]', '', size.replace(',', '.'))) / div
         size = '%.2f GB' % size
@@ -630,7 +625,7 @@ def GetDomain(url):
     elements = urlparse.urlparse(url)
     domain = elements.netloc or elements.path
     domain = domain.split('@')[-1].split(':')[0]
-    regex = "(?:www\.)?([\w\-]*\.[\w\-]{2,3}(?:\.[\w\-]{2,3})?)$"
+    regex = r"(?:www\.)?([\w\-]*\.[\w\-]{2,3}(?:\.[\w\-]{2,3})?)$"
     res = re.search(regex, domain)
     if res:
         domain = res.group(1)
@@ -642,7 +637,7 @@ def GetMediaInfo(html):
     try:
         # <h1 class="postTitle" rel="bookmark">American Dresser 2018 BRRip XviD AC3-RBG</h1>
         match = client.parseDOM(html, 'h1', attrs={'class': 'postTitle'})[0]
-        match = re.findall('(.+?)\s+(\d{4}|S\d+E\d+)', match)[0]
+        match = re.findall(r'(.+?)\s+(\d{4}|S\d+E\d+)', match)[0]
         return match
     except IndexError:
         match = client.parseDOM(html, 'h1', attrs={'class': 'postTitle'})[0]
