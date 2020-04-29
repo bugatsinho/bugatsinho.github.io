@@ -39,6 +39,7 @@
 		<import addon="xbmc.python" version="2.19.0"/>
 		<import addon="script.module.resolveurl" version="5.0.00"/>
 		<import addon="script.module.pyxbmct" version="1.2.0"/>
+	    <import addon="script.module.requests" version="2.19.1"/>
 	  </requires>
 	  <extension point="xbmc.python.pluginsource" library="default.py">
 			<provides>video</provides>
