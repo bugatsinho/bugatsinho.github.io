@@ -138,7 +138,7 @@ msgid "Password"
 msgstr ""
 
 msgctxt "#32037"
-msgid "Register at http://paidikestainies.online/"
+msgid "CHANGE DOMAIN MANUALLY"
 msgstr ""
 
 msgctxt "#32038"

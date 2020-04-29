@@ -136,8 +136,8 @@ msgid "Password"
 msgstr "Κωδικός πρόσβασης"
 
 msgctxt "#32037"
-msgid "Register at http://paidikestainies.online/"
-msgstr "Εγγραφή στο http://paidikestainies.online/"
+msgid "CHANGE DOMAIN MANUALLY"
+msgstr "Χειροκίνητη Αλλαγή URL"
 
 msgctxt "#32038"
 msgid "CLICK HERE TO SAVE VIEW"

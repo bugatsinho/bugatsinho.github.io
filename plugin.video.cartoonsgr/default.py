@@ -17,8 +17,8 @@ from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
 
 BASEURL = 'https://tenies-online.gr/genre/kids/'  # 'https://paidikestainies.online/'
-GAMATO = 'https://gamatokids.com/'
-Baseurl = Teniesonline = 'https://tenies-online.gr/'
+GAMATO = control.setting('gamato.domain') #'https://gamatokid.com/'
+Baseurl = Teniesonline = control.setting('tenies.domain')
 
 ADDON = xbmcaddon.Addon()
 ADDON_DATA = ADDON.getAddonInfo('profile')
@@ -297,7 +297,7 @@ def get_tenies_online_links(url):
 
             host = __top_domain(flink)
             urls.append((flink, host))
-        xbmc.log('FRAMES-LINKs: %s' % urls)
+        # xbmc.log('FRAMES-LINKs: %s' % urls)
     except BaseException:
         pass
 
@@ -319,7 +319,7 @@ def get_tenies_online_links(url):
             host = item[0]
 
             urls.append((url, host))
-        xbmc.log('EXTRA-LINKs: %s' % urls)
+        # xbmc.log('EXTRA-LINKs: %s' % urls)
     except BaseException:
         pass
 
@@ -480,7 +480,7 @@ def download(name, iconimage, url):
     try:
 
         url = evaluate(url)
-        xbmc.log('URL-EVALUATE: %s' % url)
+        # xbmc.log('URL-EVALUATE: %s' % url)
     except Exception:
         control.idle()
         xbmcgui.Dialog().ok(NAME, 'Download failed', 'Your service can\'t resolve this hoster', 'or Link is down')
@@ -525,11 +525,11 @@ def download(name, iconimage, url):
     # ext = os.path.splitext(urlparse.urlparse(url).path)[1]
 
     ext = os.path.splitext(urlparse.urlparse(url).path)[1][1:]
-    xbmc.log('URL-EXT: %s' % ext)
+    # xbmc.log('URL-EXT: %s' % ext)
     if not ext in ['mp4', 'mkv', 'flv', 'avi', 'mpg']: ext = 'mp4'
     dest = os.path.join(dest, transname + '.' + ext)
     headers = urllib.quote_plus(json.dumps(headers))
-    xbmc.log('URL-HEADERS: %s' % headers)
+    # xbmc.log('URL-HEADERS: %s' % headers)
 
     from resources.lib.modules import downloader
     control.idle()
@@ -568,18 +568,18 @@ def get_gam_genres(url):  # 3
 
         r = requests.get(url).text
         r = client.parseDOM(r, 'li', attrs={'id': r'menu-item-\d+'})[1:]
-        xbmc.log('POSTs: {}'.format(r))
+        # xbmc.log('POSTs: {}'.format(r))
         # r = client.parseDOM(r, 'div', attrs={'class': 'categorias'})[0]
         # r = client.parseDOM(r, 'li', attrs={'class': 'cat-item.+?'})
         for post in r:
             try:
-                xbmc.log('POST: {}'.format(post))
+                # xbmc.log('POST: {}'.format(post))
                 url = client.parseDOM(post, 'a', ret='href')[0]
                 name = client.parseDOM(post, 'a')[0]
                 name = clear_Title(name).encode('utf-8')
                 if 'facebook' in url or 'imdb' in url:
                     continue
-                xbmc.log('NAME: {} | URL: {}'.format(name, url))
+                # xbmc.log('NAME: {} | URL: {}'.format(name, url))
                 addDir('[B][COLOR white]%s[/COLOR][/B]' % name, url, 4, ART + 'movies.jpg', FANART, '')
             except BaseException:
                 pass
@@ -686,35 +686,36 @@ def gamato_links(url, name, poster):  # 12
 
         try:
             # Playerjs({id:"playerjs14892",file:"https://gamato1.com/s/Aladdin%20and%20the%20King%20of%20Thieves%201996.mp4"})
-            link = re.findall(r'''Playerjs\(\{.+?file\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
+            link = re.findall(r'''Playerjs\(\{.+?file\s*:\s*['"](.+?\.mp4)['"]\}''', data, re.DOTALL)[0]
             link = urllib.quote(link, ':/.')
-            link += '|User-Agent={}&Referer={}'.format(urllib.quote(client.agent()), urllib.quote(url))
-            # xbmc.log('FRAME: {}'.format(link))
+            # link += '|User-Agent={}&Referer={}'.format(urllib.quote(client.agent()), urllib.quote(url))
+            # xbmc.log('FRAME1: {}'.format(link))
         except IndexError:
             try:
                 match = re.findall(r'''file\s*:\s*['"](.+?)['"],poster\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
                 link, _poster = match[0], match[1]
-                # xbmc.log('FRAME: {} | Poster {}'.format(link, _poster))
+                # xbmc.log('FRAME2: {} | Poster {}'.format(link, _poster))
             except IndexError:
                 frame = client.parseDOM(data, 'div', attrs={'id': r'option-\d+'})[0]
                 frame = client.parseDOM(frame, 'iframe', ret='src')[0]
-                # xbmc.log('FRAME: {}'.format(frame))
+                # xbmc.log('FRAME3: {}'.format(frame))
 
                 if 'cloud' in frame:
                     # sources: ["http://cloudb.me/4fogdt6l4qprgjzd2j6hymoifdsky3tfskthk76ewqbtgq4aml3ior7bdjda/v.mp4"],
-                    match = client.request(frame)
+                    match = client.request(frame, referer=url)
+                    # xbmc.log('MATCH3: {}'.format(match))
                     try:
                         from resources.lib.modules import jsunpack
                         if jsunpack.detect(match):
                             match = jsunpack.unpack(match)
                         match = re.findall(r'sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
-                        match += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), frame)
+                        # match += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), frame)
                     except IndexError:
                         from resources.lib.modules import jsunpack as jsun
                         if jsun.detect(match):
                             match = jsun.unpack(match)
                             match = re.findall(r'sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
-                            match += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), frame)
+                            # match += '|User-Agent=%s&Referer=%s' % (urllib.quote(client.agent()), frame)
                 else:
                     match = frame
                 link, _poster = match, poster

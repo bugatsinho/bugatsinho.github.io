@@ -15,9 +15,9 @@
 		<setting type="lsep" label="32042" />
 		<setting type="lsep" label="32043" />
     </category>
-	<category label="32034">
+	<category label="DOMAINS">
         <setting type="lsep" label="32037" />
-        <setting id="username" type="text" label="32035" default="" />
-        <setting id="password" type="text" option="hidden" label="32036" enable="!eq(-1,)" default="" />
+        <setting id="gamato.domain" type="text" label="GAMATO URL" default="https://gamatoskidder.com/" />
+        <setting id="tenies.domain" type="text" label="TENIES ONLINE URL" default="https://tenies-onl.gr/" />
 	</category>
 </settings>

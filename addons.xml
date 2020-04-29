@@ -34,14 +34,16 @@
 		</extension>
 	</addon>
 
-	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.9" provider-name="Bugatsinho">
+	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.10" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.python" version="2.19.0"/>
 		<import addon="script.module.resolveurl" version="5.0.00"/>
+		<import addon="script.module.pyxbmct" version="1.2.0"/>
 	  </requires>
 	  <extension point="xbmc.python.pluginsource" library="default.py">
 			<provides>video</provides>
 	  </extension>
+	  <extension point="xbmc.service" library="service.py" start="startup" />
 	  <extension point="xbmc.addon.metadata">
 		<reuselanguageinvoker>false</reuselanguageinvoker>
 		<platform>all</platform>
@@ -56,12 +58,15 @@
 		</disclaimer>
 		<language>en el</language>
 		<license>GNU GPL, version 2</license>
-		<twitter>https://twitter.com/Bugatsinho</twitter>
-		<forum>https://www.facebook.com/groups/GRecoTM/</forum>
-		<source>http://grecotm.com/repo/</source>
-		<website>http://grecotm.com</website>
-		<news>[B]v0.4.3[/B] (04/04/2019)
-	  - Διόρθωση resolver</news>
+		<website>https://bugatsinho.github.io/</website>
+		<twitter>https://twitter.com/bugatsinho</twitter>
+		<repo>https://bugatsinho.github.io/repo/</repo>
+		<email>bugatsinho@protonmail.com</email>
+		<news>[B]v1.0.10[/B] (29/04/2020)
+	  - Αλλαγή domain για το gamatokids
+	  - Λειτουργία για ανακτηση των domain απο το gamato &amp; tenies-online
+	  - Δυνατότητα χειροκίνητης αλλαγής domain στις ρυθμίσεις
+	  - Διόρθωση του επιλυτή στα λινκς του gamato</news>
 	  </extension>
 	</addon>
 
