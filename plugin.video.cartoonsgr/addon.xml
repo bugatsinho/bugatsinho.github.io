@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.10.1" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.12" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.python" version="2.19.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
@@ -28,7 +28,7 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>[B]v1.0.10[/B] (29/04/2020)
+    <news>[B]v1.0.12[/B] (29/04/2020)
   - Αλλαγή domain για το gamatokids
   - Λειτουργία για ανακτηση των domain απο το gamato &amp; tenies-online
   - Δυνατότητα χειροκίνητης αλλαγής domain στις ρυθμίσεις
