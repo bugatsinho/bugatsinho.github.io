@@ -65,7 +65,7 @@ def get_greek_cams():
     link = 'http://www.livecameras.gr/'
     headers = {"User-Agent": client.agent()}
     r = client.request(link, headers=headers)
-    r = r.decode('cp1253')
+    r = r.encode('utf-8')
     cams = client.parseDOM(r, 'div', attrs={'class': 'fp-playlist'})[0]
     cams = zip(client.parseDOM(cams, 'a', ret='href'),
                client.parseDOM(cams, 'a', ret='data-title'),
@@ -85,15 +85,15 @@ def get_the_random(url): #3
                  client.parseDOM(r, 'a'))
     frame = [i[0] for i in frames if 'random cam' in i[1].lower()][0]
     frame = base_url + frame if frame.startswith('/') else frame
-    xbmc.log('FRAME:%s' % frame)
+    # xbmc.log('FRAME:%s' % frame)
     info = client.request(frame, headers=headers)
     head = client.parseDOM(info, 'title')[0].encode('utf-8')
     # title = client.parseDOM(info, 'meta', ret='content', attrs={'name': 'description'})[0].encode('utf-8')
     # name = '{0} - {1}'.format(head, title)
-    xbmc.log('NAME:%s' % head)
+    # xbmc.log('NAME:%s' % head)
     poster = client.parseDOM(info, 'meta', ret='content', attrs={'property': 'og:image'})[0]
-    xbmc.log('INFO:%s' % info)
-    link = re.findall('''\,url:['"](.+?)['"]\}''', info, re.DOTALL)[0]
+    # xbmc.log('INFO:%s' % info)
+    link = re.findall(r'''\,url:['"](.+?)['"]\}''', info, re.DOTALL)[0]
     addDir('[B][COLOR white]%s[/COLOR][/B]' % head, link, 100, poster, '', 'Random Live Cam')
 
 
@@ -180,8 +180,10 @@ def Open_settings():
 
 
 def resolve(name, url, iconimage, description):
+    xbmc.log('URLLLL: {}'.format(url))
     if 'm3u8' in url:
         link = url
+        link += '|User-Agent={}'.format(urllib.quote_plus(client.agent()))
         liz = xbmcgui.ListItem(name, iconImage=ICON, thumbnailImage=iconimage)
     else:
         url = base_url + url if url.startswith('/') else url
@@ -190,8 +192,10 @@ def resolve(name, url, iconimage, description):
         # title = client.parseDOM(info, 'meta', ret='content', attrs={'name': 'description'})[0].encode('utf-8')
         # name = '{0} - {1}'.format(head, title)
         poster = client.parseDOM(info, 'meta', ret='content', attrs={'property': 'og:image'})[0]
-        link = re.findall('''\,url:['"](.+?)['"]\}''', info, re.DOTALL)[0]
+        link = re.findall(r'''\,url:['"](.+?)['"]\}''', info, re.DOTALL)[0]
+        link += '|User-Agent={}&Referer={}'.format(urllib.quote_plus(client.agent()), urllib.quote_plus(url))
         liz = xbmcgui.ListItem(head, iconImage=ICON, thumbnailImage=poster)
+
     try:
         liz.setInfo(type="Video", infoLabels={"Title": description})
         liz.setProperty("IsPlayable", "true")
