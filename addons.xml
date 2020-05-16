@@ -500,7 +500,7 @@
 	        <reuselanguageinvoker>true</reuselanguageinvoker>
 	    </extension>
 	</addon>
-	<addon id="script.module.cloudscraper" name="CloudScraper2" version="1.2.36" provider-name="venomous">
+	<addon id="script.module.cloudscraper" name="CloudScraper2" version="1.2.36.2" provider-name="venomous">
 	  <requires>
 	    <import addon="xbmc.python" version="2.25.0"/>
 	    <import addon="script.module.requests" />
