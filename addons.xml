@@ -522,7 +522,7 @@
 	</addon>
 	<addon id="plugin.video.shadow"                                                                                                                                    
 		   name="Shadow"                                                 
-		   version="1.8.0"                                                                                                                                        
+		   version="1.8.2"                                                                                                                                        
 		   provider-name="Darkness">
 	  <requires>
 	    <import addon="xbmc.python" version="2.1.0"/>
