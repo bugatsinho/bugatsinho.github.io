@@ -321,7 +321,7 @@
         </extension>
     </addon>
 
-    <addon id="service.subtitles.subscene" name="Subscene.com" version="1.8.2" provider-name="jarmo">
+    <addon id="service.subtitles.subscene" name="Subscene.com" version="1.8.2.1" provider-name="jarmo">
 	    <requires>
 	        <import addon="xbmc.python" version="2.14.0"/>
 	    </requires>
