@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.module.python.koding.aio"
+   name="Python Koding AIO"
+   version="2.0"
+   provider-name="Total Revolution, Bugatsinho">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.urlresolver" version="5.0.45"/>
+    <import addon="script.module.requests" version="2.3.0"/>
+    <import addon="script.module.beautifulsoup" version="2.1.31"/>
+    <import addon="script.module.unidecode" version="0.4.16"/>
+  </requires>
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Python Koding All In One</summary>
+    <description lang="en">Python Koding AIO contains a bunch of time saving modules that allows for quick and simple development.</description>
+    <disclaimer lang="en"></disclaimer>
+    <language></language>
+    <license>Creative Commons 4.0-NC-ND</license>
+    <forum>http:s//bugatsinho.github.io</forum>
+    <website>http://totalrevolution.tv</website>
+    <news>2.0 New version with the use of ResolveUrl</news>
+    <source>https://github.com/bugatsinho/python-koding/tree/master/script.module.python.koding.aio</source>
+  </extension>
+</addon>

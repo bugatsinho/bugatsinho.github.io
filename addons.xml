@@ -522,7 +522,7 @@
 	</addon>
 	<addon id="plugin.video.shadow"                                                                                                                                    
 		   name="Shadow"                                                 
-		   version="1.8.3"                                                                                                                                        
+		   version="1.8.5"                                                                                                                                        
 		   provider-name="Darkness">
 	  <requires>
 	    <import addon="xbmc.python" version="2.1.0"/>
@@ -539,5 +539,72 @@
 	    <platform>all</platform>
 	  </extension>
 	</addon>
-	
+	<addon id="script.module.python.koding.aio"
+   name="Python Koding AIO"
+   version="2.0"
+   provider-name="Total Revolution, Bugatsinho">
+	  <requires>
+	    <import addon="xbmc.python" version="2.1.0"/>
+	    <import addon="script.module.urlresolver" version="5.0.45"/>
+	    <import addon="script.module.requests" version="2.3.0"/>
+	    <import addon="script.module.beautifulsoup" version="2.1.31"/>
+	    <import addon="script.module.unidecode" version="0.4.16"/>
+	  </requires>
+	  <extension point="xbmc.python.module" library="lib" />
+	  <extension point="xbmc.addon.metadata">
+	    <platform>all</platform>
+	    <summary lang="en">Python Koding All In One</summary>
+	    <description lang="en">Python Koding AIO contains a bunch of time saving modules that allows for quick and simple development.</description>
+	    <disclaimer lang="en"></disclaimer>
+	    <language></language>
+	    <license>Creative Commons 4.0-NC-ND</license>
+	    <forum>http:s//bugatsinho.github.io</forum>
+	    <website>http://totalrevolution.tv</website>
+	    <news>2.0 New version with the use of ResolveUrl</news>
+	    <source>https://github.com/bugatsinho/python-koding/tree/master/script.module.python.koding.aio</source>
+	  </extension>
+	</addon>
+
+	<addon id="script.module.requests"
+	       name="requests"
+	       version="2.12.4"
+	       provider-name="kennethreitz, beenje">
+	  <requires>
+	    <import addon="xbmc.python" version="2.14.0"/>
+	  </requires>
+	  <extension point="xbmc.python.module"
+	             library="lib" />
+	  <extension point="xbmc.addon.metadata">
+	    <summary>Python HTTP for Humans</summary>
+	    <description>Packed for KODI from https://github.com/kennethreitz/requests</description>
+	    <platform>all</platform>
+	    <language></language>
+	    <license>Apache2</license>
+	    <forum></forum>
+	    <website>http://python-requests.org</website>
+	    <source>https://github.com/beenje/script.module.requests</source>
+	    <email>beenje AT gmail.com</email>
+	  </extension>
+	</addon>
+
+	<addon id="script.module.resolveurl" name="ResolveURL" version="5.0.45" provider-name="jsergio, gujal">
+	    <requires>
+	        <import addon="xbmc.python" version="2.1.0" />
+	        <import addon="plugin.video.youtube" optional="true" />
+	        <import addon="script.module.python.twitch" optional="true" />
+	        <import addon="script.module.cryptopy" version="1.2.6" optional="true" />
+	        <import addon="plugin.video.gdrive" optional="true" />
+	    </requires>
+	    <extension point="xbmc.python.module" library="lib" />
+	    <extension point="xbmc.python.pluginsource" library="lib/default.py" />
+	    <extension point="xbmc.addon.metadata">
+	        <platform>all</platform>
+	        <summary lang="en">Resolve common video host URL's to be playable in XBMC/Kodi.</summary>
+	        <summary lang="es">Resolver enlaces a videos de sitios populares para poder reproducirlos en XBMC/Kodi.</summary>
+	        <summary lang="hr">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju.</summary>
+	        <summary lang="el">Επίλυση συνδέσμων κοινών εξυπηρετητών σε μορφή βίντεο ικανό για αναπαραγωγή στο XBMC/Kodi.</summary>
+	        <description lang="en">Resolve common video host URL's to be playable in XBMC/Kodi, simplify addon development of video plugins requiring multi video hosts.</description>
+	        <description lang="hr">Prilagodi najčešće URL-ove video izvora kako bi radili u XBMC/Kodiju, pojednostavnjuje razvoj priključaka za video dodatke koji zahtjevaju višestruke video izvore.</description>
+	    </extension>
+</addon>
 </addons>
