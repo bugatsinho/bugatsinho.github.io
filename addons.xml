@@ -541,11 +541,11 @@
 	</addon>
 	<addon id="script.module.python.koding.aio"
    name="Python Koding AIO"
-   version="2.0"
+   version="2.1"
    provider-name="Total Revolution, Bugatsinho">
 	  <requires>
 	    <import addon="xbmc.python" version="2.1.0"/>
-	    <import addon="script.module.urlresolver" version="5.0.45"/>
+	    <import addon="script.module.resolveurl" version="5.0.45"/>
 	    <import addon="script.module.requests" version="2.3.0"/>
 	    <import addon="script.module.beautifulsoup" version="2.1.31"/>
 	    <import addon="script.module.unidecode" version="0.4.16"/>
