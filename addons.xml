@@ -159,37 +159,6 @@
 	  </extension>
 	</addon>
 
-	<addon id="plugin.video.sport365.live" name="Sport365" version="2.6.10.1" provider-name="Bugatsinho">
-	    <requires>
-	        <import addon="xbmc.python" version="2.1.0"/>
-	        <import addon="script.module.requests" version="2.19.1"/>
-	        <import addon="plugin.video.f4mTester" />
-	        <import addon="script.module.streamlink.base" />
-	        <import addon="script.module.pyxbmct" version="1.2.0"/>
-	    </requires>
-	    <extension point="xbmc.python.pluginsource" library="main.py">
-	        <provides>video</provides>
-	    </extension>
-	  <extension point="xbmc.addon.metadata">
-	    <summary lang="en">Sport365 originally made by GalAnonim</summary>
-	    <description lang="en">Fork version 1.0 by GalAnonim!Kindly note that Sport365 Live is not an official part of the media player you are running, and therefore not to be mentioned within official support channels, this addon has nothing to do with the media player itself, nor it’s intended use, it is simply a third party plugin which has been added to your system.</description>
-	    <disclaimer lang="en">Sport365 Live does not provide any streams of its own. Stream quality, content and copyright are responsibility of the ad-financed source web site.</disclaimer>
-	    <language>en</language>
-	    <platform>all</platform>
-	    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
-	    <website>https://bugatsinho.github.io</website>
-	    <twitter>@bugatsinho</twitter>
-	  <assets>
-	    <icon>icon.png</icon>
-	    <fanart>fanart.png</fanart>
-	  </assets>
-	  <news>2.6.0 17-05-2019
-	- Add as default playback method Streamlink thanks to Twilight and Devilsport
-	- Add News-Updates on menu
-	- Show version and by click it you force update addons!</news>
-	  </extension>
-	</addon>
-
     <addon id="plugin.video.skylinecctv" name="Skyline WebCams" version="0.0.4" provider-name="Bugatsinho">
 	  <requires>
 	    <import addon="xbmc.python" version="2.25.0"/>
@@ -320,27 +289,6 @@
             <platform>all</platform>
         </extension>
     </addon>
-
-    <addon id="service.subtitles.subscene" name="Subscene.com" version="1.8.2.1" provider-name="jarmo">
-	    <requires>
-	        <import addon="xbmc.python" version="2.14.0"/>
-	    </requires>
-	    <extension point="xbmc.subtitle.module"
-	               library="service.py"/>
-	    <extension point="xbmc.addon.metadata">
-	        <summary lang="en">Get subtitles from Subscene.com</summary>
-	        <description lang="en">Subscene.com provides subtitles in more than 50 languages, mainly in English, Arabic, Brazilian Portuguese, Farsi, Indonesian and Vietnamese.
-			Other languages with a great number of subtitles are: Danish, French, Swedish, Dutch, Italian, Norwegian and Spanish.[CR][CR]Note: Needs kodi-vfs-rar and/or kodi-vfs-libarchive addon to extract rar files.</description>
-	        <disclaimer lang="en"/>
-	        <platform>all</platform>
-	        <language/>
-	        <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
-	        <forum>http://forum.xbmc.org/showthread.php?tid=184854</forum>
-	        <website/>
-	        <email/>
-	        <source>https://github.com/jarmo/service.subtitles.subscene</source>
-	    </extension>
-	</addon>
 	
 	<addon id="script.module.cloudscraper" name="CloudScraper2" version="1.2.40" provider-name="venomous">
 	  <requires>
@@ -364,7 +312,7 @@
 	</addon>
 	<addon id="plugin.video.shadow"                                                                                                                                    
 		   name="Shadow"                                                 
-		   version="2.0.3"                                                                                                                                        
+		   version="2.0.6"                                                                                                                                        
 		   provider-name="Darkness">
 	  <requires>
 	    <import addon="xbmc.python" version="2.1.0"/>
