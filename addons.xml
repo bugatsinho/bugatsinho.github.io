@@ -391,4 +391,23 @@
             <platform>all</platform>
     </extension>
 </addon>
+	<addon id="plugin.video.sportshdme" name="SportHD" version="0.0.1" provider-name="Bugatsinho">
+	  <requires>
+		<!--import addon="xbmc.python" version="2.1.0"/-->
+		<import addon="script.module.dateutil" />
+	  </requires>
+	  <extension point="xbmc.python.pluginsource" library="default.py">
+		<provides>video</provides>
+	  </extension>
+	  <extension point="xbmc.addon.metadata">
+		<summary lang="en">SportHD by Bugatsinho</summary>
+		<description lang="en">Sport Streams from SportHD.me</description>
+		<disclaimer lang="en">All the streams on this add-on are hosted on the third party site and uploaded by other people. We are not responsible for any content that hosted on on the third-party sites. If you have any legal issues please contact appropriate video owners hosters.</disclaimer>
+		<language>EN</language>
+		<license>GNU GPL, version 2</license>
+		<twitter>https://twitter.com/Bugatsinho</twitter>
+		<news>
+		</news>
+	  </extension>
+	</addon>
 </addons>
