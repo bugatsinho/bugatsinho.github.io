@@ -261,9 +261,9 @@
         </extension>
     </addon>
 	
-	<addon id="script.module.cloudscraper" name="CloudScraper2" version="1.2.40" provider-name="venomous">
+	<addon id="script.module.cloudscraper" name="CloudScraper2" version="1.2.44" provider-name="venomous">
 	  <requires>
-	    <import addon="xbmc.python" version="2.25.0"/>
+	    <!--import addon="xbmc.python" version="2.25.0"/-->
 	    <import addon="script.module.requests" />
 	  </requires>
 	  <extension point="xbmc.python.module" library="lib" />
@@ -391,7 +391,7 @@
 				<platform>all</platform>
 		</extension>
 	</addon>
-	<addon id="plugin.video.sporthdme" name="SportHD" version="0.0.3" provider-name="Bugatsinho">
+	<addon id="plugin.video.sporthdme" name="SportHD" version="0.0.3.1" provider-name="Bugatsinho">
 	  <requires>
 		<!--import addon="xbmc.python" version="2.1.0"/-->
 		<import addon="script.module.dateutil" />
