@@ -4,6 +4,7 @@ import re
 import sys
 import urllib
 import urlparse
+import json
 import xbmc
 import xbmcaddon
 import xbmcgui
@@ -29,12 +30,40 @@ Live_url = 'http://www.sporthd.me/index.php?'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
+from dateutil.parser import parse
+from dateutil.tz import gettz
+from dateutil.tz import tzlocal
+
+#######################################
+# Time and Date Helpers
+#######################################
+try:
+    local_tzinfo = tzlocal()
+    locale_timezone = json.loads(xbmc.executeJSONRPC(
+        '{"jsonrpc": "2.0", "method": "Settings.GetSettingValue", "params": {"setting": "locale.timezone"}, "id": 1}'))
+    if locale_timezone['result']['value']:
+        local_tzinfo = gettz(locale_timezone['result']['value'])
+except:
+    pass
+
+
+def convDateUtil(timestring, newfrmt='default', in_zone='UTC'):
+    if newfrmt == 'default':
+        newfrmt = xbmc.getRegion('time').replace(':%S', '')
+    try:
+        in_time = parse(timestring)
+        in_time_with_timezone = in_time.replace(tzinfo=gettz(in_zone))
+        local_time = in_time_with_timezone.astimezone(local_tzinfo)
+        return local_time.strftime(newfrmt)
+    except:
+        return timestring
+
 
 def Main_menu():
     addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 5, ICON, FANART, '')
     addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
     addDir('[B][COLOR white]BEST LEAGUES[/COLOR][/B]', '', 2, ICON, FANART, '')
-    # addDir('[B][COLOR white]Navegar por letras[/COLOR][/B]', BASEURL, 9, ICON, FANART, '')
+    addDir('[B][COLOR gold]Settings[/COLOR][/B]', '', 10, ICON, FANART, '')
     addDir('[B][COLOR gold]Version: [COLOR lime]%s[/COLOR][/B]' % vers, '', 'BUG', ICON, FANART, '')
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
@@ -101,9 +130,9 @@ def sports_menu():
            'http://www.sporthd.me/images/nfl.png', FANART, 'NFL')
     addDir('[B][COLOR white]UFC[/COLOR][/B]', 'http://www.sporthd.me/?type=ufc', 5,
            'http://www.sporthd.me/images/ufc.png', FANART, 'UFC')
-    addDir('[B][COLOR white]Wresling[/COLOR][/B]', 'http://www.sporthd.me/?type=wresling', 5,
+    addDir('[B][COLOR white]Wrestling[/COLOR][/B]', 'http://www.sporthd.me/?type=wresling', 5,
            'http://www.sporthd.me/images/wresling.png', FANART, 'Wresling')
-    addDir('[B][COLOR white]Hokey[/COLOR][/B]', 'http://www.sporthd.me/?type=hokey', 5,
+    addDir('[B][COLOR white]Hockey[/COLOR][/B]', 'http://www.sporthd.me/?type=hokey', 5,
            'http://www.sporthd.me/images/hockey.png', FANART, 'Hokey')
     addDir('[B][COLOR white]Volleyball[/COLOR][/B]', 'http://www.sporthd.me/?type=volleyball', 5,
            'http://www.sporthd.me/images/volleyball.png', FANART, 'Volleyball')
@@ -125,9 +154,10 @@ def sports_menu():
 
 def get_events(url):  # 5
     data = client.request(url)
+    # xbmc.log('@#@EDATAAA: {}'.format(data), xbmc.LOGNOTICE)
     events = zip(client.parseDOM(data, 'li', attrs={'class': "item itemhov"}),
                  re.findall(r'<i class="material-icons">(.+?)</a> </li>', data, re.DOTALL))
-    addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
+    # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
     for event, streams in events:
         # xbmc.log('@#@EVENTTTTT:%s' % event, xbmc.LOGNOTICE)
         watch = '[COLORlime]*[/COLOR]' if '>Live<' in event else '[COLORred]*[/COLOR]'
@@ -141,8 +171,11 @@ def get_events(url):  # 5
         lname = client.parseDOM(event, 'a')[1]
         lname = re.sub(r'<.+?>', '', lname)
         time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
-        time = '[COLORgold][I]{}[/COLOR][/I]'.format(time.split('GMT')[0].strip())
-        name = '{0}{1} {2} - [I]{3}[/I]'.format(watch, time, teams, lname)
+        time = time.split('GMT')[0].strip()
+        cov_time = convDateUtil(time, 'default', 'GMT{}'.format(str(control.setting('timezone'))))
+        # xbmc.log('@#@COVTIMEEE:%s' % str(cov_time), xbmc.LOGNOTICE)
+        ftime = '[COLORgold][I]{}[/COLOR][/I]'.format(cov_time)
+        name = '{0}{1} {2} - [I]{3}[/I]'.format(watch, ftime, teams, lname)
 
         # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
         streams = base64.b64encode(streams)
@@ -224,10 +257,10 @@ def resolve(url):
             stream_url = url
         liz = xbmcgui.ListItem(name, iconImage=iconimage, thumbnailImage=iconimage)
         liz.setProperty("IsPlayable", "true")
-        liz.setPath(stream_url)
-        xbmc.Player().play(stream_url, liz, False)
-        quit()
-        # xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
+        liz.setPath(str(stream_url))
+        # xbmc.Player().play(stream_url, liz, False)
+        # quit()
+        xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
     except Exception as e:
         # try:
         #     liz = xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
@@ -239,6 +272,9 @@ def resolve(url):
         # except:
         control.infoDialog("[COLOR red]Dead Link[/COLOR]!", NAME, iconimage)
 
+def Open_settings():
+    control.openSettings()
+
 
 def addDir(name, url, mode, iconimage, fanart, description):
     u = sys.argv[0] + "?url=" + urllib.quote_plus(url) + "&mode=" + str(mode) + "&name=" + urllib.quote_plus(
@@ -247,9 +283,11 @@ def addDir(name, url, mode, iconimage, fanart, description):
     liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
     liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
     liz.setProperty('fanart_image', fanart)
-    if mode == 100 or mode == 'BUG':
+    if mode == 100:
         liz.setProperty("IsPlayable", "true")
         liz.addContextMenuItems([('GRecoTM Pair Tool', 'RunAddon(script.grecotm.pair)',)])
+        ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
+    elif mode == 10 or mode == 'BUG':
         ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
     else:
         ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=True)
@@ -327,6 +365,8 @@ elif mode == 5:
     get_events(url)
 elif mode == 4:
     get_stream(url)
+elif mode == 10:
+    Open_settings()
 
 elif mode == 100:
     resolve(url)
