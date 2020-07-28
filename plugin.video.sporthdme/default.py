@@ -246,10 +246,24 @@ def resolve(url):
             quit()
         if '/live.cdnz' in url:
             r = client.request(url, referer=BASEURL)
-            stream = client.parseDOM(r, 'iframe', ret='src')[-1]
+
+            if 'hfstream.js' in r:
+                regex = '''<script type='text/javascript'> width=(.+?), height=(.+?), channel='(.+?)', g='(.+?)';</script>'''
+                wid, heig, chan, ggg = re.findall(regex, r, re.DOTALL)[0]
+                stream = 'https://www.playerfs.com/membedplayer/'+chan+'/'+ggg+'/'+wid+'/'+heig+''
+            else:
+                stream = client.parseDOM(r, 'iframe', ret='src')[-1]
+
             r = client.request(stream, referer=url)
-            flink = re.findall(r'source:\s*"(.+?)",', r, re.DOTALL)[0]
-            # xbmc.log('@#@STREAMMMMM:%s' % flink, xbmc.LOGNOTICE)
+            # xbmc.log('@#@DATAAAA: %s' % r, xbmc.LOGNOTICE)
+            try:
+                flink = re.findall(r'source:\s*"(.+?)",', r, re.DOTALL)[0]
+            except IndexError:
+                ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', r, re.DOTALL)[0]
+                ea = client.request(ea).split('=')[1]
+                flink = re.findall('''videoplayer.src = "(.+?)";''', r, re.DOTALL)[0]
+                flink = flink.replace('" + ea + "', ea)
+            # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
             flink += '|Referer={}'.format('https://limetvv.com/')
             stream_url = flink
 
@@ -258,9 +272,9 @@ def resolve(url):
         liz = xbmcgui.ListItem(name, iconImage=iconimage, thumbnailImage=iconimage)
         liz.setProperty("IsPlayable", "true")
         liz.setPath(str(stream_url))
-        # xbmc.Player().play(stream_url, liz, False)
-        # quit()
-        xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
+        xbmc.Player().play(stream_url, liz, False)
+        quit()
+        # xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
     except Exception as e:
         # try:
         #     liz = xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
