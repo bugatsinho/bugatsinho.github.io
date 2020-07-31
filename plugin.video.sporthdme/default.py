@@ -33,6 +33,8 @@ headers = {'User-Agent': client.agent(),
 from dateutil.parser import parse
 from dateutil.tz import gettz
 from dateutil.tz import tzlocal
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 #######################################
 # Time and Date Helpers
@@ -164,10 +166,12 @@ def get_events(url):  # 5
         try:
             teams = client.parseDOM(event, 'td')
             home, away = re.sub(r'\s*(<img.+?>)\s*', '', teams[0]), re.sub(r'\s*(<img.+?>)\s*', '', teams[2])
-            teams = '[B]{0} vs {1}[/B]'.format(home.strip(), away.strip())
+            home = home.strip().encode('utf-8')
+            away = away.strip().encode('utf-8')
+            teams = '[B]{0} vs {1}[/B]'.format(home, away)
         except IndexError:
             teams = client.parseDOM(event, 'center')[0]
-            teams = re.sub(r'<.+?>|\s{2}', '', teams)
+            teams = re.sub(r'<.+?>|\s{2}', '', teams).encode('utf-8')
         lname = client.parseDOM(event, 'a')[1]
         lname = re.sub(r'<.+?>', '', lname)
         time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
