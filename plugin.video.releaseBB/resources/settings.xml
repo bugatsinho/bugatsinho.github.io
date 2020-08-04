@@ -2,9 +2,12 @@
 <settings>
     <category label="GENERAL">
         <setting type="lsep" label="Select Domain" />
-        <setting id="domain" label="DOMAIN" type="select" values="RLSBB.TO|RLSBB.RU" default="RLSBB.TO"/>
+        <setting id="domain" label="DOMAIN" type="select" values="RLSBB.TO|RLSBB.RU|RLSBB.UNBLOCKIT.ME" default="RLSBB.TO"/>
         <setting type="lsep" label="LINKS/SIZE" />
         <setting id="test.links" label="Remove 'DEAD' Links|Show File Size" type="bool" default="false"/>
+        <setting type="lsep" label="EZTV" />
+        <setting id="eztv_menu" type="bool" label="Enable EZTV" default="false" />
+        <setting id="eztv.domain" label="EZTV DOMAIN" type="select" values="EZTV.IO|EZTV.WF|EZTV.TF|EZTV.YT" default="EZTV.IO"/>
     </category>
     <category label="RESOLVER">
         <setting type="lsep" label="ResolveUrl-Settings" />

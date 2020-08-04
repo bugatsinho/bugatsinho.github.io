@@ -1,3 +1,6 @@
++ [B][COLOR lime]2.0.0[/B][/COLOR] [COLOR gold](22-04-2020)[/COLOR]
+- add eztv website option
+
 + [B][COLOR lime]1.9.0[/B][/COLOR] [COLOR gold](22-04-2020)[/COLOR]
 - add cloudscraper module to bypass cloudflare
 

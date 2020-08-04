@@ -9,15 +9,16 @@ import re
 import sys
 import os
 import threading
+import random
 from resources.lib.modules import client
 from resources.lib.modules import control
 from resources.lib.modules import cache
 from resources.lib.modules import search
 from resources.lib.modules import view
 from resources.lib.modules import dom_parser as dom
+from resources.lib.modules.user_agents import USER_AGENTS
 from t0mm0.common.addon import Addon
 from t0mm0.common.net import Net
-
 
 addon_id = 'plugin.video.releaseBB'
 plugin = xbmcaddon.Addon(id=addon_id)
@@ -61,49 +62,45 @@ allfun = [
     (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)
 ]
 
+
 def MainMenu():  # homescreen
     addon.add_directory({'mode': 'open_news'},
                         {'title': '[COLOR lime][B]News - Updates[/COLOR][/B]'},
-                        [(control.lang(32008).encode('utf-8'),
-                          'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
-                        img=ICON, fanart=FANART, is_folder=False)
+                        allfun, img=ICON, fanart=FANART, is_folder=False)
 
     addon.add_directory({'mode': 'Categories', 'section': 'movies'},
                         {'title': control.lang(32000).encode('utf-8')},
-                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
-                        img=IconPath + 'movies.png', fanart=FANART)
+                        allfun, img=IconPath + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'Categories', 'section': 'tv-shows'},
                         {'title': control.lang(32001).encode('utf-8')},
-                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
-                        img=IconPath + 'tv_shows.png', fanart=FANART)
+                        allfun, img=IconPath + 'tv_shows.png', fanart=FANART)
     addon.add_directory({'mode': 'search_menu'},
                         {'title': control.lang(32002).encode('utf-8')},
-                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
-                        img=IconPath + 'search.png', fanart=FANART)
+                        allfun, img=IconPath + 'search.png', fanart=FANART)
 
     downloads = True if control.setting('downloads') == 'true' and (
-                len(control.listDir(control.setting('movie.download.path'))[0]) > 0 or
-                len(control.listDir(control.setting('tv.download.path'))[0]) > 0) else False
+            len(control.listDir(control.setting('movie.download.path'))[0]) > 0 or
+            len(control.listDir(control.setting('tv.download.path'))[0]) > 0) else False
     if downloads:
         addon.add_directory({'mode': 'downloadlist'}, {'title': control.lang(32003).encode('utf-8')},
-                            [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
-                            img=IconPath + 'downloads.png', fanart=FANART)
+                            allfun, img=IconPath + 'downloads.png', fanart=FANART)
+
+    if control.setting('eztv_menu') == 'true':
+        addon.add_directory({'mode': 'eztv'}, {'title': 'EZTV TV Shows'}, allfun,
+                            img=IconPath + 'eztv.png', fanart=FANART)
 
     addon.add_directory({'mode': 'settings'}, {'title': control.lang(32004).encode('utf-8')},
-                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
-                        img=IconPath + 'tools.png', fanart=FANART, is_folder=False)
+                        allfun, img=IconPath + 'tools.png', fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'setviews'}, {'title': control.lang(32005).encode('utf-8')},
-                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
-                        img=IconPath + 'set_view.png', fanart=FANART)
-   
+                        allfun, img=IconPath + 'set_view.png', fanart=FANART)
+
     # addon.add_directory({'mode': 'help'}, {'title': control.lang(32006).encode('utf-8')},
     #                     [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
     #                     img=IconPath + 'github.png', fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'forceupdate'},
                         {'title': '[COLOR gold][B]Version: [COLOR lime]%s[/COLOR][/B]' % version},
-                        [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)')],
-                        img=ICON, fanart=FANART, is_folder=False)
-    
+                        allfun, img=ICON, fanart=FANART, is_folder=False)
+
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -134,8 +131,8 @@ def downloads_root():
 
 def Categories(section):  # categories
     sec = '/category/%s' % section
-    html = response_html(BASE_URL, '96')
-    # html = cloudflare_mode(BASE_URL)
+    # html = response_html(BASE_URL, '96')
+    html = cloudflare_mode(BASE_URL)
     # xbmc.log('HTMLLLLL: %s' % html)
     match = client.parseDOM(html, 'li', attrs={'id': 'categories-2'})[0]
     items = zip(client.parseDOM(match, 'a'),
@@ -152,7 +149,7 @@ def Categories(section):  # categories
         link = client.replaceHTMLCodes(link)
         addon.add_directory({'mode': 'GetTitles', 'section': section, 'url': link, 'startPage': '1', 'numOfPages': '2'},
                             {'title': title}, allfun, img=img, fanart=FANART)
-    
+
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -168,7 +165,7 @@ def foreign_movies(url):
         title = '[B][COLORgold]{0}[/COLOR][/B]'.format(title)
         addon.add_directory({'mode': 'GetTitles', 'section': section, 'url': BASE_URL + link,
                              'startPage': '1', 'numOfPages': '2'}, {'title': title}, allfun,
-                            img= IconPath + 'movies.png', fanart=FANART)
+                            img=IconPath + 'movies.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -176,8 +173,8 @@ def foreign_movies(url):
 
 def recommended_movies(url):
     try:
-        r = response_html(url, '8')
-        # r = cloudflare_mode(url)
+        # r = response_html(url, '8')
+        r = cloudflare_mode(url)
         r = client.parseDOM(r, 'li', attrs={'id': 'text-\d+'})[-1]
         items = zip(client.parseDOM(r, 'a', ret='href'),
                     client.parseDOM(r, 'img', ret='src'))
@@ -213,15 +210,16 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
         else:
             pageUrl = url
 
-        html = response_html(pageUrl, '3')
-        # html = cloudflare_mode(pageUrl)
+        # html = response_html(pageUrl, '3')
+        html = cloudflare_mode(pageUrl)
+        # xbmc.log('RESULTOOOO: {}'.format(html))
         start = int(startPage)
         end = start + int(numOfPages)
         for page in range(start, end):
             if page != start:
                 pageUrl = urlparse.urljoin(url, 'page/%s' % page)
-                html = response_html(pageUrl, '3')
-                # html = cloudflare_mode(pageUrl)
+                # html = response_html(pageUrl, '3')
+                html = cloudflare_mode(pageUrl)
             match = client.parseDOM(html, 'div', attrs={'class': 'post'})
             for item in match:
                 movieUrl = client.parseDOM(item, 'a', ret='href')[0]
@@ -236,12 +234,12 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
                 except:
                     desc = 'N/A'
 
-            # match = [(client.parseDOM(i, 'a', ret='href')[0],
-            #           client.parseDOM(i, 'a')[0],
-            #           client.parseDOM(i, 'img', ret='src')[1],
-            #           client.parseDOM(i, 'div', attrs={'class': 'postContent'})[0]) for i in match if i]
-            # match = re.compile('postHeader.+?href="(.+?)".+?>(.+?)<.+?src=.+? src="(.+?).+?(Plot:.+?)</p>"', re.DOTALL).findall(html)
-            # for movieUrl, name, img, desc in match:
+                # match = [(client.parseDOM(i, 'a', ret='href')[0],
+                #           client.parseDOM(i, 'a')[0],
+                #           client.parseDOM(i, 'img', ret='src')[1],
+                #           client.parseDOM(i, 'div', attrs={'class': 'postContent'})[0]) for i in match if i]
+                # match = re.compile('postHeader.+?href="(.+?)".+?>(.+?)<.+?src=.+? src="(.+?).+?(Plot:.+?)</p>"', re.DOTALL).findall(html)
+                # for movieUrl, name, img, desc in match:
                 desc = Sinopsis(desc)
                 name = '[B][COLORgold]{0}[/COLOR][/B]'.format(name.encode('utf-8'))
                 mode = 'GetPack' if 'tv-packs' in url else 'GetLinks'
@@ -257,16 +255,16 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
     except BaseException:
         control.infoDialog(
             control.lang(32011).encode('utf-8'), NAME, ICON, 5000)
-    
+
     control.content(int(sys.argv[1]), 'movies')
     control.directory(int(sys.argv[1]))
     view.setView('movies', {'skin.estuary': 55, 'skin.confluence': 500})
 
 
-def GetPack(section, url, img, plot): # TV packs links
+def GetPack(section, url, img, plot):  # TV packs links
     try:
-        html = response_html(url, '3')
-        # html = cloudflare_mode(url)
+        # html = response_html(url, '3')
+        html = cloudflare_mode(url)
         main = client.parseDOM(html, 'div', {'class': 'postContent'})[0]
         data = client.parseDOM(main, 'p')
         data = [i for i in data if 'nfo1.' in i]
@@ -281,8 +279,10 @@ def GetPack(section, url, img, plot): # TV packs links
                                 {'title': title, 'plot': plot},
                                 [(control.lang(32007).encode('utf-8'),
                                   'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                                 (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                                 (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                                 (control.lang(32008).encode('utf-8'),
+                                  'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                                 (control.lang(32009).encode('utf-8'),
+                                  'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                                 img=img, fanart=FANART)
 
     except BaseException:
@@ -299,8 +299,8 @@ def GetLinksPack(section, url, img, plot):
         urls = eval(url)
         frames = []
         for u in urls:
-            html = response_html(u, '72')
-            # html = cloudflare_mode(u)
+            # html = response_html(u, '72')
+            html = cloudflare_mode(u)
             data = client.parseDOM(html, 'ol')[0]
             frames += client.parseDOM(data, 'div')
             try:
@@ -355,8 +355,8 @@ def GetLinks(section, url, img, plot):  # Get Links
     try:
         import resolveurl
         from resources.lib.modules import init
-        html = response_html(url, '3')
-        # html = cloudflare_mode(url)
+        # html = response_html(url, '3')
+        html = cloudflare_mode(url)
         listitem = GetMediaInfo(html)
         name = '%s (%s)' % (listitem[0], listitem[1])
         main = client.parseDOM(html, 'div', {'class': 'postContent'})
@@ -408,8 +408,10 @@ def GetLinks(section, url, img, plot):  # Get Links
                             {'title': title, 'plot': plot},
                             [(control.lang(32007).encode('utf-8'),
                               'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                             (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                             (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                             (control.lang(32008).encode('utf-8'),
+                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                             (control.lang(32009).encode('utf-8'),
+                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                             img=img, fanart=FANART, is_folder=False)
                     else:
                         links.append((host, title, url, name))
@@ -423,13 +425,15 @@ def GetLinks(section, url, img, plot):  # Get Links
 
             for item in tested_links:
                 link, title, name = item[0], item[1], item[2]
-                cm = [(control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                      (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                      (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)]
+                cm = [
+                    (control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                    (control.lang(32008).encode('utf-8'),
+                     'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                    (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)]
                 downloads = True if control.setting('downloads') == 'true' and not (control.setting(
                     'movie.download.path') == '' or control.setting('tv.download.path') == '') else False
                 if downloads:
-                    #frame = resolveurl.resolve(link)
+                    # frame = resolveurl.resolve(link)
                     cm.append((control.lang(32013).encode('utf-8'),
                                'RunPlugin(plugin://plugin.video.releaseBB/?mode=download&title=%s&img=%s&url=%s)' %
                                (name, img, link))
@@ -442,9 +446,11 @@ def GetLinks(section, url, img, plot):  # Get Links
             for item in links:
                 host, title, link, name = item[0], item[1], item[2], item[3]
                 title = '%s - %s' % (host, title)
-                cm = [(control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                      (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                      (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)]
+                cm = [
+                    (control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                    (control.lang(32008).encode('utf-8'),
+                     'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                    (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)]
                 downloads = True if control.setting('downloads') == 'true' and not (control.setting(
                     'movie.download.path') == '' or control.setting('tv.download.path') == '') else False
                 if downloads:
@@ -460,18 +466,190 @@ def GetLinks(section, url, img, plot):  # Get Links
         control.infoDialog(
             control.lang(32012).encode('utf-8'),
             NAME, ICON, 5000)
-    
+
     control.content(int(sys.argv[1]), 'videos')
     control.directory(int(sys.argv[1]))
     view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500})
 
 
 def cloudflare_mode(url):
-    from cloudscraper2 import CloudScraper as cfscrape
-    scraper = cfscrape.create_scraper()
-    result = scraper.get(url).text
+    from cloudscraper2 import CloudScraper
+    import requests
+    scraper = CloudScraper.create_scraper()
+    ua = client.agent()
+    scraper.headers.update({'User-Agent': ua})
+    cookies = scraper.get(url).cookies.get_dict()
+    headers = {'User-Agent': ua}
+    req = requests.get(url, cookies=cookies, headers=headers)
+    result = req.text
     # xbmc.log('RESULTTTTT: %s' % result)
     return result
+
+
+##########################
+###### EZTV TV ###########
+##########################
+eztv_base = control.setting('eztv.domain')
+eztv_base = 'https://%s' % eztv_base.lower()
+
+
+def eztv_menu():
+    addon.add_directory({'mode': 'eztv_latest'}, {'title': 'Latest Releases'}, allfun,
+                        img=IconPath + 'eztv.png', fanart=FANART)
+    addon.add_directory({'mode': 'eztv_calendar', 'url': urlparse.urljoin(eztv_base, '/calendar')},
+                        {'title': 'Calendar'}, allfun, img=IconPath + 'eztv.png', fanart=FANART)
+    addon.add_directory({'mode': 'eztv_search'}, {'title': 'Search'}, allfun,
+                        img=IconPath + 'eztv.png', fanart=FANART)
+    control.content(int(sys.argv[1]), 'addons')
+    control.directory(int(sys.argv[1]))
+    view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
+
+
+def eztv_latest(url):
+    html = client.request(eztv_base)
+    posts = client.parseDOM(html, 'tr', attrs={'class': 'forum_header_border'})
+    for post in posts:
+        infos = dom.parse_dom(post, 'a')[1]
+        title = infos.attrs['title'].encode('utf-8')
+        page_link = infos.attrs['href']
+        page_link = urlparse.urljoin(eztv_base, page_link) if page_link.startswith('/') else page_link
+        magnet = re.findall(r'href="(magnet:.+?)"', post, re.DOTALL)[0]
+        addon.add_directory({'mode': 'open_page', 'url': page_link, 'img': img, 'plot': 'N/A'},
+                            {'title': title}, allfun, img=img, fanart=FANART)
+
+    try:
+        np = dom.parse_dom(html, 'a', req='href')
+        np = [i.attrs['href'] for i in np if 'next page' in i.content][0]
+        np = urlparse.urljoin(eztv_base, np)
+        addon.add_directory({'mode': 'eztv_latest', 'url': np},
+                            {'title': control.lang(32010).encode('utf-8')},
+                            img=IconPath + 'eztv.png', fanart=FANART)
+    except BaseException:
+        pass
+
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500})
+
+
+def eztv_calendar(url):
+    html = client.request(url)
+    tables = client.parseDOM(html, 'table', attrs={'class': 'forum_header_border'})[1:]
+    for table in tables:
+        day = client.parseDOM(table, 'td', attrs={'class': 'forum_thread_header'})[0]
+        day = '[B][COLORgold]{}[/B][/COLOR]'.format(day.strip().upper())
+        addon.add_item({}, {'title': day}, allfun, img=IconPath + 'eztv.png', fanart=FANART)
+
+        items = client.parseDOM(table, 'tr', attrs={'name': 'hover'})
+        items = [i for i in items if 'alt="' in i]
+        items = [(client.parseDOM(i, 'a', ret='href')[0],
+                  client.parseDOM(i, 'img', ret='src')[0],
+                  client.parseDOM(i, 'img', ret='alt')[0]) for i in items if i]
+        for page_link, poster, name in items:
+            poster = urlparse.urljoin(eztv_base, poster) if poster.startswith('/') else poster
+            page_link = urlparse.urljoin(eztv_base, page_link) if page_link.startswith('/') else page_link
+            addon.add_directory({'mode': 'open_show', 'url': page_link, 'img': poster, 'plot': 'N/A'},
+                                {'title': name.encode('utf-8')}, allfun, img=poster, fanart=FANART)
+
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500})
+
+
+def open_show(url):
+    # xbmc.log('URLLLLL: {}'.format(url))
+    html = client.request(url)
+    try:
+        alts = client.parseDOM(html, 'tr', attrs={'class': 'forum_header_border'})
+        alts = [dom.parse_dom(str(i), 'a', req=['href', 'title'])[1] for i in alts if alts]
+
+        for alt in alts:
+            link, title = alt.attrs['href'], alt.attrs['title']
+            link = urlparse.urljoin(eztv_base, link) if link.startswith('/') else link
+            addon.add_directory({'mode': 'open_page', 'url': link, 'img': img, 'plot': 'N/A'},
+                                {'title': title}, allfun, img=img, fanart=FANART)
+    except IndexError:
+        pass
+
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500})
+
+
+def open_episode_page(url):
+    html = client.request(url)
+    try:
+        poster = client.parseDOM(html, 'td', attrs={'align': 'center'})
+        poster = [i for i in poster if 'img src=' in i][0]
+        poster = client.parseDOM(poster, 'img', ret='src')[0]
+        poster = urlparse.urljoin(eztv_base, poster) if poster.startswith('/') else poster
+    except IndexError:
+        poster = IconPath + 'eztv.png'
+    try:
+        img = client.parseDOM(html, 'a', attrs={'class': 'pirobox'}, ret='href')[0]
+        img = 'https:' + img if img.startswith('//') else img
+        img = img.replace('large', 'small')
+    except IndexError:
+        img = FANART
+    try:
+
+        magnet = re.findall(r'href="(magnet:.+?)"', html, re.DOTALL)[0]
+        title = client.parseDOM(html, 'title')[0].split(' EZTV')[0]
+        addon.add_video_item({'mode': 'PlayVideo', 'url': magnet, 'img': img},
+                             {'title': title}, allfun, img=poster, fanart=img)
+    except IndexError:
+        control.infoDialog(
+            '[COLOR red][B]No Magnet Link available![/B][/COLOR]\n'
+            '[COLOR lime][B]Please try other title!![/B][/COLOR]', NAME, ICON, 5000)
+        return
+
+    try:
+        alts = client.parseDOM(html, 'tr', attrs={'class': 'forum_header_border'})
+        alts = [dom.parse_dom(str(i), 'a', req=['href', 'title'])[0] for i in alts if alts]
+
+        for alt in alts:
+            link, title = alt.attrs['href'], alt.attrs['title']
+            link = urlparse.urljoin(eztv_base, link) if link.startswith('/') else link
+            addon.add_directory({'mode': 'open_page', 'url': link, 'img': img, 'plot': 'N/A'},
+                                {'title': title}, allfun, img=img, fanart=FANART)
+    except IndexError:
+        pass
+
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500})
+
+
+def eztv_search():
+    url = 'https://eztv.io/search/?q1={}&q2=&search=Search'
+    search_url = 'https://eztv.io/search/{}'
+    keyboard = xbmc.Keyboard()
+    keyboard.setHeading(control.lang(32002).encode('utf-8'))
+    keyboard.doModal()
+    if keyboard.isConfirmed():
+        _query = keyboard.getText()
+        query = _query.encode('utf-8')
+        query = urllib.quote_plus(query).replace('+', '-')
+        # get_link = client.request(url.format(query), output='location')
+        search_url = search_url.format(query)
+        # xbmc.log('SEARCH-URL: {}'.format(search_url))
+        data = client.request(query)
+        try:
+            alts = client.parseDOM(data, 'tr', attrs={'class': 'forum_header_border'})
+            alts = [dom.parse_dom(str(i), 'a', req=['href', 'title'])[0] for i in alts if alts]
+            # xbmc.log('SEARCH-ALTSL: {}'.format(alts))
+            for alt in alts:
+                link, title = alt.attrs['href'], alt.attrs['title']
+                link = urlparse.urljoin(eztv_base, link) if link.startswith('/') else link
+                addon.add_directory({'mode': 'open_page', 'url': link, 'img': img, 'plot': 'N/A'},
+                                    {'title': title}, allfun, img=img, fanart=FANART)
+        except IndexError:
+            pass
+    else:
+        return
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500})
 
 
 def download(title, img, url):
@@ -495,16 +673,18 @@ def download(title, img, url):
         headers = dict('')
 
     content = re.compile(r'(.+?)\s+[\.|\(|\[]S(\d+)E\d+[\.|\)|\]]', re.I).findall(title)
-    transname = title.translate(None, '\/:*?"<>|').strip('.')
-    transname = re.sub('\[.+?\]', '', transname)
-    levels =['../../../..', '../../..', '../..', '..']
+    transname = title.translate(None, r'\/:*?"<>|').strip('.')
+    transname = re.sub(r'\[.+?\]', '', transname)
+    levels = ['../../../..', '../../..', '../..', '..']
 
     if len(content) == 0:
         dest = control.setting('movie.download.path')
         dest = control.transPath(dest)
         for level in levels:
-            try: control.makeFile(os.path.abspath(os.path.join(dest, level)))
-            except: pass
+            try:
+                control.makeFile(os.path.abspath(os.path.join(dest, level)))
+            except:
+                pass
         control.makeFile(dest)
         dest = os.path.join(dest, transname)
         control.makeFile(dest)
@@ -512,18 +692,20 @@ def download(title, img, url):
         dest = control.setting('tv.download.path')
         dest = control.transPath(dest)
         for level in levels:
-            try: control.makeFile(os.path.abspath(os.path.join(dest, level)))
-            except: pass
+            try:
+                control.makeFile(os.path.abspath(os.path.join(dest, level)))
+            except:
+                pass
         control.makeFile(dest)
-        tvtitle = re.sub('\[.+?\]', '', content[0])
-        transtvshowtitle = tvtitle.translate(None, '\/:*?"<>|').strip('.')
+        tvtitle = re.sub(r'\[.+?\]', '', content[0])
+        transtvshowtitle = tvtitle.translate(None, r'\/:*?"<>|').strip('.')
         dest = os.path.join(dest, transtvshowtitle)
         control.makeFile(dest)
         dest = os.path.join(dest, 'Season %01d' % int(content[0][1]))
         control.makeFile(dest)
 
     ext = os.path.splitext(urlparse.urlparse(url).path)[1][1:]
-    if not ext in ['mp4', 'mkv', 'flv', 'avi', 'mpg']: ext = 'mp4'
+    if ext not in ['mp4', 'mkv', 'flv', 'avi', 'mpg']: ext = 'mp4'
     dest = os.path.join(dest, transname + '.' + ext)
     headers = urllib.quote_plus(json.dumps(headers))
 
@@ -543,7 +725,8 @@ def response_html(url, cachetime):
         if html is None:
             control.infoDialog(control.lang(32011).encode('utf-8'), NAME, ICON, 5000)
 
-        return html
+        else:
+            return html
     except BaseException:
         control.infoDialog(control.lang(32011).encode('utf-8'), NAME, ICON, 5000)
 
@@ -551,9 +734,9 @@ def response_html(url, cachetime):
 def link_tester(item):
     try:
         host, title, link, name = item[0], item[1], item[2], item[3]
-        #addon.log('URL Tested: [%s]: URL: %s ' % (host.upper(), link))
+        # addon.log('URL Tested: [%s]: URL: %s ' % (host.upper(), link))
         na = ['has been deleted', 'file not found', 'file removed', 'sorry', 'step 1: select your plan']
-        r = response_html(link, 1)
+        r = cloudflare_mode(link)
         if r is None:
             addon.log('NO result: [%s]: URL: %s ' % (host.upper(), link))
             return False, 'N/A'
@@ -691,11 +874,14 @@ def search_menu():
         delete_option = True
         addon.add_directory({'mode': 'search_bb', 'url': search},
                             {'title': title},
-                            [(control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                            [(control.lang(32007).encode('utf-8'),
+                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
                              (control.lang(32015).encode('utf-8'),
                               'RunPlugin(plugin://plugin.video.releaseBB/?mode=del_search_item&query=%s)' % search,),
-                             (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                             (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                             (control.lang(32008).encode('utf-8'),
+                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                             (control.lang(32009).encode('utf-8'),
+                              'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
                             img=IconPath + 'search.png', fanart=FANART)
         lst += [(search)]
     dbcur.close()
@@ -720,7 +906,6 @@ def clear_Title(txt):
 
 
 def setviews():
-
     try:
         control.idle()
 
@@ -781,9 +966,11 @@ elif mode == 'search_bb':
     search.Search_bb(url)
 elif mode == 'del_search_items':
     from resources.lib.modules import search
+
     search.search_clear()
 elif mode == 'del_search_item':
     from resources.lib.modules import search
+
     search.del_search(query)
 elif mode == 'PlayVideo':
     PlayVideo(url, title, img, plot)
@@ -791,6 +978,7 @@ elif mode == 'settings':
     control.Settings(ADDON.getAddonInfo('id'))
 elif mode == 'ResolverSettings':
     import resolveurl
+
     resolveurl.display_settings()
 # elif mode == 'RealDebrid':
 #    xbmc.executebuiltin('XBMC.RunPlugin(plugin://script.module.resolveurl/?mode=auth_rd)')
@@ -799,8 +987,19 @@ elif mode == 'ClearCache':
 elif mode == 'forceupdate':
     control.infoDialog(control.lang(32021).encode('utf-8'))
     control.execute('UpdateAddonRepos')
-# elif mode == 'help':
-#     control.open_git()
+elif mode == 'eztv':
+    eztv_menu()
+elif mode == 'eztv_latest':
+    eztv_latest(url)
+elif mode == 'eztv_calendar':
+    url = '{0}/calendar/'.format(eztv_base)
+    eztv_calendar(url)
+elif mode == 'eztv_search':
+    eztv_search()
+elif mode == 'open_page':
+    open_episode_page(url)
+elif mode == 'open_show':
+    open_show(url)
 elif mode == 'addView':
     view.addView(content)
 elif mode == 'setviews':
@@ -817,4 +1016,5 @@ elif mode == 'foreign':
     foreign_movies(url)
 elif mode == 'open_news':
     from resources.lib.modules import newsbox
+
     newsbox.welcome()
