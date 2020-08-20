@@ -704,6 +704,10 @@ def gamato_links(url, name, poster):  # 12
                     # sources: ["http://cloudb.me/4fogdt6l4qprgjzd2j6hymoifdsky3tfskthk76ewqbtgq4aml3ior7bdjda/v.mp4"],
                     match = client.request(frame, referer=url)
                     # xbmc.log('MATCH3: {}'.format(match))
+                    if 'meta name="robots"' in match:
+                        cloudid = frame.split('html?')[-1].split('=')[0]
+                        cloud = 'http://cloudb2.me/embed-{}.html?auto=1&referer={}'.format(cloudid, url)
+                        match = client.request(cloud)
                     try:
                         from resources.lib.modules import jsunpack
                         if jsunpack.detect(match):
@@ -750,7 +754,8 @@ def find_single_match(data, patron, index=0):
 
 def clear_Title(txt):
     txt = txt.encode('utf-8', 'ignore')
-    txt = re.sub('<.+?>', '', txt)
+    txt = re.sub(r'<.+?>', '', txt)
+    txt = re.sub(r'var\s+cp.+?document.write\(\'\'\);\s*', '', txt)
     txt = txt.replace("&quot;", "\"").replace('()', '').replace("&#038;", "&").replace('&#8211;', ':').replace('\n',
                                                                                                                ' ')
     txt = txt.replace("&amp;", "&").replace('&#8217;', "'").replace('&#039;', ':').replace('&#;', '\'')
@@ -775,13 +780,22 @@ def search_clear():
 
 def resolve(name, url, iconimage, description):
     host = url
+    # xbmc.log('HOSTTTTT: {}'.format(host))
     if host.split('|')[0].endswith('.mp4') and 'clou' in host:
         stream_url = host + '|User-Agent=%s&Referer=%s' % (urllib.quote_plus(client.agent(), ':/'), GAMATO)
         name = name
-    elif 'tenies-online' in host:
-        stream_url = client.request(host)
-        stream_url = client.parseDOM(stream_url, 'a', {'id': 'link'}, ret='href')[0]
-        stream_url = evaluate(stream_url)
+    elif '/links/' in host:
+            host, ref = host.split('|')
+            hdr = {'User-Agent': client.agent(),
+                   'Referer': ref}
+            stream_url = requests.get(host, headers=hdr).url
+            # stream_url = client.request(host, headers=hdr, output='location')
+            # xbmc.log('LOCATION: {}'.format(stream_url))
+            stream_url = evaluate(stream_url)
+        # stream_url = client.request(host)
+        # stream_url = client.parseDOM(stream_url, 'a', {'id': 'link'}, ret='href')[0]
+        # stream_url = evaluate(stream_url)
+
     else:
         stream_url = evaluate(host)
         name = name.split(' [B]|')[0]
