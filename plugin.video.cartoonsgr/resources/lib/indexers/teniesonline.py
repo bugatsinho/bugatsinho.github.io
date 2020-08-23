@@ -2,7 +2,9 @@
 
 import xbmcgui
 import xbmcaddon
+import xbmc
 import re
+import requests
 from resources.lib.modules import client
 from resources.lib.modules import control
 from resources.lib.modules import views
@@ -103,6 +105,8 @@ def get_links(name, url, iconimage, description):
                 info = '[Χωρίς Υπ]'
             else:
                 info = '[N/A]'
+
+            frame = requests.get(frame, allow_redirects=False).headers['Location']
             title = '[COLOR lime]{}[/COLOR] | [B]{}[/B] | ({})'.format(info, host.capitalize(), quality.encode('utf-8'))
             addDir(title, frame, 100, iconimage, FANART, str(description))
     except BaseException:

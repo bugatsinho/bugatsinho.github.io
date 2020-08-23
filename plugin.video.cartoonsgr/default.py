@@ -779,28 +779,44 @@ def search_clear():
 
 
 def resolve(name, url, iconimage, description):
+    liz = xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
     host = url
-    # xbmc.log('HOSTTTTT: {}'.format(host))
     if host.split('|')[0].endswith('.mp4') and 'clou' in host:
         stream_url = host + '|User-Agent=%s&Referer=%s' % (urllib.quote_plus(client.agent(), ':/'), GAMATO)
         name = name
-    elif '/links/' in host:
-            host, ref = host.split('|')
-            hdr = {'User-Agent': client.agent(),
-                   'Referer': ref}
-            stream_url = requests.get(host, headers=hdr).url
-            # stream_url = client.request(host, headers=hdr, output='location')
-            # xbmc.log('LOCATION: {}'.format(stream_url))
-            stream_url = evaluate(stream_url)
-        # stream_url = client.request(host)
-        # stream_url = client.parseDOM(stream_url, 'a', {'id': 'link'}, ret='href')[0]
-        # stream_url = evaluate(stream_url)
+
+    # stream_url = requests.get(host, headers=hdr).url
+    elif '/aparat.' in host:
+       try:
+           from resources.lib.resolvers import aparat
+           stream_url = aparat.get_video(host)
+           stream_url, sub = stream_url.split('|')
+           liz.setSubtitles([sub])
+       except BaseException:
+           stream_url = evaluate(host)
+    # elif '/clipwatching.' in host:
+    #     xbmc.log('HOST: {}'.format(host))
+    #     # try:
+    #     data = requests.get(host).text
+    #     xbmc.log('DATA: {}'.format(data))
+    #     try:
+    #         sub = client.parseDOM(data, 'track', ret='src', attrs={'label': 'Greek'})[0]
+    #         xbmc.log('SUBS: {}'.format(sub))
+    #         liz.setSubtitles([sub])
+    #     except IndexError:
+    #         pass
+    #
+    #     stream_url = re.findall(r'''sources:\s*\[\{src:\s*['"](.+?)['"]\,''', data, re.DOTALL)[0]
+    #     xbmc.log('HOST111: {}'.format(stream_url))
+    #
+    #
+    #     # except BaseException:
+    #     #     stream_url = evaluate(stream_url)
 
     else:
         stream_url = evaluate(host)
         name = name.split(' [B]|')[0]
     try:
-        liz = xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
         liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
         liz.setProperty("IsPlayable", "true")
         liz.setPath(str(stream_url))
@@ -819,6 +835,9 @@ def evaluate(host):
                 host = resolveurl.resolve(oplink) if oplink == '' else oplink
             except BaseException:
                 host = resolveurl.resolve(host)
+
+            # except BaseException:
+            #     host = resolveurl.resolve(host)
 
         elif resolveurl.HostedMediaFile(host):
             host = resolveurl.resolve(host)
