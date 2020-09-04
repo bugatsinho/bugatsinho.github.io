@@ -25,8 +25,8 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'http://www.sporthd.me/'
-Live_url = 'http://www.sporthd.me/index.php?'
+BASEURL = 'http://sporthd.live/'
+Live_url = 'http://sporthd.live/index.php?'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
@@ -72,86 +72,86 @@ def Main_menu():
 
 def leagues_menu():
     addDir('[B][COLOR white]Uefa Champions League[/COLOR][/B]',
-           'http://www.sporthd.me/index.php?champ=uefa-champions-league', 5,
-           'http://www.sporthd.me/flags/uefa-champions-league.png', FANART, 'Uefa Champions League')
-    addDir('[B][COLOR white]Uefa Europa League[/COLOR][/B]', 'http://www.sporthd.me/index.php?champ=uefa-europa-league',
-           5, 'http://www.sporthd.me/flags/uefa-europa-league.png', FANART, 'Uefa Europa League')
-    addDir('[B][COLOR white]Premier League[/COLOR][/B]', 'http://www.sporthd.me/index.php?champ=premier-league', 5,
-           'http://www.sporthd.me/flags/premier-league.png', FANART, 'Premier League')
-    addDir('[B][COLOR white]Bundesliga[/COLOR][/B]', 'http://www.sporthd.me/index.php?champ=bundesliga', 5,
-           'http://www.sporthd.me/flags/bundesliga.png', FANART, 'Bundesliga')
-    addDir('[B][COLOR white]Laliga[/COLOR][/B]', 'http://www.sporthd.me/index.php?champ=laliga', 5,
-           'http://www.sporthd.me/flags/spanish-primera-division.png', FANART, 'Laliga')
-    addDir('[B][COLOR white]Serie A[/COLOR][/B]', 'http://www.sporthd.me/index.php?champ=serie-a', 5,
-           'http://www.sporthd.me/flags/serie-a.png', FANART, 'Serie a')
-    addDir('[B][COLOR white]France Ligue 1[/COLOR][/B]', 'http://www.sporthd.me/index.php?champ=france-ligue-1', 5,
-           'http://www.sporthd.me/flags/france-ligue-1.png', FANART, 'France ligue 1')
-    addDir('[B][COLOR white]Eredivisie[/COLOR][/B]', 'http://www.sporthd.me/index.php?champ=eredivisie', 5,
-           'http://www.sporthd.me/flags/eredivisie.png', FANART, 'Eredivisie')
+           'http://sporthd.live/index.php?champ=uefa-champions-league', 5,
+           'http://sporthd.live/flags/uefa-champions-league.png', FANART, 'Uefa Champions League')
+    addDir('[B][COLOR white]Uefa Europa League[/COLOR][/B]', 'http://sporthd.live/index.php?champ=uefa-europa-league',
+           5, 'http://sporthd.live/flags/uefa-europa-league.png', FANART, 'Uefa Europa League')
+    addDir('[B][COLOR white]Premier League[/COLOR][/B]', 'http://sporthd.live/index.php?champ=premier-league', 5,
+           'http://sporthd.live/flags/premier-league.png', FANART, 'Premier League')
+    addDir('[B][COLOR white]Bundesliga[/COLOR][/B]', 'http://sporthd.live/index.php?champ=bundesliga', 5,
+           'http://sporthd.live/flags/bundesliga.png', FANART, 'Bundesliga')
+    addDir('[B][COLOR white]Laliga[/COLOR][/B]', 'http://sporthd.live/index.php?champ=laliga', 5,
+           'http://sporthd.live/flags/spanish-primera-division.png', FANART, 'Laliga')
+    addDir('[B][COLOR white]Serie A[/COLOR][/B]', 'http://sporthd.live/index.php?champ=serie-a', 5,
+           'http://sporthd.live/flags/serie-a.png', FANART, 'Serie a')
+    addDir('[B][COLOR white]France Ligue 1[/COLOR][/B]', 'http://sporthd.live/index.php?champ=france-ligue-1', 5,
+           'http://sporthd.live/flags/france-ligue-1.png', FANART, 'France ligue 1')
+    addDir('[B][COLOR white]Eredivisie[/COLOR][/B]', 'http://sporthd.live/index.php?champ=eredivisie', 5,
+           'http://sporthd.live/flags/eredivisie.png', FANART, 'Eredivisie')
     addDir('[B][COLOR white]Australian A League[/COLOR][/B]',
-           'http://www.sporthd.me/index.php?champ=australian-a-league', 5,
-           'http://www.sporthd.me/flags/australian-a-league.png', FANART, 'Australian a league')
-    addDir('[B][COLOR white]MLS[/COLOR][/B]', 'http://www.sporthd.me/index.php?champ=mls', 5,
-           'http://www.sporthd.me/flags/mls.png', FANART, 'Mls')
-    addDir('[B][COLOR white]Rugby Top 14[/COLOR][/B]', 'http://www.sporthd.me/index.php?champ=rugby-top-14', 5,
-           'http://www.sporthd.me/flags/rugby-top-14.png', FANART, 'Rugby top 14')
+           'http://sporthd.live/index.php?champ=australian-a-league', 5,
+           'http://sporthd.live/flags/australian-a-league.png', FANART, 'Australian a league')
+    addDir('[B][COLOR white]MLS[/COLOR][/B]', 'http://sporthd.live/index.php?champ=mls', 5,
+           'http://sporthd.live/flags/mls.png', FANART, 'Mls')
+    addDir('[B][COLOR white]Rugby Top 14[/COLOR][/B]', 'http://sporthd.live/index.php?champ=rugby-top-14', 5,
+           'http://sporthd.live/flags/rugby-top-14.png', FANART, 'Rugby top 14')
     addDir('[B][COLOR white]Greece Super League[/COLOR][/B]',
-           'http://www.sporthd.me/index.php?champ=greece-super-league', 5,
-           'http://www.sporthd.me/flags/greece-super-league.png', FANART, 'Greece super league')
+           'http://sporthd.live/index.php?champ=greece-super-league', 5,
+           'http://sporthd.live/flags/greece-super-league.png', FANART, 'Greece super league')
     addDir('[B][COLOR white]Argentina Superliga[/COLOR][/B]',
-           'http://www.sporthd.me/index.php?champ=argentina-superliga', 5,
-           'http://www.sporthd.me/flags/argentina-superliga.png', FANART, 'Argentina superliga')
+           'http://sporthd.live/index.php?champ=argentina-superliga', 5,
+           'http://sporthd.live/flags/argentina-superliga.png', FANART, 'Argentina superliga')
     addDir('[B][COLOR white]Portuguese Primeira Liga[/COLOR][/B]',
-           'http://www.sporthd.me/index.php?champ=portuguese-primeira-liga', 5,
-           'http://www.sporthd.me/flags/portuguese-primeira-liga.png', FANART, 'Portuguese primeira liga')
+           'http://sporthd.live/index.php?champ=portuguese-primeira-liga', 5,
+           'http://sporthd.live/flags/portuguese-primeira-liga.png', FANART, 'Portuguese primeira liga')
     addDir('[B][COLOR white]Primera Division Apertura[/COLOR][/B]',
-           'http://www.sporthd.me/index.php?champ=primera-division-apertura', 5,
-           'http://www.sporthd.me/flags/primera-division-apertura.png', FANART, 'Primera division apertura')
-    addDir('[B][COLOR white]Bundesliga 2[/COLOR][/B]', 'http://www.sporthd.me/index.php?champ=bundesliga-2', 5,
-           'http://www.sporthd.me/flags/bundesliga-2.png', FANART, 'Bundesliga 2')
+           'http://sporthd.live/index.php?champ=primera-division-apertura', 5,
+           'http://sporthd.live/flags/primera-division-apertura.png', FANART, 'Primera division apertura')
+    addDir('[B][COLOR white]Bundesliga 2[/COLOR][/B]', 'http://sporthd.live/index.php?champ=bundesliga-2', 5,
+           'http://sporthd.live/flags/bundesliga-2.png', FANART, 'Bundesliga 2')
     addDir('[B][COLOR white]Greece Super League 2[/COLOR][/B]',
-           'http://www.sporthd.me/index.php?champ=greece-super-league-2', 5,
-           'http://www.sporthd.me/flags/greece-super-league-2.png', FANART, 'Greece super league 2')
+           'http://sporthd.live/index.php?champ=greece-super-league-2', 5,
+           'http://sporthd.live/flags/greece-super-league-2.png', FANART, 'Greece super league 2')
     addDir('[B][COLOR white]Belarus Vysheyshaya Liga[/COLOR][/B]',
-           'http://www.sporthd.me/index.php?champ=belarus-vysheyshaya-liga', 5,
-           'http://www.sporthd.me/flags/belarus-vysheyshaya-liga.png', FANART, 'Belarus vysheyshaya liga')
+           'http://sporthd.live/index.php?champ=belarus-vysheyshaya-liga', 5,
+           'http://sporthd.live/flags/belarus-vysheyshaya-liga.png', FANART, 'Belarus vysheyshaya liga')
 
 
 def sports_menu():
-    addDir('[B][COLOR white]Football[/COLOR][/B]', 'http://www.sporthd.me/?type=football', 5,
-           'http://www.sporthd.me/images/football.png', FANART, 'Football')
-    addDir('[B][COLOR white]Basketball[/COLOR][/B]', 'http://www.sporthd.me/?type=basketball', 5,
-           'http://www.sporthd.me/images/basketball.png', FANART, 'Basketball')
-    addDir('[B][COLOR white]MotorSport[/COLOR][/B]', 'http://www.sporthd.me/?type=motorsport', 5,
-           'http://www.sporthd.me/images/motorsport.png', FANART, 'MotorSport')
-    addDir('[B][COLOR white]Handball[/COLOR][/B]', 'http://www.sporthd.me/?type=handball', 5,
-           'http://www.sporthd.me/images/handball.png', FANART, 'Handball')
-    addDir('[B][COLOR white]Rugby[/COLOR][/B]', 'http://www.sporthd.me/?type=rugby', 5,
-           'http://www.sporthd.me/images/rugby.png', FANART, 'Rugby')
-    addDir('[B][COLOR white]NFL[/COLOR][/B]', 'http://www.sporthd.me/?type=nfl', 5,
-           'http://www.sporthd.me/images/nfl.png', FANART, 'NFL')
-    addDir('[B][COLOR white]UFC[/COLOR][/B]', 'http://www.sporthd.me/?type=ufc', 5,
-           'http://www.sporthd.me/images/ufc.png', FANART, 'UFC')
-    addDir('[B][COLOR white]Wrestling[/COLOR][/B]', 'http://www.sporthd.me/?type=wresling', 5,
-           'http://www.sporthd.me/images/wresling.png', FANART, 'Wresling')
-    addDir('[B][COLOR white]Hockey[/COLOR][/B]', 'http://www.sporthd.me/?type=hokey', 5,
-           'http://www.sporthd.me/images/hockey.png', FANART, 'Hokey')
-    addDir('[B][COLOR white]Volleyball[/COLOR][/B]', 'http://www.sporthd.me/?type=volleyball', 5,
-           'http://www.sporthd.me/images/volleyball.png', FANART, 'Volleyball')
-    addDir('[B][COLOR white]Darts[/COLOR][/B]', 'http://www.sporthd.me/?type=darts', 5,
-           'http://www.sporthd.me/images/darts.png', FANART, 'Darts')
-    addDir('[B][COLOR white]Tennis[/COLOR][/B]', 'http://www.sporthd.me/?type=tennis', 5,
-           'http://www.sporthd.me/images/tennis.png', FANART, 'Tennis')
-    addDir('[B][COLOR white]Boxing[/COLOR][/B]', 'http://www.sporthd.me/?type=boxing', 5,
-           'http://www.sporthd.me/images/boxing.png', FANART, 'Boxing')
-    addDir('[B][COLOR white]Cricket[/COLOR][/B]', 'http://www.sporthd.me/?type=cricket', 5,
-           'http://www.sporthd.me/images/cricket.png', FANART, 'Cricket')
-    addDir('[B][COLOR white]Baseball[/COLOR][/B]', 'http://www.sporthd.me/?type=baseball', 5,
-           'http://www.sporthd.me/images/baseball.png', FANART, 'Baseball')
-    addDir('[B][COLOR white]Snooker[/COLOR][/B]', 'http://www.sporthd.me/?type=snooker', 5,
-           'http://www.sporthd.me/images/snooker.png', FANART, 'Snooker')
-    addDir('[B][COLOR white]Chess[/COLOR][/B]', 'http://www.sporthd.me/?type=chess', 5,
-           'http://www.sporthd.me/images/chess.png', FANART, 'Chess')
+    addDir('[B][COLOR white]Football[/COLOR][/B]', 'http://sporthd.live/?type=football', 5,
+           'http://sporthd.live/images/football.png', FANART, 'Football')
+    addDir('[B][COLOR white]Basketball[/COLOR][/B]', 'http://sporthd.live/?type=basketball', 5,
+           'http://sporthd.live/images/basketball.png', FANART, 'Basketball')
+    addDir('[B][COLOR white]MotorSport[/COLOR][/B]', 'http://sporthd.live/?type=motorsport', 5,
+           'http://sporthd.live/images/motorsport.png', FANART, 'MotorSport')
+    addDir('[B][COLOR white]Handball[/COLOR][/B]', 'http://sporthd.live/?type=handball', 5,
+           'http://sporthd.live/images/handball.png', FANART, 'Handball')
+    addDir('[B][COLOR white]Rugby[/COLOR][/B]', 'http://sporthd.live/?type=rugby', 5,
+           'http://sporthd.live/images/rugby.png', FANART, 'Rugby')
+    addDir('[B][COLOR white]NFL[/COLOR][/B]', 'http://sporthd.live/?type=nfl', 5,
+           'http://sporthd.live/images/nfl.png', FANART, 'NFL')
+    addDir('[B][COLOR white]UFC[/COLOR][/B]', 'http://sporthd.live/?type=ufc', 5,
+           'http://sporthd.live/images/ufc.png', FANART, 'UFC')
+    addDir('[B][COLOR white]Wrestling[/COLOR][/B]', 'http://sporthd.live/?type=wresling', 5,
+           'http://sporthd.live/images/wresling.png', FANART, 'Wresling')
+    addDir('[B][COLOR white]Hockey[/COLOR][/B]', 'http://sporthd.live/?type=hokey', 5,
+           'http://sporthd.live/images/hockey.png', FANART, 'Hokey')
+    addDir('[B][COLOR white]Volleyball[/COLOR][/B]', 'http://sporthd.live/?type=volleyball', 5,
+           'http://sporthd.live/images/volleyball.png', FANART, 'Volleyball')
+    addDir('[B][COLOR white]Darts[/COLOR][/B]', 'http://sporthd.live/?type=darts', 5,
+           'http://sporthd.live/images/darts.png', FANART, 'Darts')
+    addDir('[B][COLOR white]Tennis[/COLOR][/B]', 'http://sporthd.live/?type=tennis', 5,
+           'http://sporthd.live/images/tennis.png', FANART, 'Tennis')
+    addDir('[B][COLOR white]Boxing[/COLOR][/B]', 'http://sporthd.live/?type=boxing', 5,
+           'http://sporthd.live/images/boxing.png', FANART, 'Boxing')
+    addDir('[B][COLOR white]Cricket[/COLOR][/B]', 'http://sporthd.live/?type=cricket', 5,
+           'http://sporthd.live/images/cricket.png', FANART, 'Cricket')
+    addDir('[B][COLOR white]Baseball[/COLOR][/B]', 'http://sporthd.live/?type=baseball', 5,
+           'http://sporthd.live/images/baseball.png', FANART, 'Baseball')
+    addDir('[B][COLOR white]Snooker[/COLOR][/B]', 'http://sporthd.live/?type=snooker', 5,
+           'http://sporthd.live/images/snooker.png', FANART, 'Snooker')
+    addDir('[B][COLOR white]Chess[/COLOR][/B]', 'http://sporthd.live/?type=chess', 5,
+           'http://sporthd.live/images/chess.png', FANART, 'Chess')
 
 
 def get_events(url):  # 5
@@ -260,15 +260,27 @@ def resolve(url):
 
             r = client.request(stream, referer=url)
             # xbmc.log('@#@DATAAAA: %s' % r, xbmc.LOGNOTICE)
-            try:
-                flink = re.findall(r'source:\s*"(.+?)",', r, re.DOTALL)[0]
-            except IndexError:
-                ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', r, re.DOTALL)[0]
-                ea = client.request(ea).split('=')[1]
-                flink = re.findall('''videoplayer.src = "(.+?)";''', r, re.DOTALL)[0]
-                flink = flink.replace('" + ea + "', ea)
+            if 'youtube' in r:
+                try:
+                    flink = client.parseDOM(r, 'iframe', ret='src')[0]
+                    fid = flink.split('/')[-1]
+                except IndexError:
+                    fid = re.findall(r'''/watch\?v=(.+?)['"]''', r, re.DOTALL)[0]
+                # xbmc.log('@#@STREAMMMMM111: %s' % fid, xbmc.LOGNOTICE)
+
+                flink = 'plugin://plugin.video.youtube/play/?video_id={}'.format(str(fid))
+                # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
+
+            else:
+                try:
+                    flink = re.findall(r'source:\s*"(.+?)",', r, re.DOTALL)[0]
+                except IndexError:
+                    ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', r, re.DOTALL)[0]
+                    ea = client.request(ea).split('=')[1]
+                    flink = re.findall('''videoplayer.src = "(.+?)";''', r, re.DOTALL)[0]
+                    flink = flink.replace('" + ea + "', ea)
+                flink += '|Referer={}'.format('https://limetvv.com/')
             # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
-            flink += '|Referer={}'.format('https://limetvv.com/')
             stream_url = flink
 
         else:
