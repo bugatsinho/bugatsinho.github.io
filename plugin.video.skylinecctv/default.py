@@ -140,7 +140,8 @@ def get_content(url): #5 <div id="content"><div class="container">
     r = client.request(url, headers=headers)
     # data = client.parseDOM(r, 'div', attrs={'class': 'container'})[0]
     # xbmc.log('DATAAAA: %s' % data)
-    data = client.parseDOM(r, 'li', attrs={'class': 'webcam'})
+    data = client.parseDOM(r, 'div', attrs={'class': 'col-sm-6 col-md-4 webcam'})
+    data = [i for i in data if not 'adsbygoogle' in i]
     for item in data:
         link = client.parseDOM(item, 'a', ret='href')[0]
         if link == '#':
@@ -183,11 +184,18 @@ def resolve(name, url, iconimage, description):
     xbmc.log('URLLLL: {}'.format(url))
     if 'm3u8' in url:
         link = url
-        link += '|User-Agent={}'.format(urllib.quote_plus(client.agent()))
+        link += '|User-Agent={}&Referer={}'.format(urllib.quote_plus(client.agent()),
+                                                   urllib.quote_plus(headers['Referer']))
         liz = xbmcgui.ListItem(name, iconImage=ICON, thumbnailImage=iconimage)
     else:
+        import requests
         url = base_url + url if url.startswith('/') else url
-        info = client.request(url, headers=headers)
+        xbmc.log('URLLLL2: {}'.format(url))
+        cj = client.request(base_url, headers=headers, output='cookie')
+        xbmc.log('COOKIES: {}'.format(str(cj)))
+        headers['Cookie'] = cj
+        info = requests.get(url, headers=headers).text
+        xbmc.log('INFOOOO: {}'.format(info))
         head = client.parseDOM(info, 'title')[0].encode('utf-8')
         # title = client.parseDOM(info, 'meta', ret='content', attrs={'name': 'description'})[0].encode('utf-8')
         # name = '{0} - {1}'.format(head, title)
