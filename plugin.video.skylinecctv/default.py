@@ -190,12 +190,12 @@ def resolve(name, url, iconimage, description):
     else:
         import requests
         url = base_url + url if url.startswith('/') else url
-        xbmc.log('URLLLL2: {}'.format(url))
+        # xbmc.log('URLLLL2: {}'.format(url))
         cj = client.request(base_url, headers=headers, output='cookie')
-        xbmc.log('COOKIES: {}'.format(str(cj)))
+        # xbmc.log('COOKIES: {}'.format(str(cj)))
         headers['Cookie'] = cj
         info = requests.get(url, headers=headers).text
-        xbmc.log('INFOOOO: {}'.format(info))
+        # xbmc.log('INFOOOO: {}'.format(info))
         head = client.parseDOM(info, 'title')[0].encode('utf-8')
         # title = client.parseDOM(info, 'meta', ret='content', attrs={'name': 'description'})[0].encode('utf-8')
         # name = '{0} - {1}'.format(head, title)
