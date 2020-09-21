@@ -697,15 +697,10 @@ def gamato_links(url, name, poster):  # 12
                     match = re.findall(r'''file\s*:\s*['"](.+?)['"],poster\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
                     link, _poster = match[0], match[1]
                 except IndexError:
-                    link = client.parseDOM(data, 'div', attrs={'class': 'pframe'})[-1]
-                    link = client.parseDOM(link, 'iframe', ret='src')[0]
-                    link = client.request(link)
-                    link = re.findall(r'''var jw\s*=\s*(\{.+?\})''', link, re.DOTALL)[0]
-                    import json
-                    link = json.loads(link)
-                    link, _poster = urllib.quote(link['file'], ':/.').replace(' ', '%20'), link['image']
+                    #'http://gamatotv2.com/kids/jwplayer/?source=http%3A%2F%2F161.97.109.217%2FSonic%2520%2520%2520-%2520Gamato%2520%2520.mp4&id=16449&type=mp4
+                    link = re.findall(r'''/jwplayer/.+source=(.+?)&id=''', data, re.DOTALL)[0]
 
-                # xbmc.log('FRAME2: {} | Poster {}'.format(link, _poster))
+                # xbmc.log('FRAME2: {}'.format(link))
             except IndexError:
                 frame = client.parseDOM(data, 'div', attrs={'id': r'option-\d+'})[0]
                 frame = client.parseDOM(frame, 'iframe', ret='src')[0]
