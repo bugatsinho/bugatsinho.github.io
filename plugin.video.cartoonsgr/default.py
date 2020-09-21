@@ -69,12 +69,11 @@ def gamatokids():
     addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]',
            GAMATO + 'genre/%ce%bc%ce%b5%cf%84%ce%b1%ce%b3%ce%bb%cf%89%cf%84%ce%b9%cf%83%ce%bc%ce%ad%ce%bd%ce%b1/',
            4, ART + 'dub.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32006).encode('utf-8') + '[/COLOR][/B]',
-           GAMATO, 3, ART + 'genre.jpg', FANART, '')
-    addDir('[B][COLOR yellow]TOP 250[/COLOR][/B]', GAMATO + 'top-imdb/', 21, ART + 'top.png', FANART, '')
+    # addDir('[B][COLOR yellow]' + Lang(32006).encode('utf-8') + '[/COLOR][/B]',
+    #        GAMATO, 3, ART + 'genre.jpg', FANART, '')
+    addDir('[B][COLOR yellow]Προτεινόμενα[/COLOR][/B]', GAMATO, 21, ART + 'top.png', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002).encode('utf-8') + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
     views.selectView('menu', 'menu-view')
-
 
 def Peliculas():
     addDir('[B][COLOR orangered]' + Lang(32008).encode('utf-8') + '[/COLOR][/B]',
@@ -660,15 +659,16 @@ def gamato_kids(url):  # 4
 
 def gamatokids_top(url):  # 21
     data = requests.get(url).text
-    posts = client.parseDOM(data, 'div', attrs={'class': 'top-imdb-item'})
+    posts = client.parseDOM(data, 'article', attrs={'class': 'w_item_a'})
     for post in posts:
         try:
-            title = client.parseDOM(post, 'a')[-1]
+            title = client.parseDOM(post, 'h3')[0]
             title = clear_Title(title)
             link = client.parseDOM(post, 'a', ret='href')[0]
             poster = client.parseDOM(post, 'img', ret='src')[0]
+            year = client.parseDOM(post, 'span', attrs={'class': 'wdate'})[0]
 
-            addDir('[B][COLOR white]{0}[/COLOR][/B]'.format(title), link, 12, poster, FANART, 'Top 100 IMDB')
+            addDir('[B][COLOR white]{0} [{1}][/COLOR][/B]'.format(title, year), link, 12, poster, FANART, 'Προτεινόμενα')
         except IndexError:
             pass
     views.selectView('movies', 'movie-view')
@@ -693,8 +693,18 @@ def gamato_links(url, name, poster):  # 12
             # xbmc.log('FRAME1: {}'.format(link))
         except IndexError:
             try:
-                match = re.findall(r'''file\s*:\s*['"](.+?)['"],poster\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
-                link, _poster = match[0], match[1]
+                try:
+                    match = re.findall(r'''file\s*:\s*['"](.+?)['"],poster\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
+                    link, _poster = match[0], match[1]
+                except IndexError:
+                    link = client.parseDOM(data, 'div', attrs={'class': 'pframe'})[-1]
+                    link = client.parseDOM(link, 'iframe', ret='src')[0]
+                    link = client.request(link)
+                    link = re.findall(r'''var jw\s*=\s*(\{.+?\})''', link, re.DOTALL)[0]
+                    import json
+                    link = json.loads(link)
+                    link, _poster = urllib.quote(link['file'], ':/.').replace(' ', '%20'), link['image']
+
                 # xbmc.log('FRAME2: {} | Poster {}'.format(link, _poster))
             except IndexError:
                 frame = client.parseDOM(data, 'div', attrs={'id': r'option-\d+'})[0]
@@ -785,7 +795,8 @@ def resolve(name, url, iconimage, description):
     if host.split('|')[0].endswith('.mp4') and 'clou' in host:
         stream_url = host + '|User-Agent=%s&Referer=%s' % (urllib.quote_plus(client.agent(), ':/'), GAMATO)
         name = name
-
+    elif host.endswith('.mp4'):
+        stream_url = host + '|User-Agent=%s&Referer=%s' % (urllib.quote_plus(client.agent(), ':/'), GAMATO)
     # stream_url = requests.get(host, headers=hdr).url
     elif '/aparat.' in host:
        try:
