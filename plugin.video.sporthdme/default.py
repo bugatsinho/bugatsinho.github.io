@@ -279,7 +279,7 @@ def resolve(url):
                     ea = client.request(ea).split('=')[1]
                     flink = re.findall('''videoplayer.src = "(.+?)";''', r, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
-                flink += '|Referer={}'.format('https://limetvv.com/')
+                flink += '|Referer={}'.format(stream)
             # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
             stream_url = flink
 
