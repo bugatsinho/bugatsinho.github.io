@@ -34,12 +34,12 @@ class s4f:
 
         try:
             query, imdb = query.split('/imdb=')
-            match = re.findall('^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
+            match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
             # xbmc.log('$#$MATCH-S4F: %s' % match, xbmc.LOGNOTICE)
 
             if len(match) > 0:
                 hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
-                       'Referer': 'https://www.subs4free.info/'}
+                       'Referer': 'https://www.subs4free.club/'}
 
                 title, year = match[0][0], match[0][1]
 
@@ -67,7 +67,7 @@ class s4f:
 
             else:
                 hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
-                       'Referer':'https://www.subs4series.com/'}
+                       'Referer': 'https://www.subs4series.com/'}
                 title, hdlr = re.findall('^(?P<title>.+)\s+(?P<hdlr>S\d+E\d+)', query, re.I)[0]
                 xbmc.log('$#$MATCH-S4F: %s | %s' % (title, hdlr), xbmc.LOGNOTICE)
 
@@ -159,10 +159,10 @@ class s4f:
             else:
                 headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
                            'Referer': url,
-                           'Origin': 'https://www.sf4-industry.com'}
+                           'Origin': 'https://www.subs4free.club'}
                 cj = {'PHPSESSID': php,
                       '__cfduid': cfd}
-                post_url = 'https://www.sf4-industry.com/getSub.html'
+                post_url = 'https://www.subs4free.club/getSub.php'
 
                 r = requests.get(url, headers=headers, cookies=cj).content
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
