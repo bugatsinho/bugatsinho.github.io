@@ -17,7 +17,7 @@
 
 
 import xbmc
-import urllib,urlparse,re,os,requests,zipfile, StringIO, urllib2
+import urllib, urlparse, re, os, requests
 from resources.modules import client
 from resources.modules import control
 
@@ -25,8 +25,8 @@ from resources.modules import control
 class s4f:
     def __init__(self):
         self.list = []
-        self.base_link = 'https://www.sf4-industry.com/'
-        self.base_TVlink = 'https://www.subs4series.com/'
+        self.base_link = 'https://www.sf4-industry.com'
+        self.base_TVlink = 'https://www.subs4series.com'
         self.search = 'search_report.php?search=%s&searchType=1'
 
 
@@ -39,7 +39,7 @@ class s4f:
 
             if len(match) > 0:
                 hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
-                       'Referer': 'https://www.subs4free.club/'}
+                       'Referer': 'https://www.subs4free.info/'}
 
                 title, year = match[0][0], match[0][1]
 
@@ -51,25 +51,28 @@ class s4f:
                 cj = req.cookies
                 r = req.content
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                # xbmc.log('$#$HTML: %s' % r, xbmc.LOGNOTICE)
 
-                urls = client.parseDOM(r, 'div', attrs={'class': ' seeDark'})
-                urls += client.parseDOM(r, 'div', attrs={'class': ' seeMedium'})
-                #xbmc.log('$#$URLS-start: %s' % urls, xbmc.LOGNOTICE)
-                urls = [i for i in urls if '/el.gif' in i]
-                urls = [(client.parseDOM(i, 'tr')[0], re.findall('<B>(\d+)</B>DLs', i, re.I)[0]) for i in urls if i]
-                urls = [(client.parseDOM(i[0], 'a', ret='href')[0],
-                         client.parseDOM(i[0], 'a', ret='title')[0], i[1]) for i in urls if i]
+                urls = client.parseDOM(r, 'div', attrs={'class': 'movie-download'})
+                # urls += client.parseDOM(r, 'div', attrs={'class': ' seeMedium'})
+                # xbmc.log('$#$URLS-start: %s' % urls, xbmc.LOGNOTICE)
+                urls = [i for i in urls if '/greek-sub' in i]
+                # urls = [(client.parseDOM(i, 'tr')[0], re.findall(r'<b>(\d+)</b>DLs', i, re.I)[0]) for i in urls if i]
+                urls = [(client.parseDOM(i, 'a', ret='href')[0],
+                         client.parseDOM(i, 'a', ret='title')[0],
+                         re.findall(r'<b>(\d+)</b>DLs', i, re.I)[0]) for i in urls if i]
+                # xbmc.log('$#$URLS: %s' % urls, xbmc.LOGNOTICE)
                 urls = [(urlparse.urljoin(self.base_link, i[0]), i[1].split('for ', 1)[1],
                          i[2]) for i in urls if i]
                 urls = [(i[0], i[1], i[2]) for i in urls if i]
-                #xbmc.log('$#$URLS: %s' % urls, xbmc.LOGNOTICE)
+                # xbmc.log('$#$URLS: %s' % urls, xbmc.LOGNOTICE)
 
 
             else:
                 hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
                        'Referer': 'https://www.subs4series.com/'}
-                title, hdlr = re.findall('^(?P<title>.+)\s+(?P<hdlr>S\d+E\d+)', query, re.I)[0]
-                xbmc.log('$#$MATCH-S4F: %s | %s' % (title, hdlr), xbmc.LOGNOTICE)
+                title, hdlr = re.findall(r'^(?P<title>.+)\s+(?P<hdlr>S\d+E\d+)', query, re.I)[0]
+                # xbmc.log('$#$MATCH-S4F: %s | %s' % (title, hdlr), xbmc.LOGNOTICE)
 
                 #hdlr = 'S%02dE%02d' % (int(season), int(episode))
 
@@ -149,32 +152,40 @@ class s4f:
 
                 r = requests.get(url, headers=headers, cookies=cj).content
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                # xbmc.log('@@HTML:%s' % r)
 
-                pos = re.findall('\/(getSub-\w+\.html)', r, re.I|re.DOTALL)[0]
+                pos = re.findall(r'\/(getSub-\w+\.html)', r, re.I | re.DOTALL)[0]
+                # xbmc.log('@@POSSSSS:%s' % pos)
                 post_url = urlparse.urljoin(self.base_TVlink, pos)
+                # xbmc.log('@@POStttt:%s' % post_url)
                 r = requests.get(post_url, headers=headers, cookies=cj)
-                result = r.content
                 surl = r.url
+                result = client.request(surl)
+
 
             else:
                 headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
                            'Referer': url,
-                           'Origin': 'https://www.subs4free.club'}
+                           'Origin': 'https://www.sf4-industry.com'}
                 cj = {'PHPSESSID': php,
                       '__cfduid': cfd}
-                post_url = 'https://www.subs4free.club/getSub.php'
+                post_url = 'https://www.sf4-industry.com/getSub.php'
 
-                r = requests.get(url, headers=headers, cookies=cj).content
+                r = requests.get(url, headers=headers, cookies=cj).text
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-                #pos = client.parseDOM(r, 'tr', attrs={'class':'stylepps'})[0]
-                pos = re.findall('getSub-(\w+)\.html', r, re.I | re.DOTALL)[0]
+                # xbmc.log('@@HTMLLL:%s' % r)
+                pos = client.parseDOM(r, 'div', attrs={'class': 'download-btn'})[0]
+                pos = client.parseDOM(pos, 'input', ret='value', attrs={'name': 'id'})[0]
+                # pos = re.findall(r'getSub-(\w+)\.html', r, re.I | re.DOTALL)[0]
                 post = {'id': pos,
                         'x': '107',
                         'y': '35'}
 
                 r = requests.post(post_url, headers=headers, data=post, cookies=cj)
-                result = r.content
+                # surl = r.headers['Location']
                 surl = r.url
+                result = client.request(surl)
+                # surl = self.base_link + surl if surl.startswith('/') else surl
 
             f = os.path.join(path, surl.rpartition('/')[2])
 

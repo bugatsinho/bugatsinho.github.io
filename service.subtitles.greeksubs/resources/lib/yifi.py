@@ -17,7 +17,7 @@
 
 
 import xbmc
-import urllib,urlparse,re,os,requests,zipfile, StringIO, urllib2
+import urllib, urlparse, re, os, json
 from resources.modules import client, cleantitle
 from resources.modules import control
 
@@ -25,33 +25,34 @@ from resources.modules import control
 class yifi:
     def __init__(self):
         self.list = []
-        self.base_link = 'http://www.ysubs.com/' #http://www.ysubs.com/movie-imdb/tt1365519
-        self.search = 'search?q=%s'
+        self.base_link = 'https://yifysubtitles.org/' #https://yts-subs.net/ajax/search/?q=tt1365519
+        self.search = 'search?q={}'
+        #https://yifysubtitles.org/movie-imdb/tt4566758
 
 
     def get(self, query):
-
         try:
             query, imdb = query.split('/imdb=')
-            match = re.findall('^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
+            match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
             #xbmc.log('$#$MATCH-YIFI: %s' % match, xbmc.LOGNOTICE)
             if len(match) > 0:
                 title, year = match[0][0], match[0][1]
                 if imdb.startswith('tt'):
-                    r = client.request(self.base_link + 'movie-imdb/%s' % imdb)
+                    url = 'https://yifysubtitles.org/movie-imdb/{}'.format(imdb)
+                    r = client.request(url)
 
                 else:
-                    url = urlparse.urljoin(self.base_link, self.search) % urllib.quote_plus(title)
+                    url = urlparse.urljoin(self.base_link, self.search.format(urllib.quote_plus(title)))
                     r = client.request(url)
-                    data = client.parseDOM(r, 'div', attrs={'id': 'content'})[0]
-                    data = client.parseDOM(data, 'li', attrs={'class': 'movie-wrapper'})
+                    data = client.parseDOM(r, 'div', attrs={'class': 'media-body'})  # <div class="media-body">
                     for i in data:
                         try:
-                            name = client.parseDOM(i, 'span', attrs={'class': 'title'})[0].encode('utf-8')
-                            if not cleantitle.get(title) == cleantitle.get(client.replaceHTMLCodes(name)): raise Exception()
-                            y = client.parseDOM(i, 'span', attrs={'class': 'wrap-enlarge year'})[0]
-                            y = re.search('(\d{4})', y).groups()[0]
-                            if not year == y: raise Exception()
+                            name = client.parseDOM(i, 'h3')[0].encode('utf-8')
+                            if not cleantitle.get(title) == cleantitle.get(client.replaceHTMLCodes(name)):
+                                raise Exception()
+                            y = re.search(r'">(\d{4})<small>year</small>', i).groups()[0]
+                            if not year == y:
+                                raise Exception()
                             url = client.parseDOM(i, 'a', ret='href')[0]
                             url = url.encode('utf-8')
                             url = urlparse.urljoin(self.base_link, url)
@@ -59,20 +60,21 @@ class yifi:
                         except BaseException:
                             pass
 
-                data = client.parseDOM(r, 'li', attrs={'data-id': '\d+'})
+                data = client.parseDOM(r, 'tr', attrs={'data-id': r'\d+'})
                 items = [i for i in data if 'greek' in i.lower()]
                 urls = []
                 for item in items:
                     try:
-                        rating = client.parseDOM(item, 'span', attrs={'title': 'rating'})[0]
-                        name = client.parseDOM(item, 'span', attrs={'class': 'subdesc'})[0].replace('subtitle', '')
+                        # rating = client.parseDOM(item, 'span', attrs={'title': 'rating'})[0]
+                        name = client.parseDOM(item, 'a')[0]
+                        name = re.sub(r'<.+?>', '', name).replace('subtitle', '')
                         name = client.replaceHTMLCodes(name)
                         name = name.encode('utf-8')
 
-                        url = client.parseDOM(item, 'a', ret='href', attrs={'class': 'subtitle-page'})[0]
+                        url = client.parseDOM(item, 'a', ret='href')[0]
                         url = client.replaceHTMLCodes(url)
                         url = url.encode('utf-8')
-                        urls += [(name, url, rating)]
+                        urls += [(name, url)]
 
                     except BaseException:
                         pass
@@ -85,7 +87,8 @@ class yifi:
         for i in urls:
             try:
                 r = client.request(urlparse.urljoin(self.base_link, i[1]))
-                url = client.parseDOM(r, 'a', ret='href', attrs={'class': 'dl-button blue download-subtitle'})[0]
+                url = client.parseDOM(r, 'a', ret='href', attrs={'class': 'btn-icon download-subtitle'})[0]
+                url = 'https://yifysubtitles.org/' + url if url.startswith('/') else url
                 self.list.append({'name': i[0], 'url': url, 'source': 'yifi', 'rating': '5'})
             except BaseException:
                 pass
