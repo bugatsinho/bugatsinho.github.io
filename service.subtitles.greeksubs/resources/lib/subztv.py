@@ -44,7 +44,7 @@ class subztv:
             query, imdb = query.split('/imdb=')
             match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
 
-            cookie = self.s.get('https://subztv.online/', headers=self.hdr).cookies
+            cookie = self.s.get('https://greeksubs.net/', headers=self.hdr).cookies
             cj = requests.utils.dict_from_cookiejar(cookie)
 
             if len(match) > 0:
@@ -52,11 +52,11 @@ class subztv:
                 title, year = match[0][0], match[0][1]
 
                 if imdb.startswith('tt'):
-                    frame = 'https://subztv.online/view/%s' % imdb
+                    frame = 'https://greeksubs.net/view/%s' % imdb
                     r = self.s.get(frame)
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r.content)
                 else:
-                    url = 'https://subztv.online/search/%s/movies' % urllib.quote(title)
+                    url = 'https://greeksubs.net/search/%s/movies' % urllib.quote(title)
 
                     data = self.s.get(url).content
                     data = client.parseDOM(data, 'span', attrs={'class': 'h5'})
@@ -74,17 +74,17 @@ class subztv:
 
             else:
                 title, season, episode = re.findall(r'^(?P<title>.+)\s+S(\d+)E(\d+)', query, re.I)[0]
-                xbmc.log('$#$MATCH-SUBZ: %s | %s | %s' % (title, season, episode), xbmc.LOGNOTICE)
+                # xbmc.log('$#$MATCH-SUBZ: %s | %s | %s' % (title, season, episode), xbmc.LOGNOTICE)
                 hdlr = 'season-{:01d}-episode-{:01d}'.format(int(season), int(episode))
 
                 if imdb.startswith('tt'):
-                    r = self.s.get('https://subztv.online/view/%s' % imdb).text
+                    r = self.s.get('https://greeksubs.net/view/%s' % imdb).text
                     # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                     frames = client.parseDOM(r, 'a', ret='href')
                     link = [i for i in frames if hdlr in i]
 
                     if not link:
-                        frame = 'https://subztv.online/view/%s' % imdb
+                        frame = 'https://greeksubs.net/view/%s' % imdb
                     else:
                         frame = link[0]
                 else:
@@ -108,13 +108,13 @@ class subztv:
 
                         series_data = client.request(series_url % imdb, headers=_headers)
                         imdb = json.loads(series_data)['data']['imdbId']
-                        r = self.s.get('https://subztv.online/view/%s' % imdb).content
+                        r = self.s.get('https://greeksubs.net/view/%s' % imdb).content
                         # xbmc.log('$#$MATCH-SUBZ-RRR-source: %s' % r)
                         #r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                         frames = client.parseDOM(r, 'a', ret='href')
                         frame = [i for i in frames if hdlr in i][0]
                     else:
-                        url = 'https://subztv.online/search/%s/tv' % urllib.quote(title)
+                        url = 'https://greeksubs.net/search/%s/tv' % urllib.quote(title)
 
                         data = self.s.get(url).content
                         data = client.parseDOM(data, 'span', attrs={'class': 'h5'})
@@ -124,7 +124,7 @@ class subztv:
                         serie_link = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
                         # xbmc.log('$#$SERIE-LINK: %s' % serie_link)
                         imdbid = re.findall('\/(tt\d+)\/', serie_link)[0]
-                        r = self.s.get('https://subztv.online/view/%s' % imdbid).content
+                        r = self.s.get('https://greeksubs.net/view/%s' % imdbid).content
                         frames = client.parseDOM(r, 'a', ret='href')
                         frame = [i for i in frames if hdlr in i][0]
 
@@ -153,7 +153,7 @@ class subztv:
                 name = data[2]
                 name = client.replaceHTMLCodes(name)
                 name = name.encode('utf-8')
-                url = 'https://subztv.online/dll/{}/0/{}'.format(data[0], secCode)
+                url = 'https://greeksubs.net/dll/{}/0/{}'.format(data[0], secCode)
                 url = client.replaceHTMLCodes(url)
                 url = url.encode('utf-8')
 
