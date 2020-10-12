@@ -10,14 +10,13 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 
 [Follow me on Twitter](https://twitter.com/bugatsinho)
 
-[Repository v2.4](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.4.zip?raw=true)
+[Repository v2.5](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.5.zip?raw=true)
 
 
 **ADD-ONS:**
 
 ![](images/rlsBB.png)       
 [**ReleaseBB source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.releaseBB) 
-
 
 ![](images/cgr.png)       
 [**CartoonsGR source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.cartoonsgr) 
@@ -31,11 +30,11 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 ![](images/sub.png)     
 [**GreekSubs source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/service.subtitles.greeksubs)
 
-![](images/mp3.png)     
-[**MP3Streams source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.audio.mp3streams)
+![](images/sky.png)     
+[**SkylineCCTV source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.skylinecctv)
 
-![](images/sport.png)       
-[**Sport365 source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.sport365.live) 
+![](images/sporthd.png)       
+[**SportHD source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.sporthdme) 
 
-![](images/flv.png)       
+![](images/fvl.png)       
 [**Free Video Lectures source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.freevl)
