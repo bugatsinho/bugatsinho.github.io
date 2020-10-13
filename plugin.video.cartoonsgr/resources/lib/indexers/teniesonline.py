@@ -39,7 +39,8 @@ def menu():
 
 def metaglotismeno(url): #34
     data = client.request(url)
-    posts = client.parseDOM(data, 'article', attrs={'class': 'item movies'})
+    posts = client.parseDOM(data, 'div', attrs={'class': 'items'})[0]
+    posts = client.parseDOM(posts, 'article', attrs={'id': r'post-\d+'})
     for post in posts:
         try:
             plot = client.parseDOM(post, 'div', attrs={'class': 'texto'})[0]
@@ -90,25 +91,39 @@ def get_links(name, url, iconimage, description):
     except BaseException:
         pass
     try:
-        frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
-        frames = [(client.parseDOM(i, 'a', ret='href')[0],
-                   client.parseDOM(i, 'img', ret='src')[0],
-                   client.parseDOM(i, 'strong', {'class': 'quality'})[0],
-                   client.parseDOM(i, 'td')[-3]) for i in frames if frames]
-        for frame, domain, quality, info in frames:
-            host = domain.split('=')[-1].encode('utf-8')
-            if 'Μεταγλωτισμένο' in info.encode('utf-8', 'ignore'):
-                info = '[Μετ]'
-            elif 'Ελληνικοί' in info.encode('utf-8', 'ignore'):
-                info = '[Υπο]'
-            elif 'Χωρίς' in info.encode('utf-8', 'ignore'):
-                info = '[Χωρίς Υπ]'
-            else:
-                info = '[N/A]'
+        if 'tvshows' not in url:
+            frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
+            frames = [(client.parseDOM(i, 'a', ret='href', attrs={'target': '_blank'})[0],
+                       client.parseDOM(i, 'img', ret='src')[0],
+                       client.parseDOM(i, 'strong', {'class': 'quality'})[0],
+                       client.parseDOM(i, 'td')[-3]) for i in frames if frames]
+            for frame, domain, quality, info in frames:
+                xbmc.log('INFO: {}'.format(str(info.encode('utf-8', 'ignore'))))
+                host = domain.split('=')[-1].encode('utf-8')
+                if 'Μεταγλωτισμένο' in info.encode('utf-8', 'ignore'):
+                    info = '[Μετ]'
+                elif 'Ελληνικοί' in info.encode('utf-8', 'ignore'):
+                    info = '[Υπο]'
+                elif 'Χωρίς' in info.encode('utf-8', 'ignore'):
+                    info = '[Χωρίς Υπ]'
+                else:
+                    info = '[N/A]'
 
-            frame = requests.get(frame, allow_redirects=False).headers['Location']
-            title = '[COLOR lime]{}[/COLOR] | [B]{}[/B] | ({})'.format(info, host.capitalize(), quality.encode('utf-8'))
-            addDir(title, frame, 100, iconimage, FANART, str(description))
+                title = '[COLOR lime]{}[/COLOR] | [B]{}[/B] | ({})'.format(info, host.capitalize(), quality.encode('utf-8'))
+                addDir(title, frame, 100, iconimage, FANART, str(description))
+        else:
+            data = client.parseDOM(data, 'table', attrs={'class': 'easySpoilerTable'})
+            seasons = [dom.parse_dom(i, 'a', {'target': '_blank'}, req='href') for i in data[:-1] if i]
+            episodes = []
+            for season in seasons:
+                for epi in season:
+                    title = clear_Title(epi.content.replace('&#215;', 'x'))
+                    frame = epi.attrs['href']
+                    episodes.append((title, frame))
+
+            for title, frame in episodes:
+                addDir(title, frame, 100, iconimage, FANART, str(description))
+
     except BaseException:
         title = '[B][COLOR white]NO LINKS[/COLOR][/B]'
         addDir(title, '', 'bug', iconimage, FANART, str(description))

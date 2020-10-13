@@ -787,6 +787,16 @@ def search_clear():
 def resolve(name, url, iconimage, description):
     liz = xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
     host = url
+    if '/links/' in host:
+        try:
+            frame = client.request(host)
+            host = client.parseDOM(frame, 'a', {'id': 'link'}, ret='href')[0]
+
+        except BaseException:
+            host = requests.get(host, allow_redirects=False).headers['Location']
+    else:
+        host = host
+
     if host.split('|')[0].endswith('.mp4') and 'clou' in host:
         stream_url = host + '|User-Agent=%s&Referer=%s' % (urllib.quote_plus(client.agent(), ':/'), GAMATO)
         name = name

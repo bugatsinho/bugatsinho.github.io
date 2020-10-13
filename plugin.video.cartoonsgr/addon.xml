@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.16.1" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.17" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.python" version="2.19.0"/>
     <import addon="script.module.resolveurl" version="5.0.00"/>
@@ -28,7 +28,8 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>[B]v1.0.16[/B] 21/09/2020)
-  - Διόρθωση στο gamato για την έρευση και την αναπαραγωγή των λινκς</news>
+    <news>[B]v1.0.17[/B] 13/10/2020)
+  - Διόρθωση στο tenies-online για την εύρεση και την αναπαραγωγή των λινκς
+  - Προσθήκη αναπαραγωγής παιδικών σειρών από το tenies-online</news>
   </extension>
 </addon>
