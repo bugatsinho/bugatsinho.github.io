@@ -15,7 +15,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-
 import xbmc
 import urllib, urlparse, re, os, requests
 from resources.modules import client
@@ -29,21 +28,20 @@ class s4f:
         self.base_TVlink = 'https://www.subs4series.com'
         self.search = 'search_report.php?search=%s&searchType=1'
 
-
     def get(self, query):
-
         try:
             query, imdb = query.split('/imdb=')
             match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
             # xbmc.log('$#$MATCH-S4F: %s' % match, xbmc.LOGNOTICE)
 
             if len(match) > 0:
-                hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
-                       'Referer': 'https://www.subs4free.info/'}
+                hdr = {
+                    'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+                    'Referer': 'https://www.subs4free.info/'}
 
                 title, year = match[0][0], match[0][1]
 
-                query = urllib.quote_plus('%s %s' % (title, year))
+                query = urllib.quote_plus('{} {}'.format(title, year))
 
                 url = urlparse.urljoin(self.base_link, self.search % query)
 
@@ -69,14 +67,15 @@ class s4f:
 
 
             else:
-                hdr = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
-                       'Referer': 'https://www.subs4series.com/'}
+                hdr = {
+                    'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+                    'Referer': 'https://www.subs4series.com/'}
                 title, hdlr = re.findall(r'^(?P<title>.+)\s+(?P<hdlr>S\d+E\d+)', query, re.I)[0]
                 # xbmc.log('$#$MATCH-S4F: %s | %s' % (title, hdlr), xbmc.LOGNOTICE)
 
-                #hdlr = 'S%02dE%02d' % (int(season), int(episode))
+                # hdlr = 'S%02dE%02d' % (int(season), int(episode))
 
-                query = urllib.quote('%s %s' % (title, hdlr))
+                query = urllib.quote('{} {}'.format(title, hdlr))
 
                 url = urlparse.urljoin(self.base_TVlink, self.search % query)
 
@@ -85,12 +84,12 @@ class s4f:
                 cj = req.cookies
                 r = req.content
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-                #xbmc.log('@@URL:%s' % r)
+                # xbmc.log('@@URL:%s' % r)
 
                 urls = client.parseDOM(r, 'div', attrs={'class': ' seeDark'})
                 urls += client.parseDOM(r, 'div', attrs={'class': ' seeMedium'})
                 urls = [i for i in urls if not '/en.gif' in i]
-                urls = [(client.parseDOM(i, 'tr')[0], re.findall('<B>(\d+)</B>DLs', i, re.I)[0]) for i in urls if i]
+                urls = [(client.parseDOM(i, 'tr')[0], re.findall(r'<B>(\d+)</B>DLs', i, re.I)[0]) for i in urls if i]
                 urls = [(client.parseDOM(i[0], 'a', ret='href')[0],
                          client.parseDOM(i[0], 'a', ret='title')[0], i[1]) for i in urls if i]
                 urls = [(urlparse.urljoin(self.base_TVlink, i[0]), re.sub('Greek subtitle[s] for ', '', i[1]),
@@ -111,13 +110,12 @@ class s4f:
                 url = client.replaceHTMLCodes(url)
                 url = url.encode('utf-8')
 
-                self.list.append({'name': name, 'url': '%s|%s|%s' % (url, cj['PHPSESSID'], cj['__cfduid']),
+                self.list.append({'name': name, 'url': '{}|{}|{}'.format(url, cj['PHPSESSID'], cj['__cfduid']),
                                   'source': 's4f', 'rating': rating})
             except BaseException:
                 pass
 
         return self.list
-
 
     def _rating(self, downloads):
 
@@ -144,9 +142,10 @@ class s4f:
         try:
             url, php, cfd = url.split('|')
             if 'subs4series' in url:
-                headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
-                           'Referer': url,
-                           'Origin': 'https://www.subs4series.com/'}
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+                    'Referer': url,
+                    'Origin': 'https://www.subs4series.com/'}
                 cj = {'PHPSESSID': php,
                       '__cfduid': cfd}
 
@@ -164,9 +163,10 @@ class s4f:
 
 
             else:
-                headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
-                           'Referer': url,
-                           'Origin': 'https://www.sf4-industry.com'}
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+                    'Referer': url,
+                    'Origin': 'https://www.sf4-industry.com'}
                 cj = {'PHPSESSID': php,
                       '__cfduid': cfd}
                 post_url = 'https://www.sf4-industry.com/getSub.php'
@@ -198,7 +198,7 @@ class s4f:
                 return
 
             if not f.lower().endswith('.rar'):
-                control.execute('Extract("%s","%s")' % (f, path))
+                control.execute('Extract("{}","{}")'.format(f, path))
 
             if control.infoLabel('System.Platform.Windows'):
                 conversion = urllib.quote

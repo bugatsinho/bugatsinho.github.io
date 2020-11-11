@@ -15,8 +15,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import json
-import urllib, re, os, xbmc
-import urlparse
+import urllib
+import re
+import os
 from resources.modules import cleantitle, client, control
 
 '''''''''
@@ -32,6 +33,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 class subztv:
     def __init__(self):
+        self.baseurl = 'https://greeksubs.net/'
         self.list = []
         self.hdr = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36'}
@@ -44,7 +46,7 @@ class subztv:
             query, imdb = query.split('/imdb=')
             match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
 
-            cookie = self.s.get('https://greeksubs.net/', headers=self.hdr).cookies
+            cookie = self.s.get(self.baseurl, headers=self.hdr).cookies
             cj = requests.utils.dict_from_cookiejar(cookie)
 
             if len(match) > 0:
@@ -52,11 +54,11 @@ class subztv:
                 title, year = match[0][0], match[0][1]
 
                 if imdb.startswith('tt'):
-                    frame = 'https://greeksubs.net/view/%s' % imdb
+                    frame = self.baseurl + 'view/{}'.format(imdb)
                     r = self.s.get(frame)
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r.content)
                 else:
-                    url = 'https://greeksubs.net/search/%s/movies' % urllib.quote(title)
+                    url = self.baseurl + 'search/{}/movies'.format(urllib.quote(title))
 
                     data = self.s.get(url).content
                     data = client.parseDOM(data, 'span', attrs={'class': 'h5'})
@@ -74,17 +76,15 @@ class subztv:
 
             else:
                 title, season, episode = re.findall(r'^(?P<title>.+)\s+S(\d+)E(\d+)', query, re.I)[0]
-                # xbmc.log('$#$MATCH-SUBZ: %s | %s | %s' % (title, season, episode), xbmc.LOGNOTICE)
-                hdlr = 'season-{:01d}-episode-{:01d}'.format(int(season), int(episode))
-
+                hdlr = 'season-{}-episode-{}'.format(int(season), int(episode))
                 if imdb.startswith('tt'):
-                    r = self.s.get('https://greeksubs.net/view/%s' % imdb).text
+                    r = self.s.get(self.baseurl + 'view/{}'.format(imdb)).text
                     # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                     frames = client.parseDOM(r, 'a', ret='href')
                     link = [i for i in frames if hdlr in i]
 
                     if not link:
-                        frame = 'https://greeksubs.net/view/%s' % imdb
+                        frame = self.baseurl + 'view/{}'.format(imdb)
                     else:
                         frame = link[0]
                 else:
@@ -108,23 +108,20 @@ class subztv:
 
                         series_data = client.request(series_url % imdb, headers=_headers)
                         imdb = json.loads(series_data)['data']['imdbId']
-                        r = self.s.get('https://greeksubs.net/view/%s' % imdb).content
-                        # xbmc.log('$#$MATCH-SUBZ-RRR-source: %s' % r)
+                        r = self.s.get(self.baseurl + 'view/{}'.format(imdb)).content
                         #r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                         frames = client.parseDOM(r, 'a', ret='href')
                         frame = [i for i in frames if hdlr in i][0]
                     else:
-                        url = 'https://greeksubs.net/search/%s/tv' % urllib.quote(title)
-
+                        url = self.baseurl + 'search/{}/tv'.format(urllib.quote(title))
                         data = self.s.get(url).content
                         data = client.parseDOM(data, 'span', attrs={'class': 'h5'})
                         data = [(client.parseDOM(i, 'a')[0],
                                  client.parseDOM(i, 'a', ret='href')[0]) for i in data if i]
 
                         serie_link = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
-                        # xbmc.log('$#$SERIE-LINK: %s' % serie_link)
-                        imdbid = re.findall('\/(tt\d+)\/', serie_link)[0]
-                        r = self.s.get('https://greeksubs.net/view/%s' % imdbid).content
+                        imdbid = re.findall(r'\/(tt\d+)\/', serie_link)[0]
+                        r = self.s.get(self.baseurl + 'view/{}'.format(imdbid)).content
                         frames = client.parseDOM(r, 'a', ret='href')
                         frame = [i for i in frames if hdlr in i][0]
 
@@ -153,7 +150,7 @@ class subztv:
                 name = data[2]
                 name = client.replaceHTMLCodes(name)
                 name = name.encode('utf-8')
-                url = 'https://greeksubs.net/dll/{}/0/{}'.format(data[0], secCode)
+                url = self.baseurl + 'dll/{}/0/{}'.format(data[0], secCode)
                 url = client.replaceHTMLCodes(url)
                 url = url.encode('utf-8')
 
@@ -161,7 +158,7 @@ class subztv:
                 rating = self._rating(down)
 
                 self.list.append(
-                    {'name': name, 'url': '%s|%s|%s|%s|%s|%s' % (frame, url, cj['__cfduid'], cj['PHPSESSID'], name, imdb),
+                    {'name': name, 'url': '{}|{}|{}|{}|{}|{}'.format(frame, url, cj['__cfduid'], cj['PHPSESSID'], name, imdb),
                      'source': 'subztv', 'rating': rating})
 
             except BaseException:
@@ -210,7 +207,7 @@ class subztv:
             except IndexError:
                 sub_name = '{}.srt'.format(sub_)
 
-            self.s.headers.update({'Referer': url, 'Origin': 'https://subztv.online'})
+            self.s.headers.update({'Referer': url, 'Origin': self.baseurl})
 
             # xbmc.log('$#$ FRAME-HEADERS: %s' % self.s.headers, xbmc.LOGNOTICE)
             post = {"langcode": "el",

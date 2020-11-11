@@ -51,8 +51,10 @@ class Search:
             control.directory(syshandle)
             control.infoDialog(control.lang(32002).encode('utf-8'))
             return
-
-        if query is None:
+        if query:
+            query = '%s/imdb=0' % re.sub(r'[\(|\)]', '', query)
+            # xbmc.log('$#$QUERY-ELSE: %s' % query, xbmc.LOGNOTICE)
+        else:
             if control.condVisibility('Player.HasVideo'):
                 title = control.infoLabel('VideoPlayer.Title')
 
@@ -103,10 +105,6 @@ class Search:
                 if not year == '':
                     query = '%s (%s)/imdb=%s' % (query, year, str(imdb))
             # xbmc.log('$#$QUERY-NONE-FINAL: %s' % query, xbmc.LOGNOTICE)
-
-        else:
-            query = '%s/imdb=0' % re.sub('[\(|\)]', '', query)
-            # xbmc.log('$#$QUERY-ELSE: %s' % query, xbmc.LOGNOTICE)
 
         self.query = query
         # xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
