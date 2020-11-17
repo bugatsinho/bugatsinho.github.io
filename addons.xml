@@ -289,7 +289,7 @@
 	</addon>
 	<addon id="plugin.video.shadow"                                                                                                                                    
 		   name="Shadow"                                                 
-		   version="2.4.4"                                                                                                                                        
+		   version="2.4.5"                                                                                                                                        
 		   provider-name="Darkness">
 	  <requires>
 	    <import addon="xbmc.python" version="2.1.0"/>
