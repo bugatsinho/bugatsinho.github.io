@@ -273,7 +273,7 @@ def resolve(url):
 
             else:
                 try:
-                    flink = re.findall(r'source:\s*"(.+?)",', r, re.DOTALL)[0]
+                    flink = re.findall(r'''source:\s*["'](.+?)['"]''', r, re.DOTALL)[0]
                 except IndexError:
                     ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', r, re.DOTALL)[0]
                     ea = client.request(ea).split('=')[1]
