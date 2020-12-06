@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# from __future__ import absolute_import, unicode_literals
 import re
 import sys
 import urllib
@@ -53,12 +54,24 @@ def Main_menu():
            'https://www.skylinewebcams.com/{0}/top-live-cams.html'.format(web_lang), 5, ICON, FANART, '')
     addDir('[B][COLOR white]New Live Cams[/COLOR][/B]', new_url.format(web_lang), 6, ICON, FANART, '')
     addDir('[B][COLOR white]Live Cams by Country[/COLOR][/B]', BASEURL.format(web_lang), 4, ICON, FANART, '')
+    addDir('[B][COLOR white]Live Cams by Category[/COLOR][/B]', BASEURL.format(web_lang), 9, ICON, FANART, '')
     addDir('[B][COLOR white]Random Live Cam[/COLOR][/B]', BASEURL.format(web_lang), 3, ICON, FANART, '')
     addDir('[B][COLOR white]Greek Live Cams[/COLOR][/B]', BASEURL.format(web_lang), 8, ICON, FANART, '')
     addDir('[B][COLOR cyan]Settings[/COLOR][/B]', '', 7, ICON, FANART, '')
     addDir('[B][COLOR gold]Version: [COLOR lime]%s[/COLOR][/B]' % vers, '', 'BUG', ICON, FANART, '')
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
+
+def get_cat_cams():
+    addDir('[B][COLOR white]Top Live Cams[/COLOR][/B]',
+           'https://www.skylinewebcams.com/{0}/top-live-cams.html'.format(web_lang), 5, ICON, FANART, '')
+    addDir('[B][COLOR white]Beaches[/COLOR][/B]',
+           'https://www.skylinewebcams.com/{0}/live-cams-category/beach-cams.html'.format(web_lang), 5, ICON, FANART, '')
+    addDir('[B][COLOR white]CITY Views[/COLOR][/B]',
+           'https://www.skylinewebcams.com/{0}/live-cams-category/city-cams.html'.format(web_lang), 5, ICON, FANART, '')
+    addDir('[B][COLOR white]Landscapes[/COLOR][/B]',
+           'https://www.skylinewebcams.com/{0}/live-cams-category/nature-mountain-cams.html'.format(web_lang), 5, ICON, FANART, '')
+    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 
 def get_greek_cams():
@@ -71,7 +84,7 @@ def get_greek_cams():
                client.parseDOM(cams, 'a', ret='data-title'),
                client.parseDOM(cams, 'img', ret='src'))
     for stream, name, poster in cams:
-        name = re.sub('".+?false', '', name)
+        name = re.sub(r'".+?false', '', name)
         name = client.replaceHTMLCodes(name).encode('utf-8')
         stream = 'http:' + stream if stream.startswith('//') else stream
         stream += '|Referer={}'.format(link)
@@ -81,9 +94,10 @@ def get_greek_cams():
 
 def get_the_random(url): #3
     r = client.request(url, headers=headers)
-    frames = zip(client.parseDOM(r, 'a', ret='href'),
-                 client.parseDOM(r, 'a'))
-    frame = [i[0] for i in frames if 'random cam' in i[1].lower()][0]
+    # frames = zip(client.parseDOM(r, 'a', ret='href'),
+    #              client.parseDOM(r, 'a'))
+    # frame = [i[0] for i in frames if 'random cam' in i[1].lower()][0]
+    frame = client.parseDOM(r, 'a', ret='href', attrs={'data-original-title': 'Random Cam'})[0]
     frame = base_url + frame if frame.startswith('/') else frame
     # xbmc.log('FRAME:%s' % frame)
     info = client.request(frame, headers=headers)
@@ -93,8 +107,8 @@ def get_the_random(url): #3
     # xbmc.log('NAME:%s' % head)
     poster = client.parseDOM(info, 'meta', ret='content', attrs={'property': 'og:image'})[0]
     # xbmc.log('INFO:%s' % info)
-    link = re.findall(r'''\,url:['"](.+?)['"]\}''', info, re.DOTALL)[0]
-    addDir('[B][COLOR white]%s[/COLOR][/B]' % head, link, 100, poster, '', 'Random Live Cam')
+    # link = re.findall(r'''\,url:['"](.+?)['"]\}''', info, re.DOTALL)[0]
+    addDir('[B][COLOR white]%s[/COLOR][/B]' % head, frame, 100, poster, '', 'Random Live Cam')
 
 
 def get_country(url): #4
@@ -200,7 +214,7 @@ def resolve(name, url, iconimage, description):
         # title = client.parseDOM(info, 'meta', ret='content', attrs={'name': 'description'})[0].encode('utf-8')
         # name = '{0} - {1}'.format(head, title)
         poster = client.parseDOM(info, 'meta', ret='content', attrs={'property': 'og:image'})[0]
-        link = re.findall(r'''\,url:['"](.+?)['"]\}''', info, re.DOTALL)[0]
+        link = re.findall(r'''source:['"](.+?)['"]\,''', info, re.DOTALL)[0]
         link += '|User-Agent={}&Referer={}'.format(urllib.quote_plus(client.agent()), urllib.quote_plus(url))
         liz = xbmcgui.ListItem(head, iconImage=ICON, thumbnailImage=poster)
 
@@ -292,6 +306,8 @@ elif mode == 7:
     Open_settings()
 elif mode == 8:
     get_greek_cams()
+elif mode == 9:
+    get_cat_cams()
 elif mode == 100:
     resolve(name, url, iconimage, description)
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
