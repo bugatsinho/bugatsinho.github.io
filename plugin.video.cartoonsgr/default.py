@@ -632,7 +632,7 @@ def gamato_kids(url):  # 4
         desc = desc.encode('utf-8')
         try:
             title = client.parseDOM(post, 'h4')[0]
-            year = re.findall(r'<span>(\d{4})</span>', post, re.DOTALL)[0]
+            year = re.findall(r'<span>.*?\s*(\d{4})</span>', post, re.DOTALL)[0]
             if not (len(year) == 4 and year.isdigit()):
                 year = 'N/A'
         except IndexError:

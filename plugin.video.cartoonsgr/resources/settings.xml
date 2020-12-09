@@ -17,7 +17,7 @@
     </category>
 	<category label="DOMAINS">
         <setting type="lsep" label="32037" />
-        <setting id="gamato.domain" type="text" label="GAMATO URL" default="http://gamatotv4.com/kids/" />
+        <setting id="gamato.domain" type="text" label="GAMATO URL" default="https://gamato2.com/kids/" />
         <setting id="tenies.domain" type="text" label="TENIES ONLINE URL" default="https://tenies-online.gr/" />
 	</category>
 </settings>
