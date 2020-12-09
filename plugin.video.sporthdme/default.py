@@ -216,12 +216,12 @@ def get_stream(url):  # 4
             elif ret > -1:
                 host = streams[ret]
                 # xbmc.log('@#@STREAMMMMM:%s' % host, xbmc.LOGNOTICE)
-                return resolve(host)
+                return resolve(host, name)
             else:
                 return
         else:
             link = links[0][0]
-            return resolve(link)
+            return resolve(link, name)
 
 
 def idle():
@@ -238,7 +238,8 @@ def busy():
         xbmc.executebuiltin('ActivateWindow(busydialog)')
 
 
-def resolve(url):
+def resolve(url, name):
+        # xbmc.log('RESOLVE-URL: %s' % url, xbmc.LOGNOTICE)
     try:
         ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
         # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
@@ -249,7 +250,13 @@ def resolve(url):
             xbmc.Player().play(url1, liz, False)
             quit()
         if '/live.cdnz' in url:
-            r = client.request(url, referer=BASEURL)
+            r = client.request(url, referer=BASEURL).replace('\t', '')
+            # xbmc.log('HTML: %s' % str(r), xbmc.LOGNOTICE)
+            from resources.modules import jsunpack
+            if jsunpack.detect(r):
+                unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', r, re.DOTALL)[0]
+                r = jsunpack.unpack(unpack.strip())
+                # xbmc.log('RESOLVE-UNPACK: %s' % str(r), xbmc.LOGNOTICE)
 
             if 'hfstream.js' in r:
                 regex = '''<script type='text/javascript'> width=(.+?), height=(.+?), channel='(.+?)', g='(.+?)';</script>'''
@@ -258,8 +265,8 @@ def resolve(url):
             else:
                 stream = client.parseDOM(r, 'iframe', ret='src')[-1]
 
-            r = client.request(stream, referer=url)
-            # xbmc.log('@#@DATAAAA: %s' % r, xbmc.LOGNOTICE)
+            r = client.request(stream, referer=url).replace('\t', '')
+            # xbmc.log('STREAM-DATA: %s' % r, xbmc.LOGNOTICE)
             if 'youtube' in r:
                 try:
                     flink = client.parseDOM(r, 'iframe', ret='src')[0]
@@ -272,6 +279,9 @@ def resolve(url):
                 # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
 
             else:
+                if jsunpack.detect(r):
+                    unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', r, re.DOTALL)[0]
+                    r = jsunpack.unpack(unpack)
                 try:
                     flink = re.findall(r'''source:\s*["'](.+?)['"]''', r, re.DOTALL)[0]
                 except IndexError:
@@ -279,27 +289,27 @@ def resolve(url):
                     ea = client.request(ea).split('=')[1]
                     flink = re.findall('''videoplayer.src = "(.+?)";''', r, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
-                flink += '|Referer={}'.format(stream)
-            # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
+                flink += '|Referer={}'.format(urllib.quote(stream))
+            xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
             stream_url = flink
 
         else:
             stream_url = url
         liz = xbmcgui.ListItem(name, iconImage=iconimage, thumbnailImage=iconimage)
+        liz.setInfo(type="Video", infoLabels={"Title": name})
         liz.setProperty("IsPlayable", "true")
         liz.setPath(str(stream_url))
+        # if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 17.5:
+        #     liz.setMimeType('application/vnd.apple.mpegurl')
+        #     liz.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        #     liz.setProperty('inputstream.adaptive.stream_headers', str(headers))
+        # else:
+        #     liz.setProperty('inputstreamaddon', None)
+        #     liz.setContentLookup(True)
         xbmc.Player().play(stream_url, liz, False)
         quit()
         # xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
     except Exception as e:
-        # try:
-        #     liz = xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
-        #     liz.setInfo(type="Video", infoLabels={"Title": 'Stream Link', 'mediatype': 'video'})
-        #     liz.setProperty("IsPlayable", "true")
-        #     liz.setPath(str(stream_url))
-        #     xbmc.Player().play(stream_url, liz)
-        #     # xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
-        # except:
         control.infoDialog("[COLOR red]Dead Link[/COLOR]!", NAME, iconimage)
 
 def Open_settings():
@@ -399,5 +409,5 @@ elif mode == 10:
     Open_settings()
 
 elif mode == 100:
-    resolve(url)
+    resolve(url, name)
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
