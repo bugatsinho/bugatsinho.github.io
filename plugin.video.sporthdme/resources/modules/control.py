@@ -18,16 +18,28 @@
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-
-import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
-import os, json
+import json
+import os
 from sys import argv
-from urlparse import parse_qsl
+
+import six
+import xbmc
+import xbmcaddon
+import xbmcgui
+import xbmcplugin
+import xbmcvfs
+from six.moves.urllib.parse import parse_qsl
+
+if six.PY2:
+    translatePath = xbmc.translatePath
+elif six.PY3:
+    translatePath = xbmcvfs.translatePath
+else:
+    translatePath = xbmc.translatePath
 
 syshandle = int(argv[1])
 sysaddon = argv[0]
-params = dict(parse_qsl(argv[2].replace('?','')))
-
+params = dict(parse_qsl(argv[2].replace('?', '')))
 
 integer = 1000
 lang = xbmcaddon.Addon().getLocalizedString
@@ -57,10 +69,9 @@ monitor = xbmc.Monitor()
 wait = monitor.waitForAbort
 aborted = monitor.abortRequested
 
-transPath = xbmc.translatePath
-skinPath = xbmc.translatePath('special://skin/')
-addonPath = xbmc.translatePath(addonInfo('path'))
-dataPath = xbmc.translatePath(addonInfo('profile')).decode('utf-8')
+skinPath = translatePath('special://skin/')
+addonPath = translatePath(addonInfo('path'))
+dataPath = translatePath(addonInfo('profile'))  # .decode('utf-8')
 
 window = xbmcgui.Window(10000)
 dialog = xbmcgui.Dialog()
@@ -89,7 +100,6 @@ cacheFile = os.path.join(dataPath, 'cache.db')
 
 
 def infoDialog(message, heading=addonInfo('name'), icon='', time=3000):
-
     if icon == '':
         icon = addonInfo('icon')
 
@@ -115,7 +125,6 @@ def selectDialog(list, heading=addonInfo('name')):
 
 
 def openSettings(query=None, id=addonInfo('id')):
-
     try:
 
         idle()
@@ -133,7 +142,6 @@ def openSettings(query=None, id=addonInfo('id')):
 
 # Alternative method
 def Settings(id=addonInfo('id')):
-
     try:
         idle()
         xbmcaddon.Addon(id).openSettings()
@@ -142,7 +150,6 @@ def Settings(id=addonInfo('id')):
 
 
 def openPlaylist():
-
     return execute('ActivateWindow(VideoPlaylist)')
 
 
@@ -167,7 +174,6 @@ def addonmedia(icon, addonid=addonInfo('id'), theme=None, media_subfolder=True):
 
 
 def sortmethods(method='unsorted', mask='%D'):
-
     """
     Function to sort directory items
 
@@ -232,7 +238,8 @@ def sortmethods(method='unsorted', mask='%D'):
     elif method == 'video_sort_title':
         return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE, label2Mask=mask)
     elif method == 'video_sort_title_ignore_the':
-        return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE, label2Mask=mask)
+        return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE,
+                          label2Mask=mask)
     elif method == 'production_code':
         return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_PRODUCTIONCODE)
     elif method == 'song_rating':
@@ -276,7 +283,6 @@ def sortmethods(method='unsorted', mask='%D'):
 
 
 def json_rpc(command):
-
     # This function was taken from tknorris's kodi.py
 
     if not isinstance(command, basestring):
@@ -287,7 +293,6 @@ def json_rpc(command):
 
 
 def addon_details(addon_id, fields=None):
-
     """
     :param addon_id: Any addon id as string
     :param fields: Possible fields as list [
@@ -326,9 +331,9 @@ def addon_details(addon_id, fields=None):
 
 
 def enable_addon(addon_id, enable=True):
-
     command = {
-        "jsonrpc":"2.0", "method": "Addons.SetAddonEnabled", "params": {"addonid": addon_id, "enabled": enable}, "id": 1
+        "jsonrpc": "2.0", "method": "Addons.SetAddonEnabled", "params": {"addonid": addon_id, "enabled": enable},
+        "id": 1
     }
 
     json_rpc(command)

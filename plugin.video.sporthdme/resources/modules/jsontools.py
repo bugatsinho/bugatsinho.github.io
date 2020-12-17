@@ -5,15 +5,13 @@
 
 import traceback
 
-
-
 try:
     import json
 except:
-
     try:
         import simplejson as json
-    except: pass
+    except:
+        pass
 
 
 def load(*args, **kwargs):

@@ -17,37 +17,51 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import random
+import re
+import sys
+import time
 
+import six
+from six.moves import urllib_request, urllib_error
+from six.moves import xrange
+from six.moves.html_parser import HTMLParser
+from six.moves.urllib.parse import urlparse, quote_plus
 
-import re, sys, cookielib, time, random
-import urllib, urllib2, urlparse, HTMLParser
-import cache
+from resources.modules import cache
 
 try:
     import requests
     requester = requests.get
 except ImportError:
     requester = None
+    
+if six.PY3:
+    unicode = str
+    import http.cookiejar as cookielib
+    from urllib.request import ProxyHandler
+elif six.PY2:
+    import cookielib
+    from urllib2 import ProxyHandler
 
 
 def request(url, close=True, redirect=True, error=False, proxy=None, post=None, headers=None, mobile=False, limit=None,
             referer=None, cookie=None, output='', timeout='30'):
-
-    try:
+ 
         handlers = []
 
         if proxy is not None:
 
-            handlers += [urllib2.ProxyHandler({'http':'{0}'.format(proxy)}), urllib2.HTTPHandler]
-            opener = urllib2.build_opener(*handlers)
-            urllib2.install_opener(opener)
+            handlers += [ProxyHandler({'http': '{0}'.format(proxy)}), urllib_request.HTTPHandler]
+            opener = urllib_request.build_opener(*handlers)
+            urllib_request.install_opener(opener)
 
         if output == 'cookie' or output == 'extended' or close is not True:
 
             cookies = cookielib.LWPCookieJar()
-            handlers += [urllib2.HTTPHandler(), urllib2.HTTPSHandler(), urllib2.HTTPCookieProcessor(cookies)]
-            opener = urllib2.build_opener(*handlers)
-            urllib2.install_opener(opener)
+            handlers += [urllib_request.HTTPHandler(), urllib_request.HTTPSHandler(), urllib_request.HTTPCookieProcessor(cookies)]
+            opener = urllib_request.build_opener(*handlers)
+            urllib_request.install_opener(opener)
 
         try:
 
@@ -58,9 +72,9 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
             ssl_context = ssl.create_default_context()
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
-            handlers += [urllib2.HTTPSHandler(context=ssl_context)]
-            opener = urllib2.build_opener(*handlers)
-            urllib2.install_opener(opener)
+            handlers += [urllib_request.HTTPSHandler(context=ssl_context)]
+            opener = urllib_request.build_opener(*handlers)
+            urllib_request.install_opener(opener)
 
         except:
             pass
@@ -81,7 +95,7 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
         if 'Referer' in headers:
             pass
         elif referer is None:
-            headers['Referer'] = '%s://%s/' % (urlparse.urlparse(url).scheme, urlparse.urlparse(url).netloc)
+            headers['Referer'] = '%s://%s/' % (urlparse(url).scheme, urlparse(url).netloc)
         else:
             headers['Referer'] = referer
 
@@ -95,39 +109,39 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
 
         if redirect is False:
 
-            class NoRedirection(urllib2.HTTPErrorProcessor):
+            class NoRedirection(urllib_error.HTTPError):
 
                 def http_response(self, request, response):
                     return response
 
-            opener = urllib2.build_opener(NoRedirection)
-            urllib2.install_opener(opener)
+            opener = urllib_request.build_opener(NoRedirection)
+            urllib_request.install_opener(opener)
 
             try:
                 del headers['Referer']
             except:
                 pass
 
-        req = urllib2.Request(url, data=post, headers=headers)
+        req = urllib_request.Request(url, data=post, headers=headers)
 
         try:
-            response = urllib2.urlopen(req, timeout=int(timeout))
+            response = urllib_request.urlopen(req, timeout=int(timeout))
 
-        except urllib2.HTTPError as response:
+        except urllib_error.HTTPError as response:
 
             if response.code == 503:
 
                 if 'cf-browser-verification' in response.read(5242880):
 
-                    netloc = '%s://%s' % (urlparse.urlparse(url).scheme, urlparse.urlparse(url).netloc)
+                    netloc = '%s://%s' % (urlparse(url).scheme, urlparse(url).netloc)
 
                     cf = cache.get(cfcookie, 168, netloc, headers['User-Agent'], timeout)
 
                     headers['Cookie'] = cf
 
-                    request = urllib2.Request(url, data=post, headers=headers)
+                    request = urllib_request.Request(url, data=post, headers=headers)
 
-                    response = urllib2.urlopen(request, timeout=int(timeout))
+                    response = urllib_request.urlopen(request, timeout=int(timeout))
 
                 elif error is False:
                     return
@@ -197,16 +211,13 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
 
         if close is True:
             response.close()
-
         return result
-
-    except:
-        return
+ 
 
 
 def retriever(source, destination, *args):
 
-    class Opener(urllib.URLopener):
+    class Opener(urllib_request.URLopener):
         version = randomagent()
 
     Opener().retrieve(source, destination, *args)
@@ -235,7 +246,7 @@ def parseDOM(html, name=u"", attrs=None, ret=False):
 
     if not name.strip():
         return u""
-
+    
     ret_lst = []
     for item in html:
         temp_item = re.compile('(<[^>]*?\n[^>]*?>)').findall(item)
@@ -335,8 +346,8 @@ def _getDOMElements(item, name, attrs):
             lst2 = []
         else:
 
-            test = range(len(lst))
-            test.reverse()
+            test = reversed(range(len(lst)))
+            #test.reverse()
             for i in test:  # Delete anything missing from the next list.
                 if not lst[i] in lst2:
                     del(lst[i])
@@ -352,7 +363,7 @@ def _getDOMElements(item, name, attrs):
 def replaceHTMLCodes(txt):
 
     txt = re.sub("(&#[0-9]+)([^;^0-9]+)", "\\1;\\2", txt)
-    txt = HTMLParser.HTMLParser().unescape(txt)
+    txt = HTMLParser().unescape(txt)
     txt = txt.replace("&quot;", "\"")
     txt = txt.replace("&amp;", "&")
     txt = txt.replace("&#38;", "&")
@@ -399,22 +410,22 @@ def ios_agent():
 def spoofer(_agent=True, age_str=randomagent(), referer=False, ref_str=''):
 
     if _agent and referer:
-        return '|User-Agent=' + urllib.quote_plus(age_str) + '&Referer=' + urllib.quote_plus(ref_str)
+        return '|User-Agent=' + quote_plus(age_str) + '&Referer=' + quote_plus(ref_str)
     elif _agent:
-        return '|User-Agent=' + urllib.quote_plus(age_str)
+        return '|User-Agent=' + quote_plus(age_str)
     elif referer:
-        return '|Referer=' + urllib.quote_plus(ref_str)
+        return '|Referer=' + quote_plus(ref_str)
 
 
 def cfcookie(netloc, ua, timeout):
     try:
         headers = {'User-Agent': ua}
 
-        req = urllib2.Request(netloc, headers=headers)
+        req = urllib_request.Request(netloc, headers=headers)
 
         try:
-            urllib2.urlopen(req, timeout=int(timeout))
-        except urllib2.HTTPError as response:
+            urllib_request.urlopen(req, timeout=int(timeout))
+        except urllib_error.HTTPError as response:
             result = response.read(5242880)
 
         jschl = re.findall('name="jschl_vc" value="(.+?)"/>', result)[0]
@@ -435,23 +446,23 @@ def cfcookie(netloc, ua, timeout):
                 line_val = parseJSString(sections[1])
                 decryptVal = int(eval(str(decryptVal)+sections[0][-1]+str(line_val)))
 
-        answer = decryptVal + len(urlparse.urlparse(netloc).netloc)
+        answer = decryptVal + len(urlparse(netloc).netloc)
 
         query = '%s/cdn-cgi/l/chk_jschl?jschl_vc=%s&jschl_answer=%s' % (netloc, jschl, answer)
 
         if 'type="hidden" name="pass"' in result:
             passval = re.findall('name="pass" value="(.*?)"', result)[0]
-            query = '%s/cdn-cgi/l/chk_jschl?pass=%s&jschl_vc=%s&jschl_answer=%s' % (netloc, urllib.quote_plus(passval), jschl, answer)
+            query = '%s/cdn-cgi/l/chk_jschl?pass=%s&jschl_vc=%s&jschl_answer=%s' % (netloc, quote_plus(passval), jschl, answer)
             time.sleep(5)
 
         cookies = cookielib.LWPCookieJar()
-        handlers = [urllib2.HTTPHandler(), urllib2.HTTPSHandler(), urllib2.HTTPCookieProcessor(cookies)]
-        opener = urllib2.build_opener(*handlers)
-        urllib2.install_opener(opener)
+        handlers = [urllib_request.HTTPHandler(), urllib_request.HTTPSHandler(), urllib_request.HTTPCookieProcessor(cookies)]
+        opener = urllib_request.build_opener(*handlers)
+        urllib_request.install_opener(opener)
 
         try:
-            request = urllib2.Request(query, headers=headers)
-            urllib2.urlopen(request, timeout=int(timeout))
+            request = urllib_request.Request(query, headers=headers)
+            urllib_request.urlopen(request, timeout=int(timeout))
         except:
             pass
 

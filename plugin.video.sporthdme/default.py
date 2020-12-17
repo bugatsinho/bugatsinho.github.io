@@ -2,15 +2,15 @@
 import base64
 import re
 import sys
-import urllib
-import urlparse
+import six
+from six.moves.urllib.parse import urljoin, unquote_plus, quote_plus, quote, unquote
+from six.moves import zip
 import json
 import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
 from resources.modules import control, client
-
 ADDON = xbmcaddon.Addon()
 ADDON_DATA = ADDON.getAddonInfo('profile')
 ADDON_PATH = ADDON.getAddonInfo('path')
@@ -25,16 +25,16 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'http://sporthd.live/'
-Live_url = 'http://sporthd.live/index.php?'
+BASEURL = 'https://www.sporthd.me/'
+Live_url = 'https://www.sporthd.me/index.php?'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
 from dateutil.parser import parse
 from dateutil.tz import gettz
 from dateutil.tz import tzlocal
-reload(sys)
-sys.setdefaultencoding("utf-8")
+#reload(sys)
+#sys.setdefaultencoding("utf-8")
 
 #######################################
 # Time and Date Helpers
@@ -72,93 +72,94 @@ def Main_menu():
 
 def leagues_menu():
     addDir('[B][COLOR white]Uefa Champions League[/COLOR][/B]',
-           'http://sporthd.live/index.php?champ=uefa-champions-league', 5,
-           'http://sporthd.live/flags/uefa-champions-league.png', FANART, 'Uefa Champions League')
-    addDir('[B][COLOR white]Uefa Europa League[/COLOR][/B]', 'http://sporthd.live/index.php?champ=uefa-europa-league',
-           5, 'http://sporthd.live/flags/uefa-europa-league.png', FANART, 'Uefa Europa League')
-    addDir('[B][COLOR white]Premier League[/COLOR][/B]', 'http://sporthd.live/index.php?champ=premier-league', 5,
-           'http://sporthd.live/flags/premier-league.png', FANART, 'Premier League')
-    addDir('[B][COLOR white]Bundesliga[/COLOR][/B]', 'http://sporthd.live/index.php?champ=bundesliga', 5,
-           'http://sporthd.live/flags/bundesliga.png', FANART, 'Bundesliga')
-    addDir('[B][COLOR white]Laliga[/COLOR][/B]', 'http://sporthd.live/index.php?champ=laliga', 5,
-           'http://sporthd.live/flags/spanish-primera-division.png', FANART, 'Laliga')
-    addDir('[B][COLOR white]Serie A[/COLOR][/B]', 'http://sporthd.live/index.php?champ=serie-a', 5,
-           'http://sporthd.live/flags/serie-a.png', FANART, 'Serie a')
-    addDir('[B][COLOR white]France Ligue 1[/COLOR][/B]', 'http://sporthd.live/index.php?champ=france-ligue-1', 5,
-           'http://sporthd.live/flags/france-ligue-1.png', FANART, 'France ligue 1')
-    addDir('[B][COLOR white]Eredivisie[/COLOR][/B]', 'http://sporthd.live/index.php?champ=eredivisie', 5,
-           'http://sporthd.live/flags/eredivisie.png', FANART, 'Eredivisie')
+           BASEURL + 'index.php?champ=uefa-champions-league', 5,
+           BASEURL + 'flags/uefa-champions-league.png', FANART, 'Uefa Champions League')
+    addDir('[B][COLOR white]Uefa Europa League[/COLOR][/B]', BASEURL + 'index.php?champ=uefa-europa-league',
+           5, BASEURL + 'flags/uefa-europa-league.png', FANART, 'Uefa Europa League')
+    addDir('[B][COLOR white]Premier League[/COLOR][/B]', BASEURL + 'index.php?champ=premier-league', 5,
+           BASEURL + 'flags/premier-league.png', FANART, 'Premier League')
+    addDir('[B][COLOR white]Bundesliga[/COLOR][/B]', BASEURL + 'index.php?champ=bundesliga', 5,
+           BASEURL + 'flags/bundesliga.png', FANART, 'Bundesliga')
+    addDir('[B][COLOR white]Laliga[/COLOR][/B]', BASEURL + 'index.php?champ=laliga', 5,
+           BASEURL + 'flags/spanish-primera-division.png', FANART, 'Laliga')
+    addDir('[B][COLOR white]Serie A[/COLOR][/B]', BASEURL + 'index.php?champ=serie-a', 5,
+           BASEURL + 'flags/serie-a.png', FANART, 'Serie a')
+    addDir('[B][COLOR white]France Ligue 1[/COLOR][/B]', BASEURL + 'index.php?champ=france-ligue-1', 5,
+           BASEURL + 'flags/france-ligue-1.png', FANART, 'France ligue 1')
+    addDir('[B][COLOR white]Eredivisie[/COLOR][/B]', BASEURL + 'index.php?champ=eredivisie', 5,
+           BASEURL + 'flags/eredivisie.png', FANART, 'Eredivisie')
     addDir('[B][COLOR white]Australian A League[/COLOR][/B]',
-           'http://sporthd.live/index.php?champ=australian-a-league', 5,
-           'http://sporthd.live/flags/australian-a-league.png', FANART, 'Australian a league')
-    addDir('[B][COLOR white]MLS[/COLOR][/B]', 'http://sporthd.live/index.php?champ=mls', 5,
-           'http://sporthd.live/flags/mls.png', FANART, 'Mls')
-    addDir('[B][COLOR white]Rugby Top 14[/COLOR][/B]', 'http://sporthd.live/index.php?champ=rugby-top-14', 5,
-           'http://sporthd.live/flags/rugby-top-14.png', FANART, 'Rugby top 14')
+           BASEURL + 'index.php?champ=australian-a-league', 5,
+           BASEURL + 'flags/australian-a-league.png', FANART, 'Australian a league')
+    addDir('[B][COLOR white]MLS[/COLOR][/B]', BASEURL + 'index.php?champ=mls', 5,
+           BASEURL + 'flags/mls.png', FANART, 'Mls')
+    addDir('[B][COLOR white]Rugby Top 14[/COLOR][/B]', BASEURL + 'index.php?champ=rugby-top-14', 5,
+           BASEURL + 'flags/rugby-top-14.png', FANART, 'Rugby top 14')
     addDir('[B][COLOR white]Greece Super League[/COLOR][/B]',
-           'http://sporthd.live/index.php?champ=greece-super-league', 5,
-           'http://sporthd.live/flags/greece-super-league.png', FANART, 'Greece super league')
+           BASEURL + 'index.php?champ=greece-super-league', 5,
+           BASEURL + 'flags/greece-super-league.png', FANART, 'Greece super league')
     addDir('[B][COLOR white]Argentina Superliga[/COLOR][/B]',
-           'http://sporthd.live/index.php?champ=argentina-superliga', 5,
-           'http://sporthd.live/flags/argentina-superliga.png', FANART, 'Argentina superliga')
+           BASEURL + 'index.php?champ=argentina-superliga', 5,
+           BASEURL + 'flags/argentina-superliga.png', FANART, 'Argentina superliga')
     addDir('[B][COLOR white]Portuguese Primeira Liga[/COLOR][/B]',
-           'http://sporthd.live/index.php?champ=portuguese-primeira-liga', 5,
-           'http://sporthd.live/flags/portuguese-primeira-liga.png', FANART, 'Portuguese primeira liga')
+           BASEURL + 'index.php?champ=portuguese-primeira-liga', 5,
+           BASEURL + 'flags/portuguese-primeira-liga.png', FANART, 'Portuguese primeira liga')
     addDir('[B][COLOR white]Primera Division Apertura[/COLOR][/B]',
-           'http://sporthd.live/index.php?champ=primera-division-apertura', 5,
-           'http://sporthd.live/flags/primera-division-apertura.png', FANART, 'Primera division apertura')
-    addDir('[B][COLOR white]Bundesliga 2[/COLOR][/B]', 'http://sporthd.live/index.php?champ=bundesliga-2', 5,
-           'http://sporthd.live/flags/bundesliga-2.png', FANART, 'Bundesliga 2')
+           BASEURL + 'index.php?champ=primera-division-apertura', 5,
+           BASEURL + 'flags/primera-division-apertura.png', FANART, 'Primera division apertura')
+    addDir('[B][COLOR white]Bundesliga 2[/COLOR][/B]', BASEURL + 'index.php?champ=bundesliga-2', 5,
+           BASEURL + 'flags/bundesliga-2.png', FANART, 'Bundesliga 2')
     addDir('[B][COLOR white]Greece Super League 2[/COLOR][/B]',
-           'http://sporthd.live/index.php?champ=greece-super-league-2', 5,
-           'http://sporthd.live/flags/greece-super-league-2.png', FANART, 'Greece super league 2')
+           BASEURL + 'index.php?champ=greece-super-league-2', 5,
+           BASEURL + 'flags/greece-super-league-2.png', FANART, 'Greece super league 2')
     addDir('[B][COLOR white]Belarus Vysheyshaya Liga[/COLOR][/B]',
-           'http://sporthd.live/index.php?champ=belarus-vysheyshaya-liga', 5,
-           'http://sporthd.live/flags/belarus-vysheyshaya-liga.png', FANART, 'Belarus vysheyshaya liga')
+           BASEURL + 'index.php?champ=belarus-vysheyshaya-liga', 5,
+           BASEURL + 'flags/belarus-vysheyshaya-liga.png', FANART, 'Belarus vysheyshaya liga')
 
 
 def sports_menu():
-    addDir('[B][COLOR white]Football[/COLOR][/B]', 'http://sporthd.live/?type=football', 5,
-           'http://sporthd.live/images/football.png', FANART, 'Football')
-    addDir('[B][COLOR white]Basketball[/COLOR][/B]', 'http://sporthd.live/?type=basketball', 5,
-           'http://sporthd.live/images/basketball.png', FANART, 'Basketball')
-    addDir('[B][COLOR white]MotorSport[/COLOR][/B]', 'http://sporthd.live/?type=motorsport', 5,
-           'http://sporthd.live/images/motorsport.png', FANART, 'MotorSport')
-    addDir('[B][COLOR white]Handball[/COLOR][/B]', 'http://sporthd.live/?type=handball', 5,
-           'http://sporthd.live/images/handball.png', FANART, 'Handball')
-    addDir('[B][COLOR white]Rugby[/COLOR][/B]', 'http://sporthd.live/?type=rugby', 5,
-           'http://sporthd.live/images/rugby.png', FANART, 'Rugby')
-    addDir('[B][COLOR white]NFL[/COLOR][/B]', 'http://sporthd.live/?type=nfl', 5,
-           'http://sporthd.live/images/nfl.png', FANART, 'NFL')
-    addDir('[B][COLOR white]UFC[/COLOR][/B]', 'http://sporthd.live/?type=ufc', 5,
-           'http://sporthd.live/images/ufc.png', FANART, 'UFC')
-    addDir('[B][COLOR white]Wrestling[/COLOR][/B]', 'http://sporthd.live/?type=wresling', 5,
-           'http://sporthd.live/images/wresling.png', FANART, 'Wresling')
-    addDir('[B][COLOR white]Hockey[/COLOR][/B]', 'http://sporthd.live/?type=hokey', 5,
-           'http://sporthd.live/images/hockey.png', FANART, 'Hokey')
-    addDir('[B][COLOR white]Volleyball[/COLOR][/B]', 'http://sporthd.live/?type=volleyball', 5,
-           'http://sporthd.live/images/volleyball.png', FANART, 'Volleyball')
-    addDir('[B][COLOR white]Darts[/COLOR][/B]', 'http://sporthd.live/?type=darts', 5,
-           'http://sporthd.live/images/darts.png', FANART, 'Darts')
-    addDir('[B][COLOR white]Tennis[/COLOR][/B]', 'http://sporthd.live/?type=tennis', 5,
-           'http://sporthd.live/images/tennis.png', FANART, 'Tennis')
-    addDir('[B][COLOR white]Boxing[/COLOR][/B]', 'http://sporthd.live/?type=boxing', 5,
-           'http://sporthd.live/images/boxing.png', FANART, 'Boxing')
-    addDir('[B][COLOR white]Cricket[/COLOR][/B]', 'http://sporthd.live/?type=cricket', 5,
-           'http://sporthd.live/images/cricket.png', FANART, 'Cricket')
-    addDir('[B][COLOR white]Baseball[/COLOR][/B]', 'http://sporthd.live/?type=baseball', 5,
-           'http://sporthd.live/images/baseball.png', FANART, 'Baseball')
-    addDir('[B][COLOR white]Snooker[/COLOR][/B]', 'http://sporthd.live/?type=snooker', 5,
-           'http://sporthd.live/images/snooker.png', FANART, 'Snooker')
-    addDir('[B][COLOR white]Chess[/COLOR][/B]', 'http://sporthd.live/?type=chess', 5,
-           'http://sporthd.live/images/chess.png', FANART, 'Chess')
+    addDir('[B][COLOR white]Football[/COLOR][/B]', BASEURL + '?type=football', 5,
+           BASEURL + 'images/football.png', FANART, 'Football')
+    addDir('[B][COLOR white]Basketball[/COLOR][/B]', BASEURL + '?type=basketball', 5,
+           BASEURL + 'images/basketball.png', FANART, 'Basketball')
+    addDir('[B][COLOR white]MotorSport[/COLOR][/B]', BASEURL + '?type=motorsport', 5,
+           BASEURL + 'images/motorsport.png', FANART, 'MotorSport')
+    addDir('[B][COLOR white]Handball[/COLOR][/B]', BASEURL + '?type=handball', 5,
+           BASEURL + 'images/handball.png', FANART, 'Handball')
+    addDir('[B][COLOR white]Rugby[/COLOR][/B]', BASEURL + '?type=rugby', 5,
+           BASEURL + 'images/rugby.png', FANART, 'Rugby')
+    addDir('[B][COLOR white]NFL[/COLOR][/B]', BASEURL + '?type=nfl', 5,
+           BASEURL + 'images/nfl.png', FANART, 'NFL')
+    addDir('[B][COLOR white]UFC[/COLOR][/B]', BASEURL + '?type=ufc', 5,
+           BASEURL + 'images/ufc.png', FANART, 'UFC')
+    addDir('[B][COLOR white]Wrestling[/COLOR][/B]', BASEURL + '?type=wresling', 5,
+           BASEURL + 'images/wresling.png', FANART, 'Wresling')
+    addDir('[B][COLOR white]Hockey[/COLOR][/B]', BASEURL + '?type=hokey', 5,
+           BASEURL + 'images/hockey.png', FANART, 'Hokey')
+    addDir('[B][COLOR white]Volleyball[/COLOR][/B]', BASEURL + '?type=volleyball', 5,
+           BASEURL + 'images/volleyball.png', FANART, 'Volleyball')
+    addDir('[B][COLOR white]Darts[/COLOR][/B]', BASEURL + '?type=darts', 5,
+           BASEURL + 'images/darts.png', FANART, 'Darts')
+    addDir('[B][COLOR white]Tennis[/COLOR][/B]', BASEURL + '?type=tennis', 5,
+           BASEURL + 'images/tennis.png', FANART, 'Tennis')
+    addDir('[B][COLOR white]Boxing[/COLOR][/B]', BASEURL + '?type=boxing', 5,
+           BASEURL + 'images/boxing.png', FANART, 'Boxing')
+    addDir('[B][COLOR white]Cricket[/COLOR][/B]', BASEURL + '?type=cricket', 5,
+           BASEURL + 'images/cricket.png', FANART, 'Cricket')
+    addDir('[B][COLOR white]Baseball[/COLOR][/B]', BASEURL + '?type=baseball', 5,
+           BASEURL + 'images/baseball.png', FANART, 'Baseball')
+    addDir('[B][COLOR white]Snooker[/COLOR][/B]', BASEURL + '?type=snooker', 5,
+           BASEURL + 'images/snooker.png', FANART, 'Snooker')
+    addDir('[B][COLOR white]Chess[/COLOR][/B]', BASEURL + '?type=chess', 5,
+           BASEURL + 'images/chess.png', FANART, 'Chess')
 
+ 
 
 def get_events(url):  # 5
     data = client.request(url)
-    # xbmc.log('@#@EDATAAA: {}'.format(data), xbmc.LOGNOTICE)
-    events = zip(client.parseDOM(data, 'li', attrs={'class': "item itemhov"}),
-                 re.findall(r'<i class="material-icons">(.+?)</a> </li>', data, re.DOTALL))
+#    xbmc.log('@#@EDATAAA: {}'.format(data), xbmc.LOGNOTICE)
+    events = list(zip(client.parseDOM(str(data), 'li', attrs={'class': "item itemhov"}),
+                 re.findall(r'<i class="material-icons">(.+?)</a> </li>', str(data), re.DOTALL)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
     for event, streams in events:
         # xbmc.log('@#@EVENTTTTT:%s' % event, xbmc.LOGNOTICE)
@@ -166,11 +167,12 @@ def get_events(url):  # 5
         try:
             teams = client.parseDOM(event, 'td')
             home, away = re.sub(r'\s*(<img.+?>)\s*', '', teams[0]), re.sub(r'\s*(<img.+?>)\s*', '', teams[2])
-            home = home.strip().encode('utf-8')
-            away = away.strip().encode('utf-8')
+            if six.PY2:
+                home = home.strip().encode('utf-8')
+                away = away.strip().encode('utf-8')
             teams = '[B]{0} vs {1}[/B]'.format(home, away)
         except IndexError:
-            teams = client.parseDOM(event, 'center')[0]
+            teams = client.parseDOM(event, 'center')
             teams = re.sub(r'<.+?>|\s{2}', '', teams).encode('utf-8')
         lname = client.parseDOM(event, 'a')[1]
         lname = re.sub(r'<.+?>', '', lname)
@@ -182,26 +184,27 @@ def get_events(url):  # 5
         name = '{0}{1} {2} - [I]{3}[/I]'.format(watch, ftime, teams, lname)
 
         # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
-        streams = base64.b64encode(streams)
+        streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
+        
 
         icon = client.parseDOM(event, 'img', ret='src')[0]
-        icon = urlparse.urljoin(BASEURL, icon)
+        icon = urljoin(BASEURL, icon)
 
-        addDir(name, str(streams), 4, icon, FANART, name)
-
+        addDir(name, streams, 4, icon, FANART, name)
 
 xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 
 def get_stream(url):  # 4
-    data = base64.b64decode(url)
-    if 'info_outline' in data:
+    data = base64.b64decode(unquote(url))
+    
+    if b'info_outline' in data:
         control.infoDialog("[COLOR gold]No Links available ATM.\n [COLOR lime]Try Again Later![/COLOR]", NAME,
                            iconimage, 5000)
         return
     else:
-        links = zip(client.parseDOM(data, 'a', ret='href'), client.parseDOM(data, 'a'))
-        # xbmc.log('@#@STREAMMMMMSSSSSS:%s' % links, xbmc.LOGNOTICE)
+        links = list(zip(client.parseDOM(str(data), 'a', ret='href'), client.parseDOM(str(data), 'a')))
+        # xbmc.log('@#@STREAMMMMMSSSSSS:%s' % data, xbmc.LOGINFO)
         titles = []
         streams = []
         for link, title in links:
@@ -238,25 +241,30 @@ def busy():
         xbmc.executebuiltin('ActivateWindow(busydialog)')
 
 
+
 def resolve(url, name):
         # xbmc.log('RESOLVE-URL: %s' % url, xbmc.LOGNOTICE)
-    try:
         ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
         # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
         if 'acestream' in url:
             url1 = "plugin://program.plexus/?url=" + url + "&mode=1&name=acestream+"
-            liz = xbmcgui.ListItem(name, iconImage=iconimage, thumbnailImage=iconimage)
+            liz = xbmcgui.ListItem( name ) 
+            liz.setArt({ 'poster': 'poster.png', 'banner' : 'banner.png' })
+            liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage,
+                             'fanart': fanart}) 
             liz.setPath(url)
             xbmc.Player().play(url1, liz, False)
             quit()
         if '/live.cdnz' in url:
-            r = client.request(url, referer=BASEURL).replace('\t', '')
+            r = six.ensure_str(client.request(url, referer=BASEURL)).replace('\t', '')
             # xbmc.log('HTML: %s' % str(r), xbmc.LOGNOTICE)
             from resources.modules import jsunpack
-            if jsunpack.detect(r):
+            try:
                 unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', r, re.DOTALL)[0]
                 r = jsunpack.unpack(unpack.strip())
                 # xbmc.log('RESOLVE-UNPACK: %s' % str(r), xbmc.LOGNOTICE)
+            except:
+                    xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))    
 
             if 'hfstream.js' in r:
                 regex = '''<script type='text/javascript'> width=(.+?), height=(.+?), channel='(.+?)', g='(.+?)';</script>'''
@@ -264,9 +272,8 @@ def resolve(url, name):
                 stream = 'https://www.playerfs.com/membedplayer/'+chan+'/'+ggg+'/'+wid+'/'+heig+''
             else:
                 stream = client.parseDOM(r, 'iframe', ret='src')[-1]
-
-            r = client.request(stream, referer=url).replace('\t', '')
-            # xbmc.log('STREAM-DATA: %s' % r, xbmc.LOGNOTICE)
+            r = six.ensure_str(client.request(stream, referer=url)).replace('\t', '')
+            # xbmc.log('STREAM-DATA: %s' % r, xbmc.LOGINFO)
             if 'youtube' in r:
                 try:
                     flink = client.parseDOM(r, 'iframe', ret='src')[0]
@@ -279,23 +286,27 @@ def resolve(url, name):
                 # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
 
             else:
-                if jsunpack.detect(r):
-                    unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', r, re.DOTALL)[0]
-                    r = jsunpack.unpack(unpack)
                 try:
-                    flink = re.findall(r'''source:\s*["'](.+?)['"]''', r, re.DOTALL)[0]
+                    unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', str(r), re.DOTALL)[0]
+                    r = jsunpack.unpack(unpack)
+                except:
+                    xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))    
+                try:
+                    flink = re.findall(r'''source:\s*["'](.+?)['"]''', str(r), re.DOTALL)[0]
                 except IndexError:
                     ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', r, re.DOTALL)[0]
                     ea = client.request(ea).split('=')[1]
                     flink = re.findall('''videoplayer.src = "(.+?)";''', r, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
-                flink += '|Referer={}'.format(urllib.quote(stream))
-            xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
+                flink += '|Referer={}'.format(quote(stream))
+            #xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
             stream_url = flink
 
         else:
             stream_url = url
-        liz = xbmcgui.ListItem(name, iconImage=iconimage, thumbnailImage=iconimage)
+        liz = xbmcgui.ListItem(name)
+        liz.setArt({ 'poster': 'poster.png', 'banner': 'banner.png'})
+        liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage, 'fanart': fanart})
         liz.setInfo(type="Video", infoLabels={"Title": name})
         liz.setProperty("IsPlayable", "true")
         liz.setPath(str(stream_url))
@@ -309,18 +320,18 @@ def resolve(url, name):
         xbmc.Player().play(stream_url, liz, False)
         quit()
         # xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
-    except Exception as e:
-        control.infoDialog("[COLOR red]Dead Link[/COLOR]!", NAME, iconimage)
 
 def Open_settings():
     control.openSettings()
 
 
 def addDir(name, url, mode, iconimage, fanart, description):
-    u = sys.argv[0] + "?url=" + urllib.quote_plus(url) + "&mode=" + str(mode) + "&name=" + urllib.quote_plus(
-        name) + "&iconimage=" + urllib.quote_plus(iconimage) + "&description=" + urllib.quote_plus(description)
+    u = sys.argv[0] + "?url=" + quote_plus(url) + "&mode=" + str(mode) + "&name=" + quote_plus(
+        name) + "&iconimage=" + quote_plus(iconimage) + "&description=" + quote_plus(description)
     ok = True
-    liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
+    liz = xbmcgui.ListItem(name)
+    liz.setArt({ 'poster': 'poster.png', 'banner' : 'banner.png'})
+    liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage, 'fanart': fanart})
     liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
     liz.setProperty('fanart_image', fanart)
     if mode == 100:
@@ -360,15 +371,15 @@ description = DESCRIPTION
 query = None
 
 try:
-    url = urllib.unquote_plus(params["url"])
+    url = unquote_plus(params["url"])
 except:
     pass
 try:
-    name = urllib.unquote_plus(params["name"])
+    name = unquote_plus(params["name"])
 except:
     pass
 try:
-    iconimage = urllib.unquote_plus(params["iconimage"])
+    iconimage = unquote_plus(params["iconimage"])
 except:
     pass
 try:
@@ -376,23 +387,23 @@ try:
 except:
     pass
 try:
-    fanart = urllib.unquote_plus(params["fanart"])
+    fanart = unquote_plus(params["fanart"])
 except:
     pass
 try:
-    description = urllib.unquote_plus(params["description"])
+    description = unquote_plus(params["description"])
 except:
     pass
 try:
-    query = urllib.unquote_plus(params["query"])
+    query = unquote_plus(params["query"])
 except:
     pass
 
-print str(ADDON_PATH) + ': ' + str(VERSION)
-print "Mode: " + str(mode)
-print "URL: " + str(url)
-print "Name: " + str(name)
-print "IconImage: " + str(iconimage)
+print(str(ADDON_PATH) + ': ' + str(VERSION))
+print("Mode: " + str(mode))
+print("URL: " + str(url))
+print("Name: " + str(name))
+print("IconImage: " + str(iconimage))
 #########################################################
 
 if mode == None:
