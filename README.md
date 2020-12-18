@@ -10,6 +10,8 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 
 [Follow me on Twitter](https://twitter.com/bugatsinho)
 
+[Join us in Telegram](http://bit.ly/bug_telegram)
+
 [Repository v2.5](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.5.zip?raw=true)
 
 
