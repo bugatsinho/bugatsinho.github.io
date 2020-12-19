@@ -11,6 +11,7 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 from resources.modules import control, client
+
 ADDON = xbmcaddon.Addon()
 ADDON_DATA = ADDON.getAddonInfo('profile')
 ADDON_PATH = ADDON.getAddonInfo('path')
@@ -25,16 +26,17 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'https://www.sporthd.me/'
-Live_url = 'https://www.sporthd.me/index.php?'
+BASEURL = 'http://sporthd.live/'
+Live_url = 'http://sporthd.live/index.php?'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
 from dateutil.parser import parse
 from dateutil.tz import gettz
 from dateutil.tz import tzlocal
-#reload(sys)
-#sys.setdefaultencoding("utf-8")
+
+# reload(sys)
+# sys.setdefaultencoding("utf-8")
 
 #######################################
 # Time and Date Helpers
@@ -153,27 +155,30 @@ def sports_menu():
     addDir('[B][COLOR white]Chess[/COLOR][/B]', BASEURL + '?type=chess', 5,
            BASEURL + 'images/chess.png', FANART, 'Chess')
 
- 
 
 def get_events(url):  # 5
     data = client.request(url)
-#    xbmc.log('@#@EDATAAA: {}'.format(data), xbmc.LOGNOTICE)
+    xbmc.log('@#@EDATAAA: {}'.format(data), xbmc.LOGNOTICE)
     events = list(zip(client.parseDOM(str(data), 'li', attrs={'class': "item itemhov"}),
-                 re.findall(r'<i class="material-icons">(.+?)</a> </li>', str(data), re.DOTALL)))
+                      re.findall(r'<i class="material-icons">(.+?)</a> </li>', str(data), re.DOTALL)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
     for event, streams in events:
         # xbmc.log('@#@EVENTTTTT:%s' % event, xbmc.LOGNOTICE)
         watch = '[COLORlime]*[/COLOR]' if '>Live<' in event else '[COLORred]*[/COLOR]'
         try:
             teams = client.parseDOM(event, 'td')
+            # xbmc.log('@#@TEAMSSSS:%s' % str(teams), xbmc.LOGNOTICE)
             home, away = re.sub(r'\s*(<img.+?>)\s*', '', teams[0]), re.sub(r'\s*(<img.+?>)\s*', '', teams[2])
             if six.PY2:
                 home = home.strip().encode('utf-8')
                 away = away.strip().encode('utf-8')
             teams = '[B]{0} vs {1}[/B]'.format(home, away)
         except IndexError:
-            teams = client.parseDOM(event, 'center')
-            teams = re.sub(r'<.+?>|\s{2}', '', teams).encode('utf-8')
+            teams = client.parseDOM(event, 'center')[0]
+            teams = re.sub(r'<.+?>|\s{2}', '', teams)
+            teams = teams.encode('utf-8') if six.PY2 else teams
+            teams = '[B]{}[/B]'.format(teams)
+        # xbmc.log('@#@TEAM-FINAL:%s' % str(teams), xbmc.LOGNOTICE)
         lname = client.parseDOM(event, 'a')[1]
         lname = re.sub(r'<.+?>', '', lname)
         time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
@@ -185,19 +190,19 @@ def get_events(url):  # 5
 
         # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
         streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
-        
 
         icon = client.parseDOM(event, 'img', ret='src')[0]
         icon = urljoin(BASEURL, icon)
 
         addDir(name, streams, 4, icon, FANART, name)
 
+
 xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 
 def get_stream(url):  # 4
     data = base64.b64decode(unquote(url))
-    
+
     if b'info_outline' in data:
         control.infoDialog("[COLOR gold]No Links available ATM.\n [COLOR lime]Try Again Later![/COLOR]", NAME,
                            iconimage, 5000)
@@ -241,85 +246,85 @@ def busy():
         xbmc.executebuiltin('ActivateWindow(busydialog)')
 
 
-
 def resolve(url, name):
-        # xbmc.log('RESOLVE-URL: %s' % url, xbmc.LOGNOTICE)
-        ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
-        # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
-        if 'acestream' in url:
-            url1 = "plugin://program.plexus/?url=" + url + "&mode=1&name=acestream+"
-            liz = xbmcgui.ListItem( name ) 
-            liz.setArt({ 'poster': 'poster.png', 'banner' : 'banner.png' })
-            liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage,
-                             'fanart': fanart}) 
-            liz.setPath(url)
-            xbmc.Player().play(url1, liz, False)
-            quit()
-        if '/live.cdnz' in url:
-            r = six.ensure_str(client.request(url, referer=BASEURL)).replace('\t', '')
-            # xbmc.log('HTML: %s' % str(r), xbmc.LOGNOTICE)
-            from resources.modules import jsunpack
+    # xbmc.log('RESOLVE-URL: %s' % url, xbmc.LOGNOTICE)
+    ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
+    # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
+    if 'acestream' in url:
+        url1 = "plugin://program.plexus/?url=" + url + "&mode=1&name=acestream+"
+        liz = xbmcgui.ListItem(name)
+        liz.setArt({'poster': 'poster.png', 'banner': 'banner.png'})
+        liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage,
+                    'fanart': fanart})
+        liz.setPath(url)
+        xbmc.Player().play(url1, liz, False)
+        quit()
+    if '/live.cdnz' in url:
+        r = six.ensure_str(client.request(url, referer=BASEURL)).replace('\t', '')
+        # xbmc.log('HTML: %s' % str(r), xbmc.LOGNOTICE)
+        from resources.modules import jsunpack
+        try:
+            unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', r, re.DOTALL)[0]
+            r = jsunpack.unpack(unpack.strip())
+            # xbmc.log('RESOLVE-UNPACK: %s' % str(r), xbmc.LOGNOTICE)
+        except:
+            xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))
+
+        if 'hfstream.js' in r:
+            regex = '''<script type='text/javascript'> width=(.+?), height=(.+?), channel='(.+?)', g='(.+?)';</script>'''
+            wid, heig, chan, ggg = re.findall(regex, r, re.DOTALL)[0]
+            stream = 'https://www.playerfs.com/membedplayer/' + chan + '/' + ggg + '/' + wid + '/' + heig + ''
+        else:
+            stream = client.parseDOM(r, 'iframe', ret='src')[-1]
+        r = six.ensure_str(client.request(stream, referer=url)).replace('\t', '')
+        # xbmc.log('STREAM-DATA: %s' % r, xbmc.LOGINFO)
+        if 'youtube' in r:
             try:
-                unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', r, re.DOTALL)[0]
-                r = jsunpack.unpack(unpack.strip())
-                # xbmc.log('RESOLVE-UNPACK: %s' % str(r), xbmc.LOGNOTICE)
-            except:
-                    xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))    
+                flink = client.parseDOM(r, 'iframe', ret='src')[0]
+                fid = flink.split('/')[-1]
+            except IndexError:
+                fid = re.findall(r'''/watch\?v=(.+?)['"]''', r, re.DOTALL)[0]
+            # xbmc.log('@#@STREAMMMMM111: %s' % fid, xbmc.LOGNOTICE)
 
-            if 'hfstream.js' in r:
-                regex = '''<script type='text/javascript'> width=(.+?), height=(.+?), channel='(.+?)', g='(.+?)';</script>'''
-                wid, heig, chan, ggg = re.findall(regex, r, re.DOTALL)[0]
-                stream = 'https://www.playerfs.com/membedplayer/'+chan+'/'+ggg+'/'+wid+'/'+heig+''
-            else:
-                stream = client.parseDOM(r, 'iframe', ret='src')[-1]
-            r = six.ensure_str(client.request(stream, referer=url)).replace('\t', '')
-            # xbmc.log('STREAM-DATA: %s' % r, xbmc.LOGINFO)
-            if 'youtube' in r:
-                try:
-                    flink = client.parseDOM(r, 'iframe', ret='src')[0]
-                    fid = flink.split('/')[-1]
-                except IndexError:
-                    fid = re.findall(r'''/watch\?v=(.+?)['"]''', r, re.DOTALL)[0]
-                # xbmc.log('@#@STREAMMMMM111: %s' % fid, xbmc.LOGNOTICE)
-
-                flink = 'plugin://plugin.video.youtube/play/?video_id={}'.format(str(fid))
-                # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
-
-            else:
-                try:
-                    unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', str(r), re.DOTALL)[0]
-                    r = jsunpack.unpack(unpack)
-                except:
-                    xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))    
-                try:
-                    flink = re.findall(r'''source:\s*["'](.+?)['"]''', str(r), re.DOTALL)[0]
-                except IndexError:
-                    ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', r, re.DOTALL)[0]
-                    ea = client.request(ea).split('=')[1]
-                    flink = re.findall('''videoplayer.src = "(.+?)";''', r, re.DOTALL)[0]
-                    flink = flink.replace('" + ea + "', ea)
-                flink += '|Referer={}'.format(quote(stream))
-            #xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
-            stream_url = flink
+            flink = 'plugin://plugin.video.youtube/play/?video_id={}'.format(str(fid))
+            # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
 
         else:
-            stream_url = url
-        liz = xbmcgui.ListItem(name)
-        liz.setArt({ 'poster': 'poster.png', 'banner': 'banner.png'})
-        liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage, 'fanart': fanart})
-        liz.setInfo(type="Video", infoLabels={"Title": name})
-        liz.setProperty("IsPlayable", "true")
-        liz.setPath(str(stream_url))
-        # if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 17.5:
-        #     liz.setMimeType('application/vnd.apple.mpegurl')
-        #     liz.setProperty('inputstream.adaptive.manifest_type', 'hls')
-        #     liz.setProperty('inputstream.adaptive.stream_headers', str(headers))
-        # else:
-        #     liz.setProperty('inputstreamaddon', None)
-        #     liz.setContentLookup(True)
-        xbmc.Player().play(stream_url, liz, False)
-        quit()
-        # xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
+            try:
+                unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', str(r), re.DOTALL)[0]
+                r = jsunpack.unpack(unpack)
+            except:
+                xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))
+            try:
+                flink = re.findall(r'''source:\s*["'](.+?)['"]''', str(r), re.DOTALL)[0]
+            except IndexError:
+                ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', r, re.DOTALL)[0]
+                ea = client.request(ea).split('=')[1]
+                flink = re.findall('''videoplayer.src = "(.+?)";''', r, re.DOTALL)[0]
+                flink = flink.replace('" + ea + "', ea)
+            flink += '|Referer={}'.format(quote(stream))
+        # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
+        stream_url = flink
+
+    else:
+        stream_url = url
+    liz = xbmcgui.ListItem(name)
+    liz.setArt({'poster': 'poster.png', 'banner': 'banner.png'})
+    liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage, 'fanart': fanart})
+    liz.setInfo(type="Video", infoLabels={"Title": name})
+    liz.setProperty("IsPlayable", "true")
+    liz.setPath(str(stream_url))
+    # if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 17.5:
+    #     liz.setMimeType('application/vnd.apple.mpegurl')
+    #     liz.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    #     liz.setProperty('inputstream.adaptive.stream_headers', str(headers))
+    # else:
+    #     liz.setProperty('inputstreamaddon', None)
+    #     liz.setContentLookup(True)
+    xbmc.Player().play(stream_url, liz, False)
+    quit()
+    # xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
+
 
 def Open_settings():
     control.openSettings()
@@ -330,7 +335,7 @@ def addDir(name, url, mode, iconimage, fanart, description):
         name) + "&iconimage=" + quote_plus(iconimage) + "&description=" + quote_plus(description)
     ok = True
     liz = xbmcgui.ListItem(name)
-    liz.setArt({ 'poster': 'poster.png', 'banner' : 'banner.png'})
+    liz.setArt({'poster': 'poster.png', 'banner': 'banner.png'})
     liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage, 'fanart': fanart})
     liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
     liz.setProperty('fanart_image', fanart)
