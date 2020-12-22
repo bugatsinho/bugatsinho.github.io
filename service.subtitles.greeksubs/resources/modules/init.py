@@ -19,10 +19,7 @@
 '''
 
 from sys import argv
-try:
-    from urlparse import parse_qsl
-except ImportError:
-    from urllib.parse import parse_qsl
+from six.moves.urllib.parse import parse_qsl
 
 syshandle = int(argv[1])
 sysaddon = argv[0]

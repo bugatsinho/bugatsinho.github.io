@@ -20,3 +20,11 @@ msgctxt "#32211"
 msgid "Providers"
 msgstr ""
 
+msgctxt "#32214"
+msgid "Select subtitle"
+msgstr ""
+
+msgctxt "#32215"
+msgid "Random choice"
+msgstr ""
+

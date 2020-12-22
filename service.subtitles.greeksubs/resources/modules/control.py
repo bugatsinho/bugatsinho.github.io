@@ -19,10 +19,13 @@
 '''
 
 
-import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
-import os, json, time
+import json
+import os
+import time
+
 from resources.modules.init import syshandle
 
+from kodi_six import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
 
 integer = 1000
 addon = xbmcaddon.Addon

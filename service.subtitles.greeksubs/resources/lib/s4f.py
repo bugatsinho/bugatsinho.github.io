@@ -15,11 +15,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import xbmc
-import urllib, urlparse, re, os, requests
+import os
+import re
+import requests
+
 from resources.modules import client
 from resources.modules import control
-
+from six.moves.urllib.parse import urljoin, quote_plus, quote
+from os.path import split as os_split
 
 class s4f:
     def __init__(self):
@@ -41,9 +44,9 @@ class s4f:
 
                 title, year = match[0][0], match[0][1]
 
-                query = urllib.quote_plus('{} {}'.format(title, year))
+                query = quote_plus('{} {}'.format(title, year))
 
-                url = urlparse.urljoin(self.base_link, self.search % query)
+                url = urljoin(self.base_link, self.search % query)
 
                 req = requests.get(url, headers=hdr)
                 cj = req.cookies
@@ -60,7 +63,7 @@ class s4f:
                          client.parseDOM(i, 'a', ret='title')[0],
                          re.findall(r'<b>(\d+)</b>DLs', i, re.I)[0]) for i in urls if i]
                 # xbmc.log('$#$URLS: %s' % urls, xbmc.LOGNOTICE)
-                urls = [(urlparse.urljoin(self.base_link, i[0]), i[1].split('for ', 1)[1],
+                urls = [(urljoin(self.base_link, i[0]), i[1].split('for ', 1)[1],
                          i[2]) for i in urls if i]
                 urls = [(i[0], i[1], i[2]) for i in urls if i]
                 # xbmc.log('$#$URLS: %s' % urls, xbmc.LOGNOTICE)
@@ -75,9 +78,9 @@ class s4f:
 
                 # hdlr = 'S%02dE%02d' % (int(season), int(episode))
 
-                query = urllib.quote('{} {}'.format(title, hdlr))
+                query = quote('{} {}'.format(title, hdlr))
 
-                url = urlparse.urljoin(self.base_TVlink, self.search % query)
+                url = urljoin(self.base_TVlink, self.search % query)
 
                 req = requests.get(url, headers=hdr)
 
@@ -92,7 +95,7 @@ class s4f:
                 urls = [(client.parseDOM(i, 'tr')[0], re.findall(r'<B>(\d+)</B>DLs', i, re.I)[0]) for i in urls if i]
                 urls = [(client.parseDOM(i[0], 'a', ret='href')[0],
                          client.parseDOM(i[0], 'a', ret='title')[0], i[1]) for i in urls if i]
-                urls = [(urlparse.urljoin(self.base_TVlink, i[0]), re.sub('Greek subtitle[s] for ', '', i[1]),
+                urls = [(urljoin(self.base_TVlink, i[0]), re.sub('Greek subtitle[s] for ', '', i[1]),
                          i[2]) for i in urls if i]
                 urls = [(i[0], i[1], i[2]) for i in urls if i]
 
@@ -154,9 +157,7 @@ class s4f:
                 # xbmc.log('@@HTML:%s' % r)
 
                 pos = re.findall(r'\/(getSub-\w+\.html)', r, re.I | re.DOTALL)[0]
-                # xbmc.log('@@POSSSSS:%s' % pos)
-                post_url = urlparse.urljoin(self.base_TVlink, pos)
-                # xbmc.log('@@POStttt:%s' % post_url)
+                post_url = urljoin(self.base_TVlink, pos)
                 r = requests.get(post_url, headers=headers, cookies=cj)
                 surl = r.url
                 result = client.request(surl)
@@ -176,7 +177,7 @@ class s4f:
                 # xbmc.log('@@HTMLLL:%s' % r)
                 pos = client.parseDOM(r, 'div', attrs={'class': 'download-btn'})[0]
                 pos = client.parseDOM(pos, 'input', ret='value', attrs={'name': 'id'})[0]
-                # pos = re.findall(r'getSub-(\w+)\.html', r, re.I | re.DOTALL)[0]
+                pos = re.findall(r'getSub-(\w+)\.html', r, re.I | re.DOTALL)[0]
                 post = {'id': pos,
                         'x': '107',
                         'y': '35'}
@@ -188,12 +189,10 @@ class s4f:
                 # surl = self.base_link + surl if surl.startswith('/') else surl
 
             f = os.path.join(path, surl.rpartition('/')[2])
-
             with open(f, 'wb') as subFile:
                 subFile.write(result)
 
             dirs, files = control.listDir(path)
-
             if len(files) == 0:
                 return
 
@@ -201,12 +200,11 @@ class s4f:
                 control.execute('Extract("{}","{}")'.format(f, path))
 
             if control.infoLabel('System.Platform.Windows'):
-                conversion = urllib.quote
+                conversion = quote
             else:
-                conversion = urllib.quote_plus
+                conversion = quote_plus
 
             if f.lower().endswith('.rar'):
-
                 uri = "rar://{0}/".format(conversion(f))
                 dirs, files = control.listDir(uri)
 
@@ -224,21 +222,78 @@ class s4f:
                     except BaseException:
                         pass
 
-            filename = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])][0].decode('utf-8')
+            filenames = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])]
+            if len(filenames) == 1:
+                filename = filenames[0]
+            else:
+                filename = multichoice(filenames)
+
+            try:
+                filename = filename.decode('utf-8')
+            except BaseException:
+                pass
+
             subtitle = os.path.join(path, filename)
 
             if f.lower().endswith('.rar'):
+                content = control.openFile(path + filename).read()
 
-                content = control.openFile(uri + filename).read()
-
-                with open(subtitle, 'wb') as subFile:
+                with open(subtitle, 'w') as subFile:
                     subFile.write(content)
 
+                control.deleteFile(f)
                 return subtitle
 
             else:
-
+                control.deleteFile(f)
                 return subtitle
 
         except BaseException:
             pass
+
+
+def multichoice(filenames, allow_random=False):
+    from random import choice
+
+    if filenames is None or len(filenames) == 0:
+
+        return
+
+    elif len(filenames) >= 1:
+
+        if allow_random:
+            length = len(filenames) + 1
+        else:
+            length = len(filenames)
+
+        if len(filenames) == 1:
+            return filenames[0]
+
+        choices = [os_split(i)[1] for i in filenames]
+
+        if allow_random:
+            choices.insert(0, control.lang(32215))
+
+        _choice = control.selectDialog(heading=control.lang(32214), list=choices)
+
+        if _choice == 0:
+            if allow_random:
+                filename = choice(filenames)
+            else:
+                filename = filenames[0]
+        elif _choice != -1 and _choice <= length:
+            if allow_random:
+                filename = filenames[_choice - 1]
+            else:
+                filename = filenames[_choice]
+        else:
+            if allow_random:
+                filename = choice(filenames)
+            else:
+                return
+
+        return filename
+
+    else:
+
+        return

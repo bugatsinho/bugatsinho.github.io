@@ -20,3 +20,11 @@ msgctxt "#32211"
 msgid "Providers"
 msgstr "Πάροχοι"
 
+msgctxt "#32214"
+msgid "Select Subtitle"
+msgstr "Επιλέξτε Υπότιτλο"
+
+msgctxt "#32215"
+msgid "Random choice"
+msgstr "Τυχαία επιλογή"
+
