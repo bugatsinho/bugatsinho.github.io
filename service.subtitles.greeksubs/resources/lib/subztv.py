@@ -15,9 +15,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 import json
+import urllib
 import re
 import os
-from six.moves.urllib.parse import urljoin, quote_plus, quote, unquote_plus, unquote
 from resources.modules import cleantitle, client, control
 
 '''''''''
@@ -58,7 +58,7 @@ class subztv:
                     r = self.s.get(frame)
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r.content)
                 else:
-                    url = self.baseurl + 'search/{}/movies'.format(quote(title))
+                    url = self.baseurl + 'search/{}/movies'.format(urllib.quote(title))
 
                     data = self.s.get(url).content
                     data = client.parseDOM(data, 'span', attrs={'class': 'h5'})
@@ -103,7 +103,7 @@ class subztv:
 
                         # data = requests.post(baseurl, data=json.dumps(post), headers=_headers).json()
                         data = client.request(baseurl, post=json.dumps(post), headers=_headers)
-                        auth = 'Bearer %s' % unquote_plus(json.loads(data)['token'])
+                        auth = 'Bearer %s' % urllib.unquote_plus(json.loads(data)['token'])
                         _headers['Authorization'] = auth
 
                         series_data = client.request(series_url % imdb, headers=_headers)
@@ -113,7 +113,7 @@ class subztv:
                         frames = client.parseDOM(r, 'a', ret='href')
                         frame = [i for i in frames if hdlr in i][0]
                     else:
-                        url = self.baseurl + 'search/{}/tv'.format(quote(title))
+                        url = self.baseurl + 'search/{}/tv'.format(urllib.quote(title))
                         data = self.s.get(url).content
                         data = client.parseDOM(data, 'span', attrs={'class': 'h5'})
                         data = [(client.parseDOM(i, 'a')[0],
@@ -219,7 +219,7 @@ class subztv:
 
             result = self.s.post(url, data=post)
             #xbmc.log('$#$POST-RESUL: %s' % result.content)
-            f = os.path.join(path, quote(sub_) + '.srt')
+            f = os.path.join(path, urllib.quote(sub_) + '.srt')
             with open(f, 'wb') as subFile:
                 subFile.write(result.content)
 
@@ -232,9 +232,9 @@ class subztv:
                 control.execute('Extract("%s","%s")' % (f, path))
 
             if control.infoLabel('System.Platform.Windows'):
-                conversion = quote
+                conversion = urllib.quote
             else:
-                conversion = quote_plus
+                conversion = urllib.quote_plus
 
             if f.lower().endswith('.rar'):
 
@@ -260,7 +260,7 @@ class subztv:
 
             if f.lower().endswith('.rar'):
 
-                content = control.openFile(path + filename).read()
+                content = control.openFile(uri + filename).read()
 
                 with open(subtitle, 'wb') as subFile:
                     subFile.write(content)

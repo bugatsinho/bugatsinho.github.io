@@ -15,14 +15,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import os
-import re
-import requests
-
+import xbmc
+import urllib, urlparse, re, os, requests
 from resources.modules import client
 from resources.modules import control
-from six.moves.urllib.parse import urljoin, quote_plus, quote
-from os.path import split as os_split
+
 
 class s4f:
     def __init__(self):
@@ -44,9 +41,9 @@ class s4f:
 
                 title, year = match[0][0], match[0][1]
 
-                query = quote_plus('{} {}'.format(title, year))
+                query = urllib.quote_plus('{} {}'.format(title, year))
 
-                url = urljoin(self.base_link, self.search % query)
+                url = urlparse.urljoin(self.base_link, self.search % query)
 
                 req = requests.get(url, headers=hdr)
                 cj = req.cookies
@@ -63,7 +60,7 @@ class s4f:
                          client.parseDOM(i, 'a', ret='title')[0],
                          re.findall(r'<b>(\d+)</b>DLs', i, re.I)[0]) for i in urls if i]
                 # xbmc.log('$#$URLS: %s' % urls, xbmc.LOGNOTICE)
-                urls = [(urljoin(self.base_link, i[0]), i[1].split('for ', 1)[1],
+                urls = [(urlparse.urljoin(self.base_link, i[0]), i[1].split('for ', 1)[1],
                          i[2]) for i in urls if i]
                 urls = [(i[0], i[1], i[2]) for i in urls if i]
                 # xbmc.log('$#$URLS: %s' % urls, xbmc.LOGNOTICE)
@@ -78,9 +75,9 @@ class s4f:
 
                 # hdlr = 'S%02dE%02d' % (int(season), int(episode))
 
-                query = quote('{} {}'.format(title, hdlr))
+                query = urllib.quote('{} {}'.format(title, hdlr))
 
-                url = urljoin(self.base_TVlink, self.search % query)
+                url = urlparse.urljoin(self.base_TVlink, self.search % query)
 
                 req = requests.get(url, headers=hdr)
 
@@ -95,7 +92,7 @@ class s4f:
                 urls = [(client.parseDOM(i, 'tr')[0], re.findall(r'<B>(\d+)</B>DLs', i, re.I)[0]) for i in urls if i]
                 urls = [(client.parseDOM(i[0], 'a', ret='href')[0],
                          client.parseDOM(i[0], 'a', ret='title')[0], i[1]) for i in urls if i]
-                urls = [(urljoin(self.base_TVlink, i[0]), re.sub('Greek subtitle[s] for ', '', i[1]),
+                urls = [(urlparse.urljoin(self.base_TVlink, i[0]), re.sub('Greek subtitle[s] for ', '', i[1]),
                          i[2]) for i in urls if i]
                 urls = [(i[0], i[1], i[2]) for i in urls if i]
 
@@ -157,7 +154,9 @@ class s4f:
                 # xbmc.log('@@HTML:%s' % r)
 
                 pos = re.findall(r'\/(getSub-\w+\.html)', r, re.I | re.DOTALL)[0]
-                post_url = urljoin(self.base_TVlink, pos)
+                # xbmc.log('@@POSSSSS:%s' % pos)
+                post_url = urlparse.urljoin(self.base_TVlink, pos)
+                # xbmc.log('@@POStttt:%s' % post_url)
                 r = requests.get(post_url, headers=headers, cookies=cj)
                 surl = r.url
                 result = client.request(surl)
@@ -177,7 +176,7 @@ class s4f:
                 # xbmc.log('@@HTMLLL:%s' % r)
                 pos = client.parseDOM(r, 'div', attrs={'class': 'download-btn'})[0]
                 pos = client.parseDOM(pos, 'input', ret='value', attrs={'name': 'id'})[0]
-                pos = re.findall(r'getSub-(\w+)\.html', r, re.I | re.DOTALL)[0]
+                # pos = re.findall(r'getSub-(\w+)\.html', r, re.I | re.DOTALL)[0]
                 post = {'id': pos,
                         'x': '107',
                         'y': '35'}
@@ -189,24 +188,32 @@ class s4f:
                 # surl = self.base_link + surl if surl.startswith('/') else surl
 
             f = os.path.join(path, surl.rpartition('/')[2])
+            if f.lower().endswith('.rar') and not control.condVisibility('system.platform.osx'):
+                return control.okDialog('GreekSubs', 'Το αρχείο υποτίτλου είναι σε μορφή rar\n και δεν μπορεί να ληφθεί.\n'
+                                        'Δοκιμάστε άλλον υπότιτλο!')
+
             with open(f, 'wb') as subFile:
                 subFile.write(result)
 
             dirs, files = control.listDir(path)
+
             if len(files) == 0:
                 return
 
             if not f.lower().endswith('.rar'):
                 control.execute('Extract("{}","{}")'.format(f, path))
 
-            if control.infoLabel('System.Platform.Windows'):
-                conversion = quote
+            if control.condVisibility('system.platform.windows'):
+                conversion = urllib.quote
             else:
-                conversion = quote_plus
+                conversion = urllib.quote_plus
 
             if f.lower().endswith('.rar'):
-                uri = "rar://{0}/".format(conversion(f))
-                dirs, files = control.listDir(uri)
+                if control.condVisibility('system.platform.osx'):
+                    uri = "rar://{0}/".format(conversion(f))
+                    dirs, files = control.listDir(uri)
+                else:
+                    return
 
             else:
 
@@ -223,6 +230,7 @@ class s4f:
                         pass
 
             filenames = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])]
+
             if len(filenames) == 1:
                 filename = filenames[0]
             else:
@@ -236,6 +244,7 @@ class s4f:
             subtitle = os.path.join(path, filename)
 
             if f.lower().endswith('.rar'):
+
                 content = control.openFile(path + filename).read()
 
                 with open(subtitle, 'w') as subFile:
@@ -245,7 +254,7 @@ class s4f:
                 return subtitle
 
             else:
-                control.deleteFile(f)
+
                 return subtitle
 
         except BaseException:
@@ -254,7 +263,7 @@ class s4f:
 
 def multichoice(filenames, allow_random=False):
     from random import choice
-
+    from os.path import split as os_split
     if filenames is None or len(filenames) == 0:
 
         return

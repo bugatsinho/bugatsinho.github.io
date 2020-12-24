@@ -19,8 +19,11 @@
 '''
 
 from sys import argv
-from six.moves.urllib.parse import parse_qsl
+try:
+    from urlparse import parse_qsl
+except ImportError:
+    from urllib.parse import parse_qsl
 
 syshandle = int(argv[1])
 sysaddon = argv[0]
-params = dict(parse_qsl(argv[2].replace('?', '')))
+params = dict(parse_qsl(argv[2].replace('?','')))

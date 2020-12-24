@@ -18,12 +18,11 @@
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import sys
-from six.moves.urllib.parse import parse_qsl
+import sys, urlparse
 
 syshandle = int(sys.argv[1])
 sysaddon = sys.argv[0]
-params = dict(parse_qsl(sys.argv[2].replace('?', '')))
+params = dict(urlparse.parse_qsl(sys.argv[2].replace('?','')))
 
 action = params.get('action')
 source = params.get('source')

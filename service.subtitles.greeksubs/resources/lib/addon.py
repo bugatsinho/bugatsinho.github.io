@@ -20,22 +20,17 @@
 '''
 
 
-import os
-import re
-import sys
-
+import urllib, re, os, xbmc
+from xbmc import getCleanMovieTitle
 import s4f
 import subztv
 import yifi
-from kodi_six import xbmc
-from six.moves import urllib
+import sys, urlparse
 from resources.modules import control, workers
-from xbmc import getCleanMovieTitle
-from six.moves.urllib.parse import parse_qsl, urlencode
 
 syshandle = int(sys.argv[1])
 sysaddon = sys.argv[0]
-params = dict(parse_qsl(sys.argv[2].replace('?', '')))
+params = dict(urlparse.parse_qsl(sys.argv[2].replace('?','')))
 
 action = params.get('action')
 source = params.get('source')
@@ -156,7 +151,7 @@ class Search:
                 name, url, source, rating = i['name'], i['url'], i['source'], i['rating']
 
                 u = {'action': 'download', 'url': url, 'source': source}
-                u = '%s?%s' % (sysaddon, urlencode(u))
+                u = '%s?%s' % (sysaddon, urllib.urlencode(u))
 
                 item = control.item(label='Greek', label2=name, iconImage=str(rating), thumbnailImage='el')
                 item.setProperty('sync', 'false')
