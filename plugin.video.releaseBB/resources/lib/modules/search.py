@@ -40,6 +40,7 @@ version = ADDON.getAddonInfo('version')
 IconPath = control.addonPath + "/resources/icons/"
 base = control.setting('domain')
 BASE_URL = 'http://%s' % base.lower()
+OLD_URL = 'http://old2.proxybb.com/'
 
 try:
     from sqlite3 import dbapi2 as database
@@ -59,10 +60,10 @@ def Search_bb(url):
             query = _query.encode('utf-8')
             try:
                 query = urllib.quote_plus(query)
-                referer_link = 'http://search.rlsbb.ru?s={0}'.format(query)
+                referer_link = 'http://search.proxybb.com?s={0}'.format(query)
 
-                url = 'http://search.rlsbb.ru/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
-                url = url.format(query, random.randint(0o000000000000001, 99999999999999999))
+                url = 'http://search.proxybb.com/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
+                url = url.format(query, random.randint(33333333333333333, 99999999999999999))
                 #########save in Database#########
                 term = urllib.unquote_plus(query).decode('utf-8')
                 dbcon = database.connect(control.searchFile)
@@ -81,7 +82,7 @@ def Search_bb(url):
                 posts = json.loads(html)['results']
                 posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
                 for movieUrl, title, infos, domain in posts:
-                    base = BASE_URL if 'old' not in domain else 'http://old2.rlsbb.ru/'
+                    base = BASE_URL if 'old' not in domain else OLD_URL
                     movieUrl = urlparse.urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
                     title = title.encode('utf-8')
                     infos = infos.replace('\\', '')
@@ -119,7 +120,7 @@ def Search_bb(url):
                 # if 'olderEntries' in ref_html:
                 pindex = int(re.search('pindex=(\d+)&', url).group(1)) + 1
                 np_url = re.sub(r'&pindex=\d+&', '&pindex={0}&'.format(pindex), url)
-                rand = random.randint(0o000000000000001, 99999999999999999)
+                rand = random.randint(33333333333333333, 99999999999999999)
                 np_url = re.sub(r'&rand=0\.\d+$', '&rand={}'.format(rand), np_url)
                 addon.add_directory(
                     {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},
@@ -138,11 +139,11 @@ def Search_bb(url):
         first = scraper.get(referer_link, headers=headers).text
         xbmc.sleep(10)
         html = scraper.get(url, headers=headers).content
-        xbmc.log('NEXT HTMLLLLL: {}'.format(html))
+        # xbmc.log('NEXT HTMLLLLL: {}'.format(html))
         posts = json.loads(html)['results']
         posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
         for movieUrl, title, infos, domain in posts:
-            base = BASE_URL if 'old' not in domain else 'http://old2.rlsbb.ru/'
+            base = BASE_URL if 'old' not in domain else OLD_URL
             movieUrl = urlparse.urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
             title = title.encode('utf-8')
             infos = infos.replace('\\', '')
@@ -179,7 +180,7 @@ def Search_bb(url):
         # if 'olderEntries' in ref_html:
         pindex = int(re.search('pindex=(\d+)&', url).groups()[0]) + 1
         np_url = re.sub('&pindex=\d+&', '&pindex={0}&'.format(pindex), url)
-        rand = random.randint(0o000000000000001, 99999999999999999)
+        rand = random.randint(33333333333333333, 99999999999999999)
         np_url = re.sub(r'&rand=0\.\d+$', '&rand={}'.format(rand), np_url)
         addon.add_directory(
             {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},
@@ -191,18 +192,18 @@ def Search_bb(url):
             from cloudscraper2 import CloudScraper as cfscrape
             scraper = cfscrape.create_scraper()
             url = urllib.quote_plus(url)
-            referer_link = 'http://search.rlsbb.ru?s={0}'.format(url)
+            referer_link = 'http://search.proxybb.com?s={0}'.format(url)
             headers = {'Referer': referer_link,
                        'X-Requested-With': 'XMLHttpRequest'}
-            first = scraper.get('http://rlsbb.ru', headers=headers).text
+            # first = scraper.get('http://rlsbb.ru', headers=headers).text
             xbmc.sleep(10)
-            s_url = 'http://search.rlsbb.ru/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
-            s_url = s_url.format(url, random.randint(0o000000000000001, 99999999999999999))
+            s_url = 'http://search.proxybb.com/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
+            s_url = s_url.format(url, random.randint(33333333333333333, 99999999999999999))
             html = scraper.get(s_url, headers=headers).text
             posts = json.loads(html)['results']
             posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
             for movieUrl, title, infos, domain in posts:
-                base = BASE_URL if 'old' not in domain else 'http://old2.rlsbb.ru/'
+                base = BASE_URL if 'old' not in domain else OLD_URL
                 movieUrl = urlparse.urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
                 title = title.encode('utf-8')
                 infos = infos.replace('\\', '')
@@ -239,7 +240,7 @@ def Search_bb(url):
 
             pindex = int(re.search('pindex=(\d+)&', s_url).groups()[0]) + 1
             np_url = re.sub('&pindex=\d+&', '&pindex={0}&'.format(pindex), s_url)
-            rand = random.randint(0o000000000000001, 99999999999999999)
+            rand = random.randint(33333333333333333, 99999999999999999)
             np_url = re.sub(r'&rand=0\.\d+$', '&rand={}'.format(rand), np_url)
             addon.add_directory(
                 {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},

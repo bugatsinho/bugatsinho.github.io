@@ -134,10 +134,10 @@ def Categories(section):  # categories
     # html = response_html(BASE_URL, '96')
     html = cloudflare_mode(BASE_URL)
     # xbmc.log('HTMLLLLL: %s' % html)
-    match = client.parseDOM(html, 'li', attrs={'id': 'categories-2'})[0]
+    match = client.parseDOM(html, 'aside', attrs={'id': 'categories-2'})[0]
     items = zip(client.parseDOM(match, 'a'),
                 client.parseDOM(match, 'a', ret='href'))
-    items = [(i[0], i[1]) for i in items if sec in i[1]]
+    items = [(i[0], i[1]) for i in items if sec in i[1] and not 'RSS' in i[0]]
     img = IconPath + 'movies.png' if 'movies' in section else IconPath + 'tv_shows.png'
     if 'movie' in section:
         addon.add_directory({'mode': 'recom', 'url': BASE_URL}, {'title': control.lang(32038).encode('utf-8')},
@@ -175,7 +175,7 @@ def recommended_movies(url):
     try:
         # r = response_html(url, '8')
         r = cloudflare_mode(url)
-        r = client.parseDOM(r, 'li', attrs={'id': 'text-\d+'})[-1]
+        r = client.parseDOM(r, 'div', attrs={'class': 'textwidget'})[-1]
         items = zip(client.parseDOM(r, 'a', ret='href'),
                     client.parseDOM(r, 'img', ret='src'))
 
@@ -220,7 +220,8 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
                 pageUrl = urlparse.urljoin(url, 'page/%s' % page)
                 # html = response_html(pageUrl, '3')
                 html = cloudflare_mode(pageUrl)
-            match = client.parseDOM(html, 'div', attrs={'class': 'post'})
+            # match = client.parseDOM(html, 'div', attrs={'class': 'post'})
+            match = client.parseDOM(html, 'article')
             for item in match:
                 movieUrl = client.parseDOM(item, 'a', ret='href')[0]
                 name = client.parseDOM(item, 'a')[0]
@@ -230,7 +231,7 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
                 except:
                     img = ICON
                 try:
-                    desc = client.parseDOM(item, 'div', attrs={'class': 'postContent'})[0]
+                    desc = client.parseDOM(item, 'div', attrs={'class': 'entry-summary'})[0]
                 except:
                     desc = 'N/A'
 
@@ -245,10 +246,10 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
                 mode = 'GetPack' if 'tv-packs' in url else 'GetLinks'
                 addon.add_directory({'mode': mode, 'section': section, 'url': movieUrl, 'img': img, 'plot': desc},
                                     {'title': name, 'plot': desc}, allfun, img=img, fanart=FANART)
-            if 'Older Entries' not in html:
+            if 'next page-numbers' not in html:
                 break
         # keep iterating until the last page is reached
-        if 'Older Entries' in html:
+        if 'next page-numbers' in html:
             addon.add_directory({'mode': 'GetTitles', 'url': url, 'startPage': str(end), 'numOfPages': numOfPages},
                                 {'title': control.lang(32010).encode('utf-8')},
                                 img=IconPath + 'next_page.png', fanart=FANART)
@@ -265,7 +266,7 @@ def GetPack(section, url, img, plot):  # TV packs links
     try:
         # html = response_html(url, '3')
         html = cloudflare_mode(url)
-        main = client.parseDOM(html, 'div', {'class': 'postContent'})[0]
+        main = client.parseDOM(html, 'div', {'class': 'entry-title'})[0]
         data = client.parseDOM(main, 'p')
         data = [i for i in data if 'nfo1.' in i]
         for i in data:
@@ -359,7 +360,11 @@ def GetLinks(section, url, img, plot):  # Get Links
         html = cloudflare_mode(url)
         listitem = GetMediaInfo(html)
         name = '%s (%s)' % (listitem[0], listitem[1])
-        main = client.parseDOM(html, 'div', {'class': 'postContent'})
+        main = list()
+        try:
+            main = client.parseDOM(html, 'div', {'class': 'postContent'})
+        except IndexError:
+            pass
         main = [i for i in main if i]
         comments = dom.parse_dom(html, 'div', {'class': re.compile('content')})
         main += [i.content for i in comments if i]
@@ -473,16 +478,18 @@ def GetLinks(section, url, img, plot):  # Get Links
 
 
 def cloudflare_mode(url):
-    from cloudscraper2 import CloudScraper
-    import requests
-    scraper = CloudScraper.create_scraper()
-    ua = client.agent()
-    scraper.headers.update({'User-Agent': ua})
-    cookies = scraper.get(url).cookies.get_dict()
-    headers = {'User-Agent': ua}
-    req = requests.get(url, cookies=cookies, headers=headers)
-    result = req.text
-    # xbmc.log('RESULTTTTT: %s' % result)
+    headers = {'User-Agent': client.randomagent()}
+    result = client.request(url, headers=headers)
+    # from cloudscraper2 import CloudScraper
+    # import requests
+    # scraper = CloudScraper.create_scraper()
+    # ua = client.agent()
+    # scraper.headers.update({'User-Agent': ua})
+    # cookies = scraper.get(url).cookies.get_dict()
+    # headers = {'User-Agent': ua}
+    # req = requests.get(url, cookies=cookies, headers=headers)
+    # result = req.text
+    #xbmc.log('RESULTTTTT: %s' % result)
     return result
 
 
@@ -819,11 +826,11 @@ def GetDomain(url):
 def GetMediaInfo(html):
     try:
         # <h1 class="postTitle" rel="bookmark">American Dresser 2018 BRRip XviD AC3-RBG</h1>
-        match = client.parseDOM(html, 'h1', attrs={'class': 'postTitle'})[0]
+        match = client.parseDOM(html, 'h1', attrs={'class': 'entry-title'})[0]
         match = re.findall(r'(.+?)\s+(\d{4}|S\d+E\d+)', match)[0]
         return match
     except IndexError:
-        match = client.parseDOM(html, 'h1', attrs={'class': 'postTitle'})[0]
+        match = client.parseDOM(html, 'h1', attrs={'class': 'entry-title'})[0]
         match = re.sub('<.+?>', '', match)
         return match
 
@@ -832,15 +839,15 @@ def Sinopsis(txt):
     OPEN = txt.encode('utf8')
     try:
         try:
-            if 'Plot:' in OPEN:
+            if 'Plot' in OPEN:
                 Sinopsis = re.findall('(Plot:.+?)</p>', OPEN, re.DOTALL)[0]
             else:
                 Sinopsis = re.findall('</p>\n<p>(.+?)</p><p>', OPEN, re.DOTALL)[0]
 
-        except:
+        except IndexError:
             Sinopsis = re.findall('</p>\n<p>(.+?)</p>\n<p style', OPEN, re.DOTALL)[0]
-        part = re.sub('<.*?>', '', Sinopsis)
-        part = re.sub('\.\s+', '.', part)
+        part = re.sub(r'<.*?>', '', Sinopsis)
+        part = re.sub(r'\.\s+', '.', part)
         desc = clear_Title(part)
         desc = desc.decode('ascii', errors='ignore')
         return desc
