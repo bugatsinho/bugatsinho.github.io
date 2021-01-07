@@ -158,7 +158,7 @@ def sports_menu():
 
 def get_events(url):  # 5
     data = client.request(url)
-    xbmc.log('@#@EDATAAA: {}'.format(data), xbmc.LOGNOTICE)
+    # xbmc.log('@#@EDATAAA: {}'.format(data), xbmc.LOGNOTICE)
     events = list(zip(client.parseDOM(str(data), 'li', attrs={'class': "item itemhov"}),
                       re.findall(r'<i class="material-icons">(.+?)</a> </li>', str(data), re.DOTALL)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
@@ -202,14 +202,14 @@ xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 def get_stream(url):  # 4
     data = base64.b64decode(unquote(url))
-
+    xbmc.log('@#@DATAAAA:%s' % data, xbmc.LOGINFO)
     if b'info_outline' in data:
         control.infoDialog("[COLOR gold]No Links available ATM.\n [COLOR lime]Try Again Later![/COLOR]", NAME,
                            iconimage, 5000)
         return
     else:
         links = list(zip(client.parseDOM(str(data), 'a', ret='href'), client.parseDOM(str(data), 'a')))
-        # xbmc.log('@#@STREAMMMMMSSSSSS:%s' % data, xbmc.LOGINFO)
+        xbmc.log('@#@STREAMMMMMSSSSSS:%s' % links, xbmc.LOGINFO)
         titles = []
         streams = []
         for link, title in links:
@@ -261,14 +261,14 @@ def resolve(url, name):
         quit()
     if '/live.cdnz' in url:
         r = six.ensure_str(client.request(url, referer=BASEURL)).replace('\t', '')
-        # xbmc.log('HTML: %s' % str(r), xbmc.LOGNOTICE)
+        # xbmc.log("[{}] - HTML: {}".format(ADDON.getAddonInfo('id'), str(r)))
         from resources.modules import jsunpack
-        try:
+        if 'script>eval' in r:
             unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', r, re.DOTALL)[0]
             r = jsunpack.unpack(unpack.strip())
             # xbmc.log('RESOLVE-UNPACK: %s' % str(r), xbmc.LOGNOTICE)
-        except:
-            xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))
+        else:
+            r = r
 
         if 'hfstream.js' in r:
             regex = '''<script type='text/javascript'> width=(.+?), height=(.+?), channel='(.+?)', g='(.+?)';</script>'''
@@ -276,8 +276,9 @@ def resolve(url, name):
             stream = 'https://www.playerfs.com/membedplayer/' + chan + '/' + ggg + '/' + wid + '/' + heig + ''
         else:
             stream = client.parseDOM(r, 'iframe', ret='src')[-1]
+        xbmc.log("[{}] - STREAM: {}".format(ADDON.getAddonInfo('id'), str(stream)))
         r = six.ensure_str(client.request(stream, referer=url)).replace('\t', '')
-        # xbmc.log('STREAM-DATA: %s' % r, xbmc.LOGINFO)
+        xbmc.log("[{}] - STREAM-DATA: {}".format(ADDON.getAddonInfo('id'), str(r)))
         if 'youtube' in r:
             try:
                 flink = client.parseDOM(r, 'iframe', ret='src')[0]
@@ -290,18 +291,23 @@ def resolve(url, name):
             # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
 
         else:
-            try:
-                unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', str(r), re.DOTALL)[0]
+            if '<script>eval':
+                unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', str(r), re.DOTALL)[0].strip()
+                # xbmc.log("[{}] - STREAM-UNPACK: {}".format(ADDON.getAddonInfo('id'), str(unpack)))
                 r = jsunpack.unpack(unpack)
-            except:
-                xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))
-            try:
-                flink = re.findall(r'''source:\s*["'](.+?)['"]''', str(r), re.DOTALL)[0]
-            except IndexError:
-                ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', r, re.DOTALL)[0]
-                ea = client.request(ea).split('=')[1]
-                flink = re.findall('''videoplayer.src = "(.+?)";''', r, re.DOTALL)[0]
-                flink = flink.replace('" + ea + "', ea)
+                # xbmc.log("[{}] - STREAM-UNPACK: {}".format(ADDON.getAddonInfo('id'), str(r)))
+            # else:
+            #     xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))
+            if 'player.src({src:' in r:
+                flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', str(r), re.DOTALL)[0]
+            else:
+                try:
+                    flink = re.findall(r'''source:\s*["'](.+?)['"]''', str(r), re.DOTALL)[0]
+                except IndexError:
+                    ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', r, re.DOTALL)[0]
+                    ea = client.request(ea).split('=')[1]
+                    flink = re.findall('''videoplayer.src = "(.+?)";''', r, re.DOTALL)[0]
+                    flink = flink.replace('" + ea + "', ea)
             flink += '|Referer={}'.format(quote(stream))
         # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
         stream_url = flink
