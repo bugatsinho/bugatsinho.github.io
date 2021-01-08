@@ -276,9 +276,9 @@ def resolve(url, name):
             stream = 'https://www.playerfs.com/membedplayer/' + chan + '/' + ggg + '/' + wid + '/' + heig + ''
         else:
             stream = client.parseDOM(r, 'iframe', ret='src')[-1]
-        xbmc.log("[{}] - STREAM: {}".format(ADDON.getAddonInfo('id'), str(stream)))
+        # xbmc.log("[{}] - STREAM: {}".format(ADDON.getAddonInfo('id'), str(stream)))
         r = six.ensure_str(client.request(stream, referer=url)).replace('\t', '')
-        xbmc.log("[{}] - STREAM-DATA: {}".format(ADDON.getAddonInfo('id'), str(r)))
+        # xbmc.log("[{}] - STREAM-DATA: {}".format(ADDON.getAddonInfo('id'), str(r)))
         if 'youtube' in r:
             try:
                 flink = client.parseDOM(r, 'iframe', ret='src')[0]
@@ -291,7 +291,7 @@ def resolve(url, name):
             # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
 
         else:
-            if '<script>eval':
+            if '<script>eval' in r:
                 unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', str(r), re.DOTALL)[0].strip()
                 # xbmc.log("[{}] - STREAM-UNPACK: {}".format(ADDON.getAddonInfo('id'), str(unpack)))
                 r = jsunpack.unpack(unpack)
@@ -300,6 +300,9 @@ def resolve(url, name):
             #     xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))
             if 'player.src({src:' in r:
                 flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', str(r), re.DOTALL)[0]
+                # xbmc.log('@#@STREAMMMMM: %s' % flink, xbmc.LOGNOTICE)
+            elif 'Clappr.Player' in r:
+                flink = re.findall(r'''source:\s*["'](.+?)['"]''', str(r), re.DOTALL)[0]
             else:
                 try:
                     flink = re.findall(r'''source:\s*["'](.+?)['"]''', str(r), re.DOTALL)[0]
