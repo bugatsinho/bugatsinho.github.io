@@ -303,6 +303,8 @@ def resolve(url, name):
                 # xbmc.log('@#@STREAMMMMM: %s' % flink, xbmc.LOGNOTICE)
             elif 'Clappr.Player' in r:
                 flink = re.findall(r'''source:\s*["'](.+?)['"]''', str(r), re.DOTALL)[0]
+            elif 'player.setSrc' in r:
+                flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', str(r), re.DOTALL)[0]
             else:
                 try:
                     flink = re.findall(r'''source:\s*["'](.+?)['"]''', str(r), re.DOTALL)[0]
