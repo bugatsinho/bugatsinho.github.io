@@ -14,6 +14,8 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 
 [Repository v2.5](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.5.zip?raw=true)
 
+[Register to Real Debrid](http://real-debrid.com/?id=1168800)
+
 
 **ADD-ONS:**
 
