@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="GENERAL">
+        <setting type="lsep" label="Select Domain" />
+        <setting id="domain" label="DOMAIN" type="select" values="PROXYBB.COM|RLSBB.TO|RLSBB.RU|RLSBB.UNBLOCKIT.DEV" default="PROXYBB.COM"/>
+        <setting type="lsep" label="LINKS/SIZE" />
+        <setting id="test.links" label="Remove 'DEAD' Links|Show File Size" type="bool" default="false"/>
+        <setting type="lsep" label="EZTV" />
+        <setting id="eztv_menu" type="bool" label="Enable EZTV" default="false" />
+        <setting id="eztv.domain" label="EZTV DOMAIN" type="select" values="EZTV.RE|EZTV.WF|EZTV.TF|EZTV.YT" default="EZTV.RE"/>
+    </category>
+    <category label="RESOLVER">
+        <setting type="lsep" label="ResolveUrl-Settings" />
+        <setting id="open_smu_settings" type="action" label="ResolveUrl Settings" enable="true" option="close" action="RunPlugin(plugin://plugin.video.rlshub/?mode=ResolverSettings)" />
+        <setting type="sep" />
+        <setting type="lsep" label="PREMIUM SERVICES AUTHORIZATION" />
+        <setting id="real-debrid" type="action" label="Real-Debrid Auth" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_rd)" />
+        <setting id="rd_reset" type="action" label="Real-Debrid Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_rd)" />
+        <setting type="sep" />
+        <setting id="pm" type="action" label="Premiumize Auth" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_pm)" />
+        <setting id="pm_reset" type="action" label="Premiumize Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_pm)" />
+        <setting type="sep" />
+        <setting id="all-debrid" type="action" label="All-Debrid Auth" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_ad)" />
+        <setting id="ad_reset" type="action" label="All-Debrid Reset" enable="true" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_ad)" />
+    </category>
+    <category label="DOWNLOADS">
+        <setting id="downloads" type="bool" label="Enable Downloads" default="false" />
+        <setting type="sep" />
+        <setting id="movie.download.path" type="folder" label="Movies Path"  default="" />
+        <setting id="tv.download.path" type="folder" label="Episodes Path"  default="" />
+        <setting type=".lsep" label="[CR]" />
+		<setting type="..lsep" label="32023" />
+		<setting type="...lsep" label="32024" />
+    </category>
+    <category label="VIEW-MODE">
+        <setting type="lsep" label="Select View-Types" />
+        <setting id="selectview" type="action" label="Select View-Type" enable="true" option="close" action="RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)" />
+        <setting id="resetviews" type="action" label="Reset View-Types" enable="true" option="close" action="RunPlugin(plugin://plugin.video.rlshub/?mode=del_views)" />
+        <setting type="sep" />
+        <setting type="lsep" label="ReleaseBB View-Types" />
+        <setting id="menu-view" label="Menu View-Type" type="text" default=""/>
+        <setting id="movie-view" label="Movies &amp; Tv shows View-Type" type="text" default=""/>
+        <setting id="links-view" label="Links View-Type" type="text" default=""/>
+    </category>
+    <category label="TOOLS">
+        <setting id="clearcache" type="action" label="Clear Cache" enable="true" action="RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)" />
+        <setting id="resetviews" type="action" label="Reset View-Types" enable="true" action="RunPlugin(plugin://plugin.video.rlshub/?mode=del_views)" />
+        <setting id="forceupdate" type="action" label="Force Update" enable="true" action="RunPlugin(plugin://plugin.video.rlshub/?mode=forceupdate)" />
+    </category>
+</settings>

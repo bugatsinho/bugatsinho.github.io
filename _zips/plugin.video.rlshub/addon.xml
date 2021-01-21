@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.rlshub" version="0.0.0~alpha" name="Release[COLOR gold][B]HUB[/B][/COLOR]" provider-name="Bugatsinho">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+    <import addon="script.module.resolveurl" />
+    <import addon="script.module.requests" />
+    <import addon="script.module.pyxbmct" />
+    <import addon="script.module.six" />
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Browse Release[COLOR orange][B]BB[/B][/COLOR]</summary>
+    <description>Stream a wide selection of scene release movies and Tv shows from various websites....
+      [COLOR red][B][I]YOU will need a Real-Debrid / Premiumize / Alldebrid account for this add-on[/B][/I][/COLOR]
+    </description>
+    <platform>all</platform>
+    <disclaimer lang="en">All the movies on this add-on are hosted on the third party sites and uploaded by other people. We are not responsible for any content that hosted on on the third-party sites. If you have any legal issues please contact appropriate video owners hosters.</disclaimer>
+    <website>https://bugatsinho.github.io/</website>
+    <twitter>https://twitter.com/bugatsinho</twitter>
+    <repo>https://bugatsinho.github.io/repo/</repo>
+    <email>bugatsinho@protonmail.com</email>
+    <news>0.0.0~alpha</news>
+    <assets>
+        <icon>icon.png</icon>
+        <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
+</addon>
