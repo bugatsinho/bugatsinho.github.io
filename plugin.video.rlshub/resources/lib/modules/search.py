@@ -29,7 +29,7 @@ from resources.lib.modules import client
 from resources.lib.modules import view
 from resources.lib.modules.addon import Addon
 
-addon = Addon('plugin.video.releaseBB', sys.argv)
+addon = Addon('plugin.video.rlshub', sys.argv)
 Lang = control.lang
 ADDON = control.addon()
 FANART = ADDON.getAddonInfo('fanart')
