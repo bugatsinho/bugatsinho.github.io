@@ -275,7 +275,10 @@ def resolve(url, name):
             wid, heig, chan, ggg = re.findall(regex, r, re.DOTALL)[0]
             stream = 'https://www.playerfs.com/membedplayer/' + chan + '/' + ggg + '/' + wid + '/' + heig + ''
         else:
-            stream = client.parseDOM(r, 'iframe', ret='src')[-1]
+            if 'cbox.ws/box' in r:
+                stream = client.parseDOM(r, 'iframe', ret='src', attrs={'id': 'thatframe'})[0]
+            else:
+                stream = client.parseDOM(r, 'iframe', ret='src')[-1]
         # xbmc.log("[{}] - STREAM: {}".format(ADDON.getAddonInfo('id'), str(stream)))
         r = six.ensure_str(client.request(stream, referer=url)).replace('\t', '')
         # xbmc.log("[{}] - STREAM-DATA: {}".format(ADDON.getAddonInfo('id'), str(r)))
