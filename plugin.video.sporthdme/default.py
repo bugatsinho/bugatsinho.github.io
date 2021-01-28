@@ -269,14 +269,17 @@ def resolve(url, name):
             # xbmc.log('RESOLVE-UNPACK: %s' % str(r), xbmc.LOGNOTICE)
         else:
             r = r
-
+        # xbmc.log("[{}] - HTML: {}".format(ADDON.getAddonInfo('id'), str(r)))
         if 'hfstream.js' in r:
             regex = '''<script type='text/javascript'> width=(.+?), height=(.+?), channel='(.+?)', g='(.+?)';</script>'''
             wid, heig, chan, ggg = re.findall(regex, r, re.DOTALL)[0]
             stream = 'https://www.playerfs.com/membedplayer/' + chan + '/' + ggg + '/' + wid + '/' + heig + ''
         else:
             if 'cbox.ws/box' in r:
-                stream = client.parseDOM(r, 'iframe', ret='src', attrs={'id': 'thatframe'})[0]
+                try:
+                    stream = client.parseDOM(r, 'iframe', ret='src', attrs={'id': 'thatframe'})[0]
+                except IndexError:
+                    stream = client.parseDOM(r, 'iframe', ret='src')[0]
             else:
                 stream = client.parseDOM(r, 'iframe', ret='src')[-1]
         # xbmc.log("[{}] - STREAM: {}".format(ADDON.getAddonInfo('id'), str(stream)))
