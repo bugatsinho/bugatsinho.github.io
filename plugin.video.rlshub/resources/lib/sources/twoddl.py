@@ -37,16 +37,16 @@ allfun = [
 def menu():
     addon.add_directory({'mode': 'ddl_items', 'url': Baseurl + 'category/movies/'},
                         {'title': '[B][COLOR yellow]Latest Movies[/COLOR][/B]'},
-                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'ddl_items', 'url': Baseurl + 'category/tv-shows/'},
                         {'title': '[B][COLOR yellow]Latest TV Shows[/COLOR][/B]'},
                         allfun, img=ART + 'tv_shows.png', fanart=FANART)
     addon.add_directory({'mode': 'ddl_movies'},
                         {'title': '[B][COLOR gold]Movies[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'ddl_series'},
                         {'title': '[B][COLOR gold]TV Shows[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -58,10 +58,10 @@ def movies_menu():
     #                     allfun, img=ICON, fanart=FANART)
     addon.add_directory({'mode': 'ddl_genre', 'url': Baseurl, 'section': 'movies'},
                         {'title': '[B][COLOR gold]' + Lang(32035).encode('utf-8') + '[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'ddl_items', 'url': Baseurl + 'category/movies/'},
                         {'title': Lang(32000).encode('utf-8')},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -70,10 +70,10 @@ def movies_menu():
 def series_menu():
     addon.add_directory({'mode': 'ddl_genre', 'url': Baseurl, 'section': 'tvshows'},
                         {'title': '[B][COLOR gold]' + Lang(32035).encode('utf-8') + '[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
     addon.add_directory({'mode': 'ddl_items', 'url': Baseurl + 'category/tv-shows/'},
                         {'title': Lang(32001).encode('utf-8')},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -154,9 +154,7 @@ def to_items(url): #34
 
 
 def to_links(url, img, plot):  # Get Links
-    # try:
-        from resources.lib.modules import init
-        # html = response_html(url, '3')
+    try:
         html = client.request(url, headers=headers)
         try:
             # <h1 class="postTitle" rel="bookmark">American Dresser 2018 BRRip XviD AC3-RBG</h1>
@@ -168,9 +166,7 @@ def to_links(url, img, plot):  # Get Links
             match = re.sub('<.+?>', '', match)
             listitem = match
         name = '%s (%s)' % (listitem[0].replace('.', ' '), listitem[1])
-        xbmc.log('DDLVALLEY-NAME: {}'.format(str(name)))
         main = client.parseDOM(html, 'div', {'class': 'content item-content'})[0]
-        xbmc.log('MAIN-DDLVALLEY: {}'.format(str(main)))
         links = []
         import resolveurl
         frames = client.parseDOM(main, 'a', ret='href')
@@ -270,11 +266,11 @@ def to_links(url, img, plot):  # Get Links
                     {'mode': 'PlayVideo', 'url': link, 'listitem': listitem, 'img': img, 'title': name, 'plot': plot},
                     {'title': title, 'plot': plot}, cm, img=img, fanart=FANART, is_folder=False)
 
-    # except BaseException:
-    #     control.infoDialog(
-    #         control.lang(32012).encode('utf-8'),
-    #         NAME, ICON, 5000)
+    except BaseException:
+        control.infoDialog(
+            control.lang(32012).encode('utf-8'),
+            NAME, ICON, 5000)
 
-        control.content(int(sys.argv[1]), 'videos')
-        control.directory(int(sys.argv[1]))
-        view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500})
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500})

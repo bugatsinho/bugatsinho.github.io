@@ -40,16 +40,16 @@ allfun = [
 def menu():
     addon.add_directory({'mode': 'scn_items', 'url': Baseurl + 'category/films/'},
                         {'title': '[B][COLOR yellow]Latest Movies[/COLOR][/B]'},
-                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'scn_items', 'url': Baseurl + 'category/tv/'},
                         {'title': '[B][COLOR yellow]Latest TV Shows[/COLOR][/B]'},
                         allfun, img=ART + 'tv_shows.png', fanart=FANART)
     addon.add_directory({'mode': 'scn_movies'},
                         {'title': '[B][COLOR gold]Movies[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'scn_series'},
                         {'title': '[B][COLOR gold]TV Shows[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -57,10 +57,10 @@ def menu():
 def movies_menu():
     addon.add_directory({'mode': 'scn_genre', 'url': Baseurl, 'section': 'movies'},
                         {'title': '[B][COLOR gold]' + Lang(32035).encode('utf-8') + '[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'scn_items', 'url': Baseurl + 'category/films/'},
                         {'title': Lang(32000).encode('utf-8')},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -69,10 +69,10 @@ def movies_menu():
 def series_menu():
     addon.add_directory({'mode': 'scn_genre', 'url': Baseurl, 'section': 'tvshows'},
                         {'title': '[B][COLOR gold]' + Lang(32035).encode('utf-8') + '[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
     addon.add_directory({'mode': 'scn_items', 'url': Baseurl + 'category/tv/'},
                         {'title': Lang(32001).encode('utf-8')},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})

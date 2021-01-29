@@ -37,16 +37,16 @@ allfun = [
 def menu():
     addon.add_directory({'mode': 'to_items', 'url': Baseurl + '/category/movies/'},
                         {'title': '[B][COLOR yellow]Latest Movies[/COLOR][/B]'},
-                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'to_items', 'url': Baseurl + '/category/tv-shows/'},
                         {'title': '[B][COLOR yellow]Latest TV Shows[/COLOR][/B]'},
                         allfun, img=ART + 'tv_shows.png', fanart=FANART)
     addon.add_directory({'mode': 'movies'},
                         {'title': '[B][COLOR gold]Movies[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'series'},
                         {'title': '[B][COLOR gold]TV Shows[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -58,10 +58,10 @@ def movies_menu():
     #                     allfun, img=ICON, fanart=FANART)
     addon.add_directory({'mode': 'to_genre', 'url': Baseurl, 'section': 'movies'},
                         {'title': '[B][COLOR gold]' + Lang(32035).encode('utf-8') + '[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'to_items', 'url': Baseurl + '/category/movies/'},
                         {'title': Lang(32000).encode('utf-8')},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'movies.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -70,10 +70,10 @@ def movies_menu():
 def series_menu():
     addon.add_directory({'mode': 'to_genre', 'url': Baseurl, 'section': 'tvshows'},
                         {'title': '[B][COLOR gold]' + Lang(32035).encode('utf-8') + '[/COLOR][/B]'},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
     addon.add_directory({'mode': 'to_items', 'url': Baseurl + '/category/tv-shows/'},
                         {'title': Lang(32001).encode('utf-8')},
-                        allfun, img=ICON, fanart=FANART)
+                        allfun, img=ART + 'tv_shows.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -100,7 +100,7 @@ def genre(section):
     # xbmc.log('DDLVALLEY-GENRE: {}'.format(str(items)))
     pattern = r'''<a href=(.+?)\s*data-wpel-link=internal>(.+?)</a> <a.+?</.+?\((.+?)\)'''
     items = re.findall(pattern, items, re.DOTALL)
-    xbmc.log('DDLVALLEY-GENRE2: {}'.format(str(items)))
+    # xbmc.log('DDLVALLEY-GENRE2: {}'.format(str(items)))
     items = [(i[0], i[1], i[2]) for i in items if sec in i[0]]
     for i in items:
         if 'tv-pack' in i[0]:

@@ -7,16 +7,13 @@ import urllib
 import re
 import sys
 import os
-import threading
 from sys import argv
-from six.moves.urllib.parse import urljoin, parse_qsl, urlparse, unquote_plus, quote_plus, quote, unquote
-from six.moves import zip
+from six.moves.urllib.parse import parse_qsl, urlparse
 from resources.lib.modules import client
 from resources.lib.modules import control, tools
 from resources.lib.modules import cache
 from resources.lib.modules import search
 from resources.lib.modules import view
-from resources.lib.modules import dom_parser as dom
 from resources.lib.modules.addon import Addon
 
 addon_id = 'plugin.video.rlshub'
@@ -63,13 +60,15 @@ allfun = [
 def MainMenu():  # homescreen
     addon.add_directory({'mode': 'open_news'}, {'title': '[COLOR lime][B]News - Updates[/COLOR][/B]'},
                         allfun, img=ICON, fanart=FANART, is_folder=False)
-    addon.add_directory({'mode': 'rlsbb'},  {'title': '[B][COLORwhite]RELEASEBB[/B][/COLOR]'},
+    addon.add_directory({'mode': 'scene'}, {'title': '[B][COLORwhite]SCENE RELEASE[/B][/COLOR]'},
                         allfun, img=IconPath + 'tv_shows.png', fanart=FANART)
     addon.add_directory({'mode': 'twoddl'}, {'title': '[B][COLORwhite]TWODDL[/B][/COLOR]'},
                         allfun, img=IconPath + 'tv_shows.png', fanart=FANART)
     addon.add_directory({'mode': 'ddlvalley',}, {'title': '[B][COLORwhite]DDLVALLEY[/B][/COLOR]'},
                         allfun, img=IconPath + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'scnsrc'}, {'title': '[B][COLORwhite]SCENESOURCE[/B][/COLOR]'},
+                        allfun, img=IconPath + 'tv_shows.png', fanart=FANART)
+    addon.add_directory({'mode': 'rlsbb'}, {'title': '[B][COLORwhite]RELEASEBB[/B][/COLOR]'},
                         allfun, img=IconPath + 'tv_shows.png', fanart=FANART)
     addon.add_directory({'mode': 'eztv'}, {'title': '[B][COLORwhite]EZTV[/B][/COLOR]'},
                         allfun, img=IconPath + 'tv_shows.png', fanart=FANART)
@@ -269,6 +268,9 @@ elif mode == 'twoddl':
 elif mode == 'scnsrc':
     from resources.lib.sources import scnsrc
     scnsrc.menu()
+elif mode == 'scene':
+    from resources.lib.sources import scenerls
+    scenerls.menu()
 elif mode == 'eztv':
     from resources.lib.sources import eztv
     eztv.eztv_menu()
@@ -411,3 +413,20 @@ elif mode == 'ddl_links':
 elif mode == 'ddl_genre':
     from resources.lib.sources import twoddl
     twoddl.genre(section)
+
+############# SCENERLS ##############
+elif mode == 'scene_tvpacks_links':
+    from resources.lib.sources import scenerls
+    scenerls.to_get_links_pack(url, img, plot, listitem)
+elif mode == 'scene_tvpacks':
+    from resources.lib.sources import scenerls
+    scenerls.to_items(url)
+elif mode == 'scene_tvpacks_items':
+    from resources.lib.sources import scenerls
+    scenerls.to_get_pack(url, img, plot)
+elif mode == 'scene_items':
+    from resources.lib.sources import scenerls
+    scenerls.to_items(url)
+elif mode == 'scene_links':
+    from resources.lib.sources import scenerls
+    scenerls.to_links(url, img, plot)
