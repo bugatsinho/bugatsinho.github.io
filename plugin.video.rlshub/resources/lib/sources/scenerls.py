@@ -59,8 +59,8 @@ def to_items(url): #34
         movieUrl = client.parseDOM(item, 'a', ret='href')[0]
         name = client.parseDOM(item, 'a')[0]
         try:
-            img = client.parseDOM(item, 'img', ret='src')[1]
-            img = img.replace('.ru', '.to')
+            img = client.parseDOM(item, 'img', ret='src')[0]
+            # img = img.replace('.ru', '.to')
         except:
             img = ICON
         try:

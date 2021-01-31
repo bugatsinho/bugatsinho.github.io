@@ -66,8 +66,8 @@ def cloudflare_mode(url):
     # xbmc.log('RESULTTTTT: %s' % result)
     return result
 
-def link_tester(item):
 
+def link_tester(item):
     try:
         host, title, link, name = item[0], item[1], item[2], item[3]
         # addon.log('URL Tested: [%s]: URL: %s ' % (host.upper(), link))
@@ -113,6 +113,7 @@ def link_tester(item):
     except BaseException:
         addon.log('URL ERROR: [%s]: URL: %s ' % (host.upper(), link))
 
+
 def PlayVideo(url, title, img, plot):
     try:
         import resolveurl
@@ -127,6 +128,7 @@ def PlayVideo(url, title, img, plot):
             '[COLOR red][B]Probably your service doesn\'t support this provider![/B][/COLOR]\n'
             '[COLOR lime][B]Please try a different link!![/B][/COLOR]', NAME, ICON, 5000)
 
+
 def get_size(text):
     try:
         text = text.upper()
@@ -138,24 +140,28 @@ def get_size(text):
     except BaseException:
         return 'N/A'
 
+
 def Sinopsis(txt):
     OPEN = txt.encode('utf8')
     try:
         try:
             if 'Plot:' in OPEN:
-                Sinopsis = re.findall('(Plot:.+?)</p>', OPEN, re.DOTALL)[0]
-            else:
-                Sinopsis = re.findall('</p>\n<p>(.+?)</p><p>', OPEN, re.DOTALL)[0]
-
+                try:
+                    Sinopsis = re.findall(r'(Plot:.+?)</p>', OPEN, re.DOTALL)[0]
+                except IndexError:
+                    Sinopsis = re.findall(r'</p>\n<p>(.+?)</p><p>', OPEN, re.DOTALL)[0]
+            elif 'imgaa.com' in OPEN:
+                Sinopsis = re.findall(r'<br />\s*.+?<br />\s*(.+?)<br />', OPEN, re.DOTALL)[0]
         except:
             Sinopsis = re.findall('</p>\n<p>(.+?)</p>\n<p style', OPEN, re.DOTALL)[0]
-        part = re.sub('<.*?>', '', Sinopsis)
-        part = re.sub('\.\s+', '.', part)
+        part = re.sub(r'<.*?>', '', Sinopsis)
+        part = re.sub(r'\.\s+', '.', part)
         desc = clear_Title(part)
         desc = desc.decode('ascii', errors='ignore')
         return desc
     except BaseException:
         return 'N/A'
+
 
 def clear_Title(txt):
     import re
@@ -165,6 +171,7 @@ def clear_Title(txt):
     txt = txt.replace("&#38;", "&").replace('&#8221;', '"').replace('&#8216;', '"').replace('&#160;', '')
     txt = txt.replace("&nbsp;", "").replace('&#8220;', '"').replace('\t', ' ').replace('\n', ' ')
     return txt
+
 
 def GetDomain(url):
     elements = urlparse(url)
@@ -176,6 +183,7 @@ def GetDomain(url):
         domain = res.group(1)
     domain = domain.lower()
     return domain
+
 
 def GetMediaInfo(html):
     try:
