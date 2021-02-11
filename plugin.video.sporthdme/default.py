@@ -279,7 +279,8 @@ def resolve(url, name):
                 try:
                     stream = client.parseDOM(r, 'iframe', ret='src', attrs={'id': 'thatframe'})[0]
                 except IndexError:
-                    stream = client.parseDOM(r, 'iframe', ret='src')[0]
+                    streams = client.parseDOM(r, 'iframe', ret='src')
+                    stream = [i for i in streams if not 'adca.' in i][0]
             else:
                 stream = client.parseDOM(r, 'iframe', ret='src')[-1]
         # xbmc.log("[{}] - STREAM: {}".format(ADDON.getAddonInfo('id'), str(stream)))
