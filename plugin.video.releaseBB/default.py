@@ -226,10 +226,14 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
                 movieUrl = client.parseDOM(item, 'a', ret='href')[0]
                 name = client.parseDOM(item, 'a')[0]
                 try:
-                    img = client.parseDOM(item, 'img', ret='src')[1]
+                    img = client.parseDOM(item, 'img', ret='src', attrs={'loading': 'lazy'})[0]
                     img = img.replace('.ru', '.to')
-                except:
+                except IndexError:
                     img = ICON
+                try:
+                    fan = client.parseDOM(item, 'img', ret='src', attrs={'class': 'aligncenter'})[0]
+                except IndexError:
+                    fan = FANART
                 try:
                     desc = client.parseDOM(item, 'div', attrs={'class': 'entry-summary'})[0]
                 except:
@@ -245,7 +249,7 @@ def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
                 name = '[B][COLORgold]{0}[/COLOR][/B]'.format(name.encode('utf-8'))
                 mode = 'GetPack' if 'tv-packs' in url else 'GetLinks'
                 addon.add_directory({'mode': mode, 'section': section, 'url': movieUrl, 'img': img, 'plot': desc},
-                                    {'title': name, 'plot': desc}, allfun, img=img, fanart=FANART)
+                                    {'title': name, 'plot': desc}, allfun, img=img, fanart=fan)
             if 'next page-numbers' not in html:
                 break
         # keep iterating until the last page is reached

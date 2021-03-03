@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# from __future__ import absolute_import, unicode_literals
 import re
 import sys
 import urllib
+import six
 from kodi_six import xbmcaddon, xbmcgui, xbmcplugin, xbmc
-from resources.modules import control, client
-
+from six.moves import zip
+from resources.modules import control, client, dom_parser as dom
 
 ADDON = xbmcaddon.Addon()
 ADDON_DATA = ADDON.getAddonInfo('profile')
@@ -23,13 +23,14 @@ ART = ADDON_PATH + "/resources/icons/"
 
 BASEURL = 'https://www.skylinewebcams.com/{0}/webcam.html'
 base_url = 'https://www.skylinewebcams.com'
-new_url = 'https://www.skylinewebcams.com/skyline/morewebcams.php?w=new&l={0}&b=5'
+new_url = 'https://www.skylinewebcams.com/{0}/new-livecams.html'
 
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
+
+# reload(sys)
+# sys.setdefaultencoding("utf-8")
 
 def get_lang():
     lang = ADDON.getSetting('lang').encode('utf-8')
@@ -52,10 +53,10 @@ web_lang = get_lang()
 def Main_menu():
     addDir('[B][COLOR white]Top Live Cams[/COLOR][/B]',
            'https://www.skylinewebcams.com/{0}/top-live-cams.html'.format(web_lang), 5, ICON, FANART, '')
-    addDir('[B][COLOR white]New Live Cams[/COLOR][/B]', new_url.format(web_lang), 6, ICON, FANART, '')
+    addDir('[B][COLOR white]New Live Cams[/COLOR][/B]', new_url.format(web_lang), 5, ICON, FANART, '')
     addDir('[B][COLOR white]Live Cams by Country[/COLOR][/B]', BASEURL.format(web_lang), 4, ICON, FANART, '')
     addDir('[B][COLOR white]Live Cams by Category[/COLOR][/B]', BASEURL.format(web_lang), 9, ICON, FANART, '')
-    addDir('[B][COLOR white]Random Live Cam[/COLOR][/B]', BASEURL.format(web_lang), 3, ICON, FANART, '')
+    addDir('[B][COLOR white]Random Live Cam[/COLOR][/B]', base_url, 3, ICON, FANART, '')
     addDir('[B][COLOR white]Greek Live Cams[/COLOR][/B]', BASEURL.format(web_lang), 8, ICON, FANART, '')
     addDir('[B][COLOR cyan]Settings[/COLOR][/B]', '', 7, ICON, FANART, '')
     addDir('[B][COLOR gold]Version: [COLOR lime]%s[/COLOR][/B]' % vers, '', 'BUG', ICON, FANART, '')
@@ -63,15 +64,35 @@ def Main_menu():
 
 
 def get_cat_cams():
-    addDir('[B][COLOR white]Top Live Cams[/COLOR][/B]',
-           'https://www.skylinewebcams.com/{0}/top-live-cams.html'.format(web_lang), 5, ICON, FANART, '')
-    addDir('[B][COLOR white]Beaches[/COLOR][/B]',
-           'https://www.skylinewebcams.com/{0}/live-cams-category/beach-cams.html'.format(web_lang), 5, ICON, FANART, '')
-    addDir('[B][COLOR white]CITY Views[/COLOR][/B]',
-           'https://www.skylinewebcams.com/{0}/live-cams-category/city-cams.html'.format(web_lang), 5, ICON, FANART, '')
-    addDir('[B][COLOR white]Landscapes[/COLOR][/B]',
-           'https://www.skylinewebcams.com/{0}/live-cams-category/nature-mountain-cams.html'.format(web_lang), 5, ICON, FANART, '')
+    try:
+        html = six.ensure_str(client.request(base_url, referer=BASEURL))
+        data = client.parseDOM(html, 'li', attrs={'class': 'dropdown mega-dropdown'})[0]
+        cats = client.parseDOM(data, 'div', attrs={'class': 'container-fluid'})[0]
+        cats = dom.parse_dom(cats, 'a', req='href')
+        for cat in cats:
+            name = client.parseDOM(cat.content, 'p', attrs={'class': 'tcam'})[0]
+            if six.PY2:
+                name = name.encode('utf-8')
+            name = '[B][COLOR white]{}[/COLOR][/B]'.format(name)
+            icon = client.parseDOM(cat.content, 'img', ret='data-src')[0]
+            icon = 'https:{}'.format(icon) if icon.startswith('//') else icon
+            icon = icon + '|Referer={}'.format(base_url)
+            url = cat.attrs['href'][3:]
+            url = '{2}/{0}/{1}'.format(web_lang, url, base_url)
+            addDir(name, url, 5, icon, FANART, '')
+    except BaseException:
+        pass
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+
+    # addDir('[B][COLOR white]Beaches[/COLOR][/B]',
+    #        'https://www.skylinewebcams.com/{0}/live-cams-category/beach-cams.html'.format(web_lang), 5, ICON, FANART, '')
+    # addDir('[B][COLOR white]CITY Views[/COLOR][/B]',
+    #        'https://www.skylinewebcams.com/{0}/live-cams-category/city-cams.html'.format(web_lang), 5, ICON, FANART, '')
+    # addDir('[B][COLOR white]Landscapes[/COLOR][/B]',
+    #        'https://www.skylinewebcams.com/{0}/live-cams-category/nature-mountain-cams.html'.format(web_lang), 5, ICON,
+    #        FANART, '')
+    # addDir('[B][COLOR white]Landscapes[/COLOR][/B]',
+    #        'https://www.skylinewebcams.com/{0}/live-cams-category/nature-mountain-cams.html'.format(web_lang), 5, ICON, FANART, '')
 
 
 def get_greek_cams():
@@ -92,39 +113,35 @@ def get_greek_cams():
         addDir('[B][COLOR white]%s[/COLOR][/B]' % name, stream, 100, poster, '', 'name')
 
 
-def get_the_random(url): #3
-    r = client.request(url, headers=headers)
-    # frames = zip(client.parseDOM(r, 'a', ret='href'),
-    #              client.parseDOM(r, 'a'))
-    # frame = [i[0] for i in frames if 'random cam' in i[1].lower()][0]
-    frame = client.parseDOM(r, 'a', ret='href', attrs={'data-original-title': 'Random Cam'})[0]
+def get_the_random(url):  # 3
+    r = six.ensure_str(client.request(url, headers=headers))
+    frame = client.parseDOM(r, 'div', attrs={'class': 'row home'})[0]
+    head = client.parseDOM(frame, 'h1')[0]
+    head = clear_Title(head)
+    frame = client.parseDOM(frame, 'a', ret='href')[0]
     frame = base_url + frame if frame.startswith('/') else frame
     # xbmc.log('FRAME:%s' % frame)
-    info = client.request(frame, headers=headers)
-    head = client.parseDOM(info, 'title')[0].encode('utf-8')
-    # title = client.parseDOM(info, 'meta', ret='content', attrs={'name': 'description'})[0].encode('utf-8')
-    # name = '{0} - {1}'.format(head, title)
-    # xbmc.log('NAME:%s' % head)
-    poster = client.parseDOM(info, 'meta', ret='content', attrs={'property': 'og:image'})[0]
-    # xbmc.log('INFO:%s' % info)
-    # link = re.findall(r'''\,url:['"](.+?)['"]\}''', info, re.DOTALL)[0]
-    addDir('[B][COLOR white]%s[/COLOR][/B]' % head, frame, 100, poster, '', 'Random Live Cam')
+    if six.PY2:
+        head = head.encode('utf-8')
+    addDir('[B][COLOR white]%s[/COLOR][/B]' % head, frame, 100, ICON, '', 'Random Live Cam')
+    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 
-def get_country(url): #4
-    r = client.request(url, headers=headers)
-    r = client.parseDOM(r, 'li', attrs={'class': 'dropdown'})[0]
-    r = zip(client.parseDOM(r, 'a', attrs={'class': 'menu-item'}),
-            client.parseDOM(r, 'a', attrs={'class': 'menu-item'}, ret='href'))
+def get_country(url):  # 4
+    r = six.ensure_str(client.request(url, headers=headers))
+    r = client.parseDOM(r, 'div', attrs={'class': 'dropdown mega-dropdown live'})[0]
+    r = zip(client.parseDOM(r, 'a'),
+            client.parseDOM(r, 'a', ret='href'))
     for name, link in r:
         name = re.sub('<.+?>', '', name).replace('&nbsp;', ' ')
         name = client.replaceHTMLCodes(name)
-        name = name.encode('utf-8')
-
+        name = '[B][COLOR white]{}[/COLOR][/B]'.format(name)
         link = client.replaceHTMLCodes(link)
-        link = link.encode('utf-8')
+        if six.PY2:
+            name = name.encode('utf-8')
+            link = link.encode('utf-8')
         link = base_url + link if link.startswith('/') else link
-        addDir('[B][COLOR white]%s[/COLOR][/B]' % name, link, 5, ICON, FANART, '')
+        addDir(name, link, 5, ICON, FANART, '')
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 
@@ -136,46 +153,51 @@ def get_new(url):
             client.parseDOM(r, 'img', ret='alt'))
     for link, poster, name in r:
         name = client.replaceHTMLCodes(name)
-        name = name.encode('utf-8')
 
         link = client.replaceHTMLCodes(link)
-        link = link.encode('utf-8')
         link = 'https:' + link if link.startswith('//') else link
 
         poster = client.replaceHTMLCodes(poster)
         poster = 'https:' + poster if poster.startswith('//') else poster
-        poster = poster.encode('utf-8')
+        if six.PY2:
+            poster = poster.encode('utf-8')
+            name = name.encode('utf-8')
+            link = link.encode('utf-8')
 
         addDir('[B][COLOR white]%s[/COLOR][/B]' % name, link, 100, poster, FANART, '')
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 
-def get_content(url): #5 <div id="content"><div class="container">
-    r = client.request(url, headers=headers)
-    # data = client.parseDOM(r, 'div', attrs={'class': 'container'})[0]
-    # xbmc.log('DATAAAA: %s' % data)
-    data = client.parseDOM(r, 'div', attrs={'class': 'col-sm-6 col-md-4 webcam'})
-    data = [i for i in data if not 'adsbygoogle' in i]
+def get_content(url):  # 5 <div id="content"><div class="container">
+    r = six.ensure_str(client.request(url, headers=headers))
+    data = client.parseDOM(r, 'div', attrs={'class': 'container'})[0]
+    data = dom.parse_dom(data, 'a', req='href')
+    data = [i for i in data if 'subt' in i.content]
+    # xbmc.log('DATAAAA: {}'.format(str(data)))
     for item in data:
-        link = client.parseDOM(item, 'a', ret='href')[0]
+        link = item.attrs['href']
         if link == '#':
             continue
         link = client.replaceHTMLCodes(link)
-        link = link.encode('utf-8')
 
-        name = client.parseDOM(item, 'span', attrs={'class': 'title'})[0]
+        name = client.parseDOM(item.content, 'img', ret='alt')[0]
         name = client.replaceHTMLCodes(name)
-        name = name.encode('utf-8')
 
-        desc = client.parseDOM(item, 'span', attrs={'class': 'description'})[0]
+        desc = client.parseDOM(item.content, 'p', attrs={'class': 'subt'})[0]
         desc = clear_Title(desc)
-        desc = desc.decode('ascii', errors='ignore')
 
-        poster = client.parseDOM(item, 'img', ret='data-original')[0]
+        try:
+            poster = client.parseDOM(item.content, 'img', ret='data-src')[0]
+        except IndexError:
+            poster = client.parseDOM(item.content, 'img', ret='src')[0]
         poster = client.replaceHTMLCodes(poster)
         poster = 'https:' + poster if poster.startswith('//') else poster
-        poster = poster.encode('utf-8')
 
+        if six.PY2:
+            link = '{}/{}'.format(base_url, link.encode('utf-8'))
+            name = name.encode('utf-8')
+            desc = desc.decode('ascii', errors='ignore')
+            poster = poster.encode('utf-8')
         addDir('[B][COLOR white]%s[/COLOR][/B]' % name, link, 100, poster, '', desc)
 
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
@@ -195,7 +217,7 @@ def Open_settings():
 
 
 def resolve(name, url, iconimage, description):
-    xbmc.log('URLLLL: {}'.format(url))
+    # xbmc.log('URLLLL: {}'.format(url))
     if 'm3u8' in url:
         link = url
         link += '|User-Agent={}&Referer={}'.format(urllib.quote_plus(client.agent()),
@@ -228,14 +250,15 @@ def resolve(name, url, iconimage, description):
 
 
 def addDir(name, url, mode, iconimage, fanart, description):
-    u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&iconimage="+urllib.quote_plus(iconimage)+"&description="+urllib.quote_plus(description)
+    u = sys.argv[0] + "?url=" + urllib.quote_plus(url) + "&mode=" + str(mode) + "&name=" + urllib.quote_plus(
+        name) + "&iconimage=" + urllib.quote_plus(iconimage) + "&description=" + urllib.quote_plus(description)
     ok = True
     liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
     liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
     liz.setProperty('fanart_image', fanart)
     if mode == 100 or mode == 'BUG' or mode == 7:
         liz.setProperty("IsPlayable", "true")
-        ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=False)
+        ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
     elif mode == 7:
         ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
     else:
@@ -243,49 +266,61 @@ def addDir(name, url, mode, iconimage, fanart, description):
     return ok
 
 
-
 def get_params():
-    param=[]
-    paramstring=sys.argv[2]
-    if len(paramstring)>=2:
-        params=sys.argv[2]
-        cleanedparams=params.replace('?','')
-        if (params[len(params)-1]=='/'): params=params[0:len(params)-2]
-        pairsofparams=cleanedparams.split('&')
-        param={}
+    param = []
+    paramstring = sys.argv[2]
+    if len(paramstring) >= 2:
+        params = sys.argv[2]
+        cleanedparams = params.replace('?', '')
+        if (params[len(params) - 1] == '/'): params = params[0:len(params) - 2]
+        pairsofparams = cleanedparams.split('&')
+        param = {}
         for i in range(len(pairsofparams)):
-            splitparams={}
-            splitparams=pairsofparams[i].split('=')
-            if (len(splitparams))==2: param[splitparams[0]]=splitparams[1]
+            splitparams = {}
+            splitparams = pairsofparams[i].split('=')
+            if (len(splitparams)) == 2: param[splitparams[0]] = splitparams[1]
     return param
 
-params=get_params()
-url=BASEURL
-name=NAME
-iconimage=ICON
-mode=None
-fanart=FANART
-description=DESCRIPTION
-query=None
 
+params = get_params()
+url = BASEURL
+name = NAME
+iconimage = ICON
+mode = None
+fanart = FANART
+description = DESCRIPTION
+query = None
 
-try   : url=urllib.unquote_plus(params["url"])
-except: pass
-try   : name=urllib.unquote_plus(params["name"])
-except: pass
-try   : iconimage=urllib.unquote_plus(params["iconimage"])
-except:pass
-try   : mode=int(params["mode"])
-except: pass
-try   : fanart=urllib.unquote_plus(params["fanart"])
-except: pass
-try   : description=urllib.unquote_plus(params["description"])
-except: pass
-try   : query=urllib.unquote_plus(params["query"])
-except: pass
+try:
+    url = urllib.unquote_plus(params["url"])
+except:
+    pass
+try:
+    name = urllib.unquote_plus(params["name"])
+except:
+    pass
+try:
+    iconimage = urllib.unquote_plus(params["iconimage"])
+except:
+    pass
+try:
+    mode = int(params["mode"])
+except:
+    pass
+try:
+    fanart = urllib.unquote_plus(params["fanart"])
+except:
+    pass
+try:
+    description = urllib.unquote_plus(params["description"])
+except:
+    pass
+try:
+    query = urllib.unquote_plus(params["query"])
+except:
+    pass
 
-
-print str(ADDON_PATH)+': '+str(VERSION)
+print str(ADDON_PATH) + ': ' + str(VERSION)
 print "Mode: " + str(mode)
 print "URL: " + str(url)
 print "Name: " + str(name)
@@ -311,4 +346,3 @@ elif mode == 9:
 elif mode == 100:
     resolve(name, url, iconimage, description)
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
