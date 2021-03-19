@@ -18,11 +18,24 @@
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-
-import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
-import os, json
+import json
+import os
 from sys import argv
-from urlparse import parse_qsl
+
+import six
+import xbmc
+import xbmcaddon
+import xbmcgui
+import xbmcplugin
+import xbmcvfs
+from six.moves.urllib.parse import parse_qsl
+
+if six.PY2:
+    translatePath = xbmc.translatePath
+elif six.PY3:
+    translatePath = xbmcvfs.translatePath
+else:
+    translatePath = xbmc.translatePath
 
 syshandle = int(argv[1])
 sysaddon = argv[0]
@@ -57,10 +70,11 @@ monitor = xbmc.Monitor()
 wait = monitor.waitForAbort
 aborted = monitor.abortRequested
 
-transPath = xbmc.translatePath
-skinPath = xbmc.translatePath('special://skin/')
-addonPath = xbmc.translatePath(addonInfo('path'))
-dataPath = xbmc.translatePath(addonInfo('profile')).decode('utf-8')
+
+skinPath = translatePath('special://skin/')
+addonPath = translatePath(addonInfo('path'))
+dataPath = translatePath(addonInfo('profile'))
+
 
 window = xbmcgui.Window(10000)
 dialog = xbmcgui.Dialog()
@@ -86,6 +100,10 @@ join = os.path.join
 settingsFile = os.path.join(dataPath, 'settings.xml')
 bookmarksFile = os.path.join(dataPath, 'bookmarks.db')
 cacheFile = os.path.join(dataPath, 'cache.db')
+
+
+def kodi_version():
+    return float(addon('xbmc.addon').getAddonInfo('version')[:4])
 
 
 def infoDialog(message, heading=addonInfo('name'), icon='', time=3000):
@@ -156,7 +174,19 @@ def refresh():
 
 
 def idle():
-    return execute('Dialog.Close(busydialog)')
+
+    if kodi_version() >= 18.0:
+        execute('Dialog.Close(busydialognocancel)')
+    else:
+        execute('Dialog.Close(busydialog)')
+
+
+def busy():
+
+    if kodi_version() >= 18.0:
+        execute('ActivateWindow(busydialognocancel)')
+    else:
+        execute('ActivateWindow(busydialog)')
 
 
 def set_view_mode(vmid):

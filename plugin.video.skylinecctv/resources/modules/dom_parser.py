@@ -15,9 +15,43 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import absolute_import
 
 import re
+import sys
+is_py2 = sys.version_info[0] == 2
+is_py3 = sys.version_info[0] == 3
+
 from collections import namedtuple
+
+if is_py2:
+
+    _str = str
+    str = unicode
+    range = xrange
+    from itertools import izip
+    zip = izip
+    unicode = unicode
+    basestring = basestring
+
+    def bytes(b, encoding="ascii"):
+
+        return _str(b)
+
+    def iteritems(d, **kw):
+
+        return d.iteritems(**kw)
+
+elif is_py3:
+
+    bytes = bytes
+    str = unicode = basestring = str
+    range = range
+    zip = zip
+
+    def iteritems(d, **kw):
+
+        return iter(d.items(**kw))
 
 DomMatch = namedtuple('DOMMatch', ['attrs', 'content'])
 re_type = type(re.compile(''))
@@ -121,6 +155,7 @@ def parse_dom(html, name='', attrs=None, req=False, exclude_comments=False):
     if attrs is None:
         attrs = {}
     name = name.strip()
+
     if isinstance(html, unicode) or isinstance(html, DomMatch):
         html = [html]
     elif isinstance(html, str):

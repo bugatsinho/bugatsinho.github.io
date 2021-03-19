@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import re
 import sys
-import urllib
 import six
 from kodi_six import xbmcaddon, xbmcgui, xbmcplugin, xbmc
+from six.moves.urllib.parse import urljoin, unquote_plus, quote_plus, quote, unquote
 from six.moves import zip
 from resources.modules import control, client, dom_parser as dom
 
@@ -33,7 +33,7 @@ headers = {'User-Agent': client.agent(),
 # sys.setdefaultencoding("utf-8")
 
 def get_lang():
-    lang = ADDON.getSetting('lang').encode('utf-8')
+    lang = ADDON.getSetting('lang').encode('utf-8') if six.PY2 else ADDON.getSetting('lang')
     lang_dict = {'English': 'en',
                  'Greek': 'el',
                  'Español': 'es',
@@ -173,7 +173,7 @@ def get_content(url):  # 5 <div id="content"><div class="container">
     data = client.parseDOM(r, 'div', attrs={'class': 'container'})[0]
     data = dom.parse_dom(data, 'a', req='href')
     data = [i for i in data if 'subt' in i.content]
-    # xbmc.log('DATAAAA: {}'.format(str(data)))
+    # xbmc.log('DATA22: {}'.format(str(data)))
     for item in data:
         link = item.attrs['href']
         if link == '#':
@@ -194,10 +194,11 @@ def get_content(url):  # 5 <div id="content"><div class="container">
         poster = 'https:' + poster if poster.startswith('//') else poster
 
         if six.PY2:
-            link = '{}/{}'.format(base_url, link.encode('utf-8'))
+            link = link.encode('utf-8')
             name = name.encode('utf-8')
             desc = desc.decode('ascii', errors='ignore')
             poster = poster.encode('utf-8')
+        link = '{}/{}'.format(base_url, link)
         addDir('[B][COLOR white]%s[/COLOR][/B]' % name, link, 100, poster, '', desc)
 
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
@@ -220,8 +221,8 @@ def resolve(name, url, iconimage, description):
     # xbmc.log('URLLLL: {}'.format(url))
     if 'm3u8' in url:
         link = url
-        link += '|User-Agent={}&Referer={}'.format(urllib.quote_plus(client.agent()),
-                                                   urllib.quote_plus(headers['Referer']))
+        link += '|User-Agent={}&Referer={}'.format(quote_plus(client.agent()),
+                                                   quote_plus(headers['Referer']))
         liz = xbmcgui.ListItem(name, iconImage=ICON, thumbnailImage=iconimage)
     else:
         import requests
@@ -230,30 +231,36 @@ def resolve(name, url, iconimage, description):
         cj = client.request(base_url, headers=headers, output='cookie')
         # xbmc.log('COOKIES: {}'.format(str(cj)))
         headers['Cookie'] = cj
-        info = requests.get(url, headers=headers).text
+        info = six.ensure_str(requests.get(url, headers=headers).text)
         # xbmc.log('INFOOOO: {}'.format(info))
-        head = client.parseDOM(info, 'title')[0].encode('utf-8')
+        head = client.parseDOM(info, 'title')[0]
         # title = client.parseDOM(info, 'meta', ret='content', attrs={'name': 'description'})[0].encode('utf-8')
         # name = '{0} - {1}'.format(head, title)
         poster = client.parseDOM(info, 'meta', ret='content', attrs={'property': 'og:image'})[0]
         link = re.findall(r'''source:['"](.+?)['"]\,''', info, re.DOTALL)[0]
-        link += '|User-Agent={}&Referer={}'.format(urllib.quote_plus(client.agent()), urllib.quote_plus(url))
-        liz = xbmcgui.ListItem(head, iconImage=ICON, thumbnailImage=poster)
+        link += '|User-Agent={}&Referer={}'.format(quote_plus(client.agent()), quote_plus(url))
+        if six.PY2:
+            head = head.encode('utf-8')
+            link = str(link)
+        liz = xbmcgui.ListItem(head)
+        liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': poster, 'fanart': fanart})
 
     try:
         liz.setInfo(type="Video", infoLabels={"Title": description})
         liz.setProperty("IsPlayable", "true")
-        liz.setPath(str(link))
+        liz.setPath(link)
+        # control.player.play(link, liz)
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
     except:
         control.infoDialog("[COLOR red]Dead Link[/COLOR]!\n[COLOR white]Please Try Another[/COLOR]", NAME, '')
 
 
 def addDir(name, url, mode, iconimage, fanart, description):
-    u = sys.argv[0] + "?url=" + urllib.quote_plus(url) + "&mode=" + str(mode) + "&name=" + urllib.quote_plus(
-        name) + "&iconimage=" + urllib.quote_plus(iconimage) + "&description=" + urllib.quote_plus(description)
+    u = sys.argv[0] + "?url=" + quote_plus(url) + "&mode=" + str(mode) + "&name=" + quote_plus(
+        name) + "&iconimage=" + quote_plus(iconimage) + "&description=" + quote_plus(description)
     ok = True
-    liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
+    liz = xbmcgui.ListItem(name)
+    liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage, 'fanart': fanart})
     liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
     liz.setProperty('fanart_image', fanart)
     if mode == 100 or mode == 'BUG' or mode == 7:
@@ -292,15 +299,15 @@ description = DESCRIPTION
 query = None
 
 try:
-    url = urllib.unquote_plus(params["url"])
+    url = unquote_plus(params["url"])
 except:
     pass
 try:
-    name = urllib.unquote_plus(params["name"])
+    name = unquote_plus(params["name"])
 except:
     pass
 try:
-    iconimage = urllib.unquote_plus(params["iconimage"])
+    iconimage = unquote_plus(params["iconimage"])
 except:
     pass
 try:
@@ -308,23 +315,23 @@ try:
 except:
     pass
 try:
-    fanart = urllib.unquote_plus(params["fanart"])
+    fanart = unquote_plus(params["fanart"])
 except:
     pass
 try:
-    description = urllib.unquote_plus(params["description"])
+    description = unquote_plus(params["description"])
 except:
     pass
 try:
-    query = urllib.unquote_plus(params["query"])
+    query = unquote_plus(params["query"])
 except:
     pass
 
-print str(ADDON_PATH) + ': ' + str(VERSION)
-print "Mode: " + str(mode)
-print "URL: " + str(url)
-print "Name: " + str(name)
-print "IconImage: " + str(iconimage)
+print(str(NAME) + ': ' + str(VERSION))
+print("Mode: " + str(mode))
+print("URL: " + str(url))
+print("Name: " + str(name))
+print("IconImage: " + str(iconimage))
 #########################################################
 
 if mode is None:
