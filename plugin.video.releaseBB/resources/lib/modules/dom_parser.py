@@ -16,7 +16,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import re
+import re, xbmc
+import six
 from collections import namedtuple
 
 DomMatch = namedtuple('DOMMatch', ['attrs', 'content'])
@@ -66,11 +67,16 @@ def __get_dom_elements(item, name, attrs):
         this_list = re.findall(pattern, item, re.M | re.S | re.I)
     else:
         last_list = None
-        for key, value in attrs.iteritems():
+        for key, value in attrs.items():
             value_is_regex = isinstance(value, re_type)
-            value_is_str = isinstance(value, basestring)
-            pattern = r'''(<{tag}[^>]*\s{key}=(?P<delim>['"])(.*?)(?P=delim)[^>]*>)'''.format(
-                tag=name, key=key)
+            if six.PY2:
+                value_is_str = isinstance(value, basestring)
+            else:
+                if isinstance(value, bytes):
+                    value = bytes.decode('utf8')
+                value_is_str = isinstance(value, str)
+
+            pattern = r'''(<{tag}[^>]*\s{key}=(?P<delim>['"])(.*?)(?P=delim)[^>]*>)'''.format(tag=name, key=key)
             re_list = re.findall(pattern, item, re.M | re.S | re.I)
             if value_is_regex:
                 this_list = [r[0] for r in re_list if re.match(value, r[2])]
@@ -120,19 +126,34 @@ def __get_attribs(element):
 def parse_dom(html, name='', attrs=None, req=False, exclude_comments=False):
     if attrs is None:
         attrs = {}
+        
     name = name.strip()
-    if isinstance(html, unicode) or isinstance(html, DomMatch):
-        html = [html]
-    elif isinstance(html, str):
-        try:
-            html = [html.decode("utf-8")]  # Replace with chardet thingy
-        except BaseException:
+    if six.PY2:
+        if isinstance(html, unicode) or isinstance(html, DomMatch):
+            html = [html]
+        elif isinstance(html, str):
             try:
-                html = [html.decode("utf-8", "replace")]
+                html = [html.decode("utf-8")]  # Replace with chardet thingy
             except BaseException:
-                html = [html]
-    elif not isinstance(html, list):
-        return ''
+                try:
+                    html = [html.decode("utf-8", "replace")]
+                except BaseException:
+                    html = [html]
+        elif not isinstance(html, list):
+            return ''
+    else:
+        if isinstance(html, DomMatch):
+            html = [html]
+        elif isinstance(html, str) or isinstance(html, bytes):
+            try:
+                html = [html.decode("utf-8")]  # Replace with chardet thingy
+            except BaseException:
+                try:
+                    html = [html.decode("utf-8", "replace")]
+                except BaseException:
+                    html = [html]
+        elif not isinstance(html, list):
+            return ''
 
     if not name:
         return ''

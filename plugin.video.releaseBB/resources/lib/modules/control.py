@@ -22,7 +22,6 @@
 import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
 import os, json
 
-
 integer = 1000
 lang = xbmcaddon.Addon().getLocalizedString
 setting = xbmcaddon.Addon().getSetting
@@ -54,7 +53,7 @@ aborted = monitor.abortRequested
 transPath = xbmc.translatePath
 skinPath = xbmc.translatePath('special://skin/')
 addonPath = xbmc.translatePath(addonInfo('path'))
-dataPath = xbmc.translatePath(addonInfo('profile')).decode('utf-8')
+dataPath = xbmc.translatePath(addonInfo('profile'))
 
 
 window = xbmcgui.Window(10000)

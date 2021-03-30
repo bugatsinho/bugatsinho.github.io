@@ -7,6 +7,7 @@ from resources.lib.modules import cache
 import re
 import os
 import xbmcvfs, xbmc
+import six
 
 _settingsFile = os.path.join(control.addonPath, 'resources', 'settings.xml')
 if xbmcvfs.exists(_settingsFile):
@@ -18,6 +19,8 @@ if xbmcvfs.exists(_settingsFile):
 
         try:
             eztv_status = client.request('https://eztvstatus.com')
+            if six.PY3:
+                eztv_status.encode('utf-8')
             domains = client.parseDOM(eztv_status, 'a', ret='href', attrs={'class': 'domainLink'})
             domains = [i.split('//')[1].encode('utf-8').upper() for i in domains if domains]
             fline = set_line.format(domains[0], domains[1], domains[2], domains[3], domains[0])

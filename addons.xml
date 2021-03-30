@@ -159,15 +159,16 @@
 	</addon>
 
 	
-	<addon id="plugin.video.releaseBB" version="2.0.3.1" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
+	<addon id="plugin.video.releaseBB" version="2.1.1" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
 	  <requires>
-	    <import addon="script.module.cloudscraper" version="1.2.34"/>
-	    <import addon="xbmc.python" version="2.1.0"/>
-	    <import addon="script.module.t0mm0.common" version="2.1.1"/>
+	    <import addon="xbmc.addon" version="16.1.000"/>
+		<import addon="script.module.six" />
+	    <import addon="script.module.t0mm0.common" version="3.0.0"/>
 	    <import addon="script.module.resolveurl" version="5.0.1"/>
-	    <import addon="script.module.simplejson" version="3.3.0"/>
 	    <import addon="script.module.requests" version="2.19.1"/>
 	    <import addon="script.module.pyxbmct" version="1.2.0"/>
+	    <!--import addon="script.module.cloudscraper" version="1.2.34"/>
+	    <import addon="script.module.simplejson" version="3.3.0"/-->
 	  </requires>
 	  <extension point="xbmc.python.pluginsource" library="default.py">
 	    <provides>video</provides>
@@ -185,8 +186,8 @@
 	    <twitter>https://twitter.com/bugatsinho</twitter>
 	    <repo>https://bugatsinho.github.io/repo/</repo>
 	    <email>bugatsinho@protonmail.com</email>
-	    <news>+ [B][COLOR lime]1.9.0[/B][/COLOR] [COLOR gold](22-04-2020)[/COLOR]
-		- add cloudscraper module to bypass cloudflare</news>
+	    <news>+ [B][COLOR lime]2.0.3.1[/B][/COLOR] [COLOR gold](06-01-2021)[/COLOR]
+	- corrections in service.py</news>
 	    <assets>
 	        <icon>icon.png</icon>
 	        <fanart>fanart.jpg</fanart>
@@ -473,6 +474,29 @@
 	    <assets>
 	      <icon>resources/icon.png</icon>
 	    </assets>
+	  </extension>
+	</addon>
+	<addon id="script.module.futures" name="Futures dummy" version="0.0.0.2" provider-name="Twilight0">
+	  <requires>
+	    <import addon="xbmc.addon" version="16.1.000"/>
+	  </requires>
+	  <extension point="xbmc.python.module" library="lib"/>
+	  <extension point="xbmc.addon.metadata">
+	    <summary>Futures dummy</summary>
+	    <description>Futures dummy</description>
+	    <platform>all</platform>
+	    <license>BSD</license>
+	  </extension>
+	</addon>
+	<addon id="script.module.t0mm0.common" name="t0mm0's common stuff" version="3.0.1" provider-name="t0mm0">
+	  <requires>
+		<import addon="script.module.six" />
+	  </requires>
+	  <extension point="xbmc.python.module" library="lib" />
+	  <extension point="xbmc.addon.metadata">
+	    <platform>all</platform>
+	    <summary lang="en">Collection of commonly used addon routines</summary>
+	    <description lang="en">Collection of commonly used addon routines to simplify addon development.</description>
 	  </extension>
 	</addon>
 </addons>
