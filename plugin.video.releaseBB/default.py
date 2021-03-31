@@ -949,7 +949,10 @@ def search_menu():
 
     delete_option = False
     for (url, search) in dbcur.fetchall():
-        title = six.python_2_unicode_compatible(six.ensure_str(unquote_plus(search).encode('utf-8')))
+        # if six.PY2:
+        #     title = unquote_plus(search).encode('utf-8')
+        # else:
+        title = six.ensure_text(unquote_plus(search), 'utf-8')
         title = '[B]{}[/B]'.format(title)
         delete_option = True
         addon.add_directory({'mode': 'search_bb', 'url': search},

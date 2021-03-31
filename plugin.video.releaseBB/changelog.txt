@@ -1,3 +1,8 @@
++ [B][COLOR lime]2.1.2[/B][/COLOR] [COLOR gold](31-03-2021)[/COLOR]
+- Kodi 19 compatibility (credits to u/lolage331 on reddit for the help)
+- fix search functio
+- fix encoding issues
+- fix infos missing
 + [B][COLOR lime]2.0.3.1[/B][/COLOR] [COLOR gold](27-03-2021)[/COLOR]
 - python 3 compatibility
 

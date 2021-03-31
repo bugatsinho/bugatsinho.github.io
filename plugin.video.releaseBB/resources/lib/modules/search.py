@@ -57,85 +57,85 @@ def Search_bb(url):
         if keyboard.isConfirmed():
             _query = keyboard.getText()
             query = _query.encode('utf-8')
-            # try:
-            query = quote_plus(query)
-            referer_link = 'http://search.proxybb.com?s={0}'.format(query)
+            try:
+                query = quote_plus(query)
+                referer_link = 'http://search.proxybb.com?s={0}'.format(query)
 
-            url = 'http://search.proxybb.com/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
-            url = url.format(query, random.randint(33333333333333333, 99999999999999999))
-            #########save in Database#########
-            if six.PY2:
-                term = unquote_plus(query).decode('utf-8')
-            else:
-                term = unquote_plus(query)
+                url = 'http://search.proxybb.com/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
+                url = url.format(query, random.randint(33333333333333333, 99999999999999999))
+                #########save in Database#########
+                if six.PY2:
+                    term = unquote_plus(query).decode('utf-8')
+                else:
+                    term = unquote_plus(query)
 
-            dbcon = database.connect(control.searchFile)
-            dbcur = dbcon.cursor()
-            dbcur.execute("DELETE FROM Search WHERE search = ?", (term,))
-            dbcur.execute("INSERT INTO Search VALUES (?,?)", (url, term))
-            dbcon.commit()
-            dbcur.close()
+                dbcon = database.connect(control.searchFile)
+                dbcur = dbcon.cursor()
+                dbcur.execute("DELETE FROM Search WHERE search = ?", (term,))
+                dbcur.execute("INSERT INTO Search VALUES (?,?)", (url, term))
+                dbcon.commit()
+                dbcur.close()
 
-            #########search in website#########
-            headers = {'Referer': referer_link,
-                       'X-Requested-With': 'XMLHttpRequest'}
-            first = client.request(referer_link, headers=headers)
-            xbmc.sleep(10)
-            html = client.request(url, headers=headers)
-            posts = json.loads(html)['results']
-            posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
-            for movieUrl, title, infos, domain in posts:
-                base = BASE_URL if 'old' not in domain else OLD_URL
-                movieUrl = urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
-                title = title.encode('utf-8')
-                infos = infos.replace('\\', '')
-                try:
-                    img = client.parseDOM(infos, 'img', ret='src')[0]
-                    img = img.replace('.ru', '.to')
-                except:
-                    img = ICON
+                #########search in website#########
+                headers = {'Referer': referer_link,
+                           'X-Requested-With': 'XMLHttpRequest'}
+                first = client.request(referer_link, headers=headers)
+                xbmc.sleep(10)
+                html = client.request(url, headers=headers)
+                posts = json.loads(html)['results']
+                posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
+                for movieUrl, title, infos, domain in posts:
+                    base = BASE_URL if 'old' not in domain else OLD_URL
+                    movieUrl = urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
+                    title = title.encode('utf-8')
+                    infos = infos.replace('\\', '')
+                    try:
+                        img = client.parseDOM(infos, 'img', ret='src')[0]
+                        img = img.replace('.ru', '.to')
+                    except:
+                        img = ICON
 
-                try:
-                    fan = client.parseDOM(infos, 'img', ret='src')[1]
-                except:
-                    fan = FANART
+                    try:
+                        fan = client.parseDOM(infos, 'img', ret='src')[1]
+                    except:
+                        fan = FANART
 
-                try:
-                    desc = re.search(r'Plot:(.+?)</p><p> <img', infos, re.DOTALL).group(0)
-                except:
-                    desc = 'N/A'
+                    try:
+                        desc = re.search(r'Plot:(.+?)</p><p> <img', infos, re.DOTALL).group(0)
+                    except:
+                        desc = 'N/A'
 
-                desc = Sinopsis(desc)
+                    desc = Sinopsis(desc)
 
-                title = six.python_2_unicode_compatible(six.ensure_str(title))
+                    # title = six.python_2_unicode_compatible(six.ensure_str(title))
+                    title = six.ensure_str(title, 'utf-8')
+                    name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title)
 
-                name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title)
+                    mode = 'GetPack' if re.search(r'\s+S\d+\s+', name) else 'GetLinks'
+                    addon.add_directory(
+                        {'mode': mode, 'url': movieUrl, 'img': img, 'plot': desc},
+                        {'title': name, 'plot': desc},
+                        [(control.lang(32007).encode('utf-8'),
+                          'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
+                         (control.lang(32008).encode('utf-8'),
+                          'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
+                         (control.lang(32009).encode('utf-8'),
+                          'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
+                        img=img, fanart=fan)
 
-                mode = 'GetPack' if re.search(r'\s+S\d+\s+', name) else 'GetLinks'
+                # if 'olderEntries' in ref_html:
+                pindex = int(re.search('pindex=(\d+)&', url).group(1)) + 1
+                np_url = re.sub(r'&pindex=\d+&', '&pindex={0}&'.format(pindex), url)
+                rand = random.randint(33333333333333333, 99999999999999999)
+                np_url = re.sub(r'&rand=0\.\d+$', '&rand={}'.format(rand), np_url)
                 addon.add_directory(
-                    {'mode': mode, 'url': movieUrl, 'img': img, 'plot': desc},
-                    {'title': name, 'plot': desc},
-                    [(control.lang(32007).encode('utf-8'),
-                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                     (control.lang(32008).encode('utf-8'),
-                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                     (control.lang(32009).encode('utf-8'),
-                      'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)],
-                    img=img, fanart=fan)
-
-            # if 'olderEntries' in ref_html:
-            pindex = int(re.search('pindex=(\d+)&', url).group(1)) + 1
-            np_url = re.sub(r'&pindex=\d+&', '&pindex={0}&'.format(pindex), url)
-            rand = random.randint(33333333333333333, 99999999999999999)
-            np_url = re.sub(r'&rand=0\.\d+$', '&rand={}'.format(rand), np_url)
-            addon.add_directory(
-                {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},
-                {'title': control.lang(32010).encode('utf-8')},
-                img=IconPath + 'next_page.png', fanart=FANART)
+                    {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},
+                    {'title': control.lang(32010).encode('utf-8')},
+                    img=IconPath + 'next_page.png', fanart=FANART)
 
 
-            # except BaseException:
-            #     control.infoDialog(control.lang(32022).encode('utf-8'), NAME, ICON, 5000)
+            except BaseException:
+                control.infoDialog(control.lang(32022).encode('utf-8'), NAME, ICON, 5000)
 
     elif '|nextpage' in url:
         url, referer_link, np = url.split('|')
@@ -151,7 +151,7 @@ def Search_bb(url):
         for movieUrl, title, infos, domain in posts:
             base = BASE_URL if 'old' not in domain else OLD_URL
             movieUrl = urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
-            title = title.encode('utf-8')
+            title = six.ensure_str(title, 'utf-8')
             infos = infos.replace('\\', '')
             try:
                 img = client.parseDOM(infos, 'img', ret='src')[0]
@@ -170,7 +170,7 @@ def Search_bb(url):
                 desc = 'N/A'
 
             desc = Sinopsis(desc)
-            name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
+            name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title)
             mode = 'GetPack' if re.search(r'\s+S\d+\s+', name) else 'GetLinks'
             addon.add_directory(
                 {'mode': mode, 'url': movieUrl, 'img': img, 'plot': desc},
@@ -209,7 +209,7 @@ def Search_bb(url):
             for movieUrl, title, infos, domain in posts:
                 base = BASE_URL if 'old' not in domain else OLD_URL
                 movieUrl = urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
-                title = title.encode('utf-8')
+                title = six.ensure_str(title, 'utf-8')
                 infos = infos.replace('\\', '')
                 try:
                     img = client.parseDOM(infos, 'img', ret='src')[0]
@@ -228,7 +228,7 @@ def Search_bb(url):
                     desc = 'N/A'
 
                 desc = Sinopsis(desc)
-                name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
+                name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title)
 
                 mode = 'GetPack' if re.search(r'\s+S\d+\s+', name) else 'GetLinks'
                 addon.add_directory(
@@ -261,7 +261,7 @@ def Search_bb(url):
 
 def del_search(query):
     control.busy()
-    #xbmc.log('$#$DEL-search:%s' % query, xbmc.LOGNOTICE)
+    # xbmc.log('$#$DEL-search:%s' % query, xbmc.LOGNOTICE)
     search = quote_plus(query)
 
     dbcon = database.connect(control.searchFile)
@@ -297,6 +297,7 @@ def Sinopsis(txt):
         return desc
     except BaseException:
         return 'N/A'
+
 
 def clear_Title(txt):
     txt = re.sub('<.+?>', '', txt)
