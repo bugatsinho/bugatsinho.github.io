@@ -921,7 +921,8 @@ def Sinopsis(txt):
         desc = clear_Title(part)
         if six.PY2:
             desc = desc.decode('ascii', errors='ignore')
-        desc = six.python_2_unicode_compatible(six.ensure_str(desc))
+        else:
+            desc = six.python_2_unicode_compatible(six.ensure_str(desc))
         return desc
     except BaseException:
         return 'N/A'
