@@ -85,6 +85,8 @@ def Search_bb(url):
                 posts = json.loads(html)['results']
                 posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
                 for movieUrl, title, infos, domain in posts:
+                    if not 'imdb.com/title' in infos:
+                        continue
                     base = BASE_URL if 'old' not in domain else OLD_URL
                     movieUrl = urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
                     title = title.encode('utf-8')
@@ -101,12 +103,12 @@ def Search_bb(url):
                         fan = FANART
 
                     try:
-                        desc = re.search(r'Plot:(.+?)</p><p> <img', infos, re.DOTALL).group(0)
+                        # desc = client.parseDOM(infos, 'div', attrs={'class': 'entry-summary'})[0]
+                        desc = re.findall(r'>(Plot:.+?)</p>', infos, re.DOTALL)[0]
                     except:
                         desc = 'N/A'
 
                     desc = Sinopsis(desc)
-
                     # title = six.python_2_unicode_compatible(six.ensure_str(title))
                     title = six.ensure_str(title, 'utf-8')
                     name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title)
@@ -132,7 +134,6 @@ def Search_bb(url):
                     {'mode': 'search_bb', 'url': np_url + '|Referer={0}|nextpage'.format(referer_link)},
                     {'title': control.lang(32010).encode('utf-8')},
                     img=IconPath + 'next_page.png', fanart=FANART)
-
 
             except BaseException:
                 control.infoDialog(control.lang(32022).encode('utf-8'), NAME, ICON, 5000)
@@ -165,7 +166,7 @@ def Search_bb(url):
                 fan = FANART
 
             try:
-                desc = re.search(r'Plot:(.+?)</p><p> <img', infos, re.DOTALL).group(0)
+                desc = re.search(r'>(Plot:.+?)</p>', infos, re.DOTALL).group(0)
             except:
                 desc = 'N/A'
 
@@ -223,7 +224,7 @@ def Search_bb(url):
                     fan = FANART
 
                 try:
-                    desc = re.search(r'Plot:(.+?)</p><p> <img', infos, re.DOTALL).group(0)
+                    desc = re.search(r'>(Plot:.+?)</p>', infos, re.DOTALL).group(0)
                 except:
                     desc = 'N/A'
 
@@ -280,20 +281,23 @@ def search_clear():
 
 
 def Sinopsis(txt):
-    OPEN = txt.encode('utf8')
+    OPEN = six.ensure_str(txt, 'utf-8')
     try:
-        try:
-            if 'Plot:' in OPEN:
-                Sinopsis = re.findall('(Plot:.+?)</p>', OPEN, re.DOTALL)[0]
-            else:
-                Sinopsis = re.findall('</p>\n<p>(.+?)</p><p>', OPEN, re.DOTALL)[0]
-
-        except:
-            Sinopsis = re.findall('</p>\n<p>(.+?)</p>\n<p style', OPEN, re.DOTALL)[0]
-        part = re.sub('<.*?>', '', Sinopsis)
-        part = re.sub('\.\s+', '.', part)
+        # try:
+        #     if 'Plot:' in OPEN:
+        #         Sinopsis = re.findall('(Plot:.+?)</p>', OPEN, re.DOTALL)[0]
+        #     else:
+        #         Sinopsis = re.findall('</p>\n<p>(.+?)</p><p>', OPEN, re.DOTALL)[0]
+        #
+        # except:
+        #     Sinopsis = re.findall('</p>\n<p>(.+?)</p>\n<p style', OPEN, re.DOTALL)[0]
+        part = re.sub('<.*?>', '', OPEN)
+        part = re.sub(r'\.\s+', '.', part)
         desc = clear_Title(part)
-        desc = desc.decode('ascii', errors='ignore')
+        if six.PY2:
+            desc = desc.decode('ascii', errors='ignore')
+        else:
+            desc = six.python_2_unicode_compatible(six.ensure_str(desc))
         return desc
     except BaseException:
         return 'N/A'

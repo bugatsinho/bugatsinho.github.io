@@ -201,8 +201,8 @@ def recommended_movies(url):
             else:
                 action = {'mode': 'GetLinks', 'section': section, 'url': movieUrl, 'img': item[1], 'plot': 'N/A'}
 
-            name = '[B][COLORgold]{0}[/COLOR][/B]'.format(name.encode('utf-8'))
-            name = six.python_2_unicode_compatible(six.ensure_text(name))
+            name = six.ensure_str(name, 'utf-8')
+            name = '[B][COLORgold]{0}[/COLOR][/B]'.format(name)
             addon.add_directory(action, {'title': name, 'plot': 'N/A'}, allfun, img=item[1], fanart=FANART)
 
     except BaseException:
