@@ -28,17 +28,11 @@ LOGERROR = xbmc.LOGERROR
 LOGFATAL = xbmc.LOGFATAL
 LOGINFO = xbmc.LOGINFO
 LOGNONE = xbmc.LOGNONE
-LOGNOTICE = xbmc.LOGNOTICE
-LOGSEVERE = xbmc.LOGSEVERE
 LOGWARNING = xbmc.LOGWARNING
 
 
 def log_debug(msg):
     log(msg, level=LOGDEBUG)
-
-
-def log_notice(msg):
-    log(msg, level=LOGNOTICE)
 
 
 def log_warning(msg):
@@ -53,14 +47,11 @@ def log_info(msg):
     log(msg, level=LOGINFO)
 
 
-def log_severe(msg):
-    log(msg, level=LOGSEVERE)
-
 
 def log(msg, level=LOGDEBUG):
     # override message level to force logging when addon logging turned on
     if control.setting('debug') == 'true' and level == LOGDEBUG:
-        level = LOGNOTICE
+        level = LOGINFO
 
     try:
         xbmc.log('{0}, {1}:: {2}'.format(control.addonInfo('name'), control.addonInfo('version'), msg), level)

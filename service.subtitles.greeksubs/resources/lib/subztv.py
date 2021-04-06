@@ -14,11 +14,17 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
+from __future__ import print_function
 import json
-import urllib
-import re
 import os
+import re
+import six
+import sys
+import traceback
+
+import xbmc
 from resources.modules import cleantitle, client, control
+from six.moves.urllib_parse import unquote_plus, quote_plus, quote
 
 '''''''''
 Disables InsecureRequestWarning: Unverified HTTPS request is being made warnings.
@@ -46,30 +52,35 @@ class subztv:
             query, imdb = query.split('/imdb=')
             match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
 
-            cookie = self.s.get(self.baseurl, headers=self.hdr).cookies
-            cj = requests.utils.dict_from_cookiejar(cookie)
-
+            cookie = self.s.get(self.baseurl, headers=self.hdr)
+            cj = requests.utils.dict_from_cookiejar(cookie.cookies)
             if len(match) > 0:
 
                 title, year = match[0][0], match[0][1]
 
                 if imdb.startswith('tt'):
                     frame = self.baseurl + 'view/{}'.format(imdb)
-                    r = self.s.get(frame)
-                    r = re.sub(r'[^\x00-\x7F]+', ' ', r.content)
+                    r = self.s.get(frame).text
+                    # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                    try:
+                        r = r.decode('utf-8', errors='replace')
+                    except AttributeError:
+                        pass
                 else:
-                    url = self.baseurl + 'search/{}/movies'.format(urllib.quote(title))
+                    url = self.baseurl + 'search/{}/movies'.format(quote(title))
 
-                    data = self.s.get(url).content
+                    data = self.s.get(url).text
                     data = client.parseDOM(data, 'span', attrs={'class': 'h5'})
                     data = [(client.parseDOM(i, 'a')[0],
                              client.parseDOM(i, 'a', ret='href')[0]) for i in data if i]
-
                     frame = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
 
                     r = self.s.get(frame).text
-                    r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-
+                    # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                    try:
+                        r = r.decode('utf-8', errors='replace')
+                    except AttributeError:
+                        pass
                 secCode = client.parseDOM(r, 'input', ret='value', attrs={'id': 'secCode'})[0]
                 items = client.parseDOM(r, 'tbody')[0]
                 items = client.parseDOM(items, 'tr')
@@ -103,25 +114,25 @@ class subztv:
 
                         # data = requests.post(baseurl, data=json.dumps(post), headers=_headers).json()
                         data = client.request(baseurl, post=json.dumps(post), headers=_headers)
-                        auth = 'Bearer %s' % urllib.unquote_plus(json.loads(data)['token'])
+                        auth = 'Bearer {}'.format(unquote_plus(json.loads(data)['token']))
                         _headers['Authorization'] = auth
 
                         series_data = client.request(series_url % imdb, headers=_headers)
                         imdb = json.loads(series_data)['data']['imdbId']
-                        r = self.s.get(self.baseurl + 'view/{}'.format(imdb)).content
+                        r = self.s.get(self.baseurl + 'view/{}'.format(imdb)).text
                         #r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                         frames = client.parseDOM(r, 'a', ret='href')
                         frame = [i for i in frames if hdlr in i][0]
                     else:
-                        url = self.baseurl + 'search/{}/tv'.format(urllib.quote(title))
-                        data = self.s.get(url).content
+                        url = self.baseurl + 'search/{}/tv'.format(quote(title))
+                        data = self.s.get(url).text
                         data = client.parseDOM(data, 'span', attrs={'class': 'h5'})
                         data = [(client.parseDOM(i, 'a')[0],
                                  client.parseDOM(i, 'a', ret='href')[0]) for i in data if i]
 
                         serie_link = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
                         imdbid = re.findall(r'\/(tt\d+)\/', serie_link)[0]
-                        r = self.s.get(self.baseurl + 'view/{}'.format(imdbid)).content
+                        r = self.s.get(self.baseurl + 'view/{}'.format(imdbid)).text
                         frames = client.parseDOM(r, 'a', ret='href')
                         frame = [i for i in frames if hdlr in i][0]
 
@@ -133,7 +144,14 @@ class subztv:
                 items = client.parseDOM(r, 'tbody')[0]
                 items = client.parseDOM(items, 'tr')
 
-        except BaseException:
+        except Exception as e:
+
+            _, __, tb = sys.exc_info()
+
+            print(traceback.print_tb(tb))
+
+            xbmc.log('Greeksubs failed at get function, reason: ' + str(e))
+
             return
 
         for item in items:
@@ -145,15 +163,17 @@ class subztv:
                 except BaseException:
                     imdb = re.search(r'\/(tt\d+)', frame).groups()[0]
 
-                data = re.findall(r'''downloadMe\(['"](\w+\-\w+).+?label.+?>(\d+).+?<td>(.+?)</td''',
-                                  str(item), re.I | re.DOTALL)[0]
+                data = re.findall(r'''downloadMe\(['"](\w+-\w+).+?label.+?>(\d+).+?<td>(.+?)</td''',
+                                  item, re.I | re.DOTALL)[0]
                 name = data[2]
                 name = client.replaceHTMLCodes(name)
-                name = name.encode('utf-8')
+
                 url = self.baseurl + 'dll/{}/0/{}'.format(data[0], secCode)
                 url = client.replaceHTMLCodes(url)
-                url = url.encode('utf-8')
 
+                url = url.encode('utf-8')
+                url = six.ensure_str(url)
+                name = six.ensure_str(name)
                 down = data[1]
                 rating = self._rating(down)
 
@@ -191,7 +211,7 @@ class subztv:
             frame, url, cjcfduid, cjphp, sub_, imdb_ = url.split('|')
             # xbmc.log('$#$ FRAME: %s | URL: %s | COOKIE: %s | SUB: %s | imdb: %s | ' % (frame, url, cjcfduid, sub_, imdb_))
 
-            sub_ = urllib.unquote_plus(sub_)
+            sub_ = unquote_plus(sub_)
 
             self.s.cookies.update({'__cfduid': cjcfduid, 'PHPSESSID': cjphp})
             # xbmc.log('$#$ FRAME-COOKIES: %s' % self.s.cookies)
@@ -219,7 +239,7 @@ class subztv:
 
             result = self.s.post(url, data=post)
             #xbmc.log('$#$POST-RESUL: %s' % result.content)
-            f = os.path.join(path, urllib.quote(sub_) + '.srt')
+            f = os.path.join(path, quote(sub_) + '.srt')
             with open(f, 'wb') as subFile:
                 subFile.write(result.content)
 
@@ -232,9 +252,9 @@ class subztv:
                 control.execute('Extract("%s","%s")' % (f, path))
 
             if control.infoLabel('System.Platform.Windows'):
-                conversion = urllib.quote
+                conversion = quote
             else:
-                conversion = urllib.quote_plus
+                conversion = quote_plus
 
             if f.lower().endswith('.rar'):
 

@@ -18,11 +18,9 @@
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-
 import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
-import os, json, time
+import os, json, time, six
 from resources.modules.init import syshandle
-
 
 integer = 1000
 addon = xbmcaddon.Addon
@@ -52,15 +50,20 @@ monitor = xbmc.Monitor()
 wait = monitor.waitForAbort
 aborted = monitor.abortRequested
 
-transPath = xbmc.translatePath
-skinPath = xbmc.translatePath('special://skin/')
-addonPath = xbmc.translatePath(addonInfo('path'))
-legalfilename = xbmc.makeLegalFilename
+if six.PY3:
+    legalfilename = xbmcvfs.makeLegalFilename
+    transPath = xbmcvfs.translatePath
+else:
+    legalfilename = xbmc.makeLegalFilename
+    transPath = xbmc.translatePath
+
+skinPath = transPath('special://skin/')
+addonPath = transPath(addonInfo('path'))
 
 try:
-    dataPath = xbmc.translatePath(addonInfo('profile')).decode('utf-8')
+    dataPath = transPath(addonInfo('profile')).decode('utf-8')
 except AttributeError:
-    dataPath = xbmc.translatePath(addonInfo('profile'))
+    dataPath = transPath(addonInfo('profile'))
 
 window = xbmcgui.Window(10000)
 dialog = xbmcgui.Dialog()
@@ -90,23 +93,27 @@ bookmarksFile = os.path.join(dataPath, 'bookmarks.db')
 cacheFile = os.path.join(dataPath, 'cache.db')
 
 
-def name():
+def kodi_version():
+    return float(addon('xbmc.addon').getAddonInfo('version')[:4])
 
+
+def conditional_visibility(boolean_condition):
+    return bool(condVisibility('{0}'.format(boolean_condition)))
+
+
+def name():
     return addonInfo('name')
 
 
 def version():
-
     return addonInfo('version')
 
 
 def fanart():
-
     return addonInfo('fanart')
 
 
 def infoDialog(message, heading=addonInfo('name'), icon='', time=3000):
-
     if icon == '':
         icon = addonInfo('icon')
 
@@ -120,17 +127,14 @@ def infoDialog(message, heading=addonInfo('name'), icon='', time=3000):
 
 
 def okDialog(heading, line1):
-
     return dialog.ok(heading, line1)
 
 
 def yesnoDialog(line1, line2='', line3='', heading=addonInfo('name'), nolabel=None, yeslabel=None):
-
     return dialog.yesno(heading, line1, line2, line3, nolabel, yeslabel)
 
 
 def selectDialog(list, heading=addonInfo('name')):
-
     return dialog.select(heading, list)
 
 
@@ -166,7 +170,6 @@ class WorkingDialog(object):
 
 
 class ProgressDialog(object):
-
     pd = None
 
     def __init__(self, heading, line1='', line2='', line3='', background=False, active=True, timer=0):
@@ -274,7 +277,6 @@ class CountdownDialog(object):
 
 
 def openSettings(query=None, id=addonInfo('id')):
-
     try:
 
         idle()
@@ -292,7 +294,6 @@ def openSettings(query=None, id=addonInfo('id')):
 
 # Alternative method
 def Settings(id=addonInfo('id')):
-
     try:
         idle()
         addon(id).openSettings()
@@ -301,28 +302,33 @@ def Settings(id=addonInfo('id')):
 
 
 def openPlaylist():
-
     return execute('ActivateWindow(VideoPlaylist)')
 
 
 def refresh():
-
     return execute('Container.Refresh')
 
 
 def idle():
+    if kodi_version() >= 18.0:
+        execute('Dialog.Close(busydialognocancel)')
+    else:
+        execute('Dialog.Close(busydialog)')
 
-    return execute('Dialog.Close(busydialog)')
+
+def busy():
+    if kodi_version() >= 18.0:
+        execute('ActivateWindow(busydialognocancel)')
+    else:
+        execute('ActivateWindow(busydialog)')
 
 
 def set_view_mode(vmid):
-
     return execute('Container.SetViewMode({0})'.format(vmid))
 
 
 # for compartmentalized theme addons
 def addonmedia(icon, addonid=addonInfo('id'), theme=None, media_subfolder=True):
-
     if not theme:
         return join(addon(addonid).getAddonInfo('path'), 'resources', 'media' if media_subfolder else '', icon)
     else:
@@ -330,7 +336,6 @@ def addonmedia(icon, addonid=addonInfo('id'), theme=None, media_subfolder=True):
 
 
 def sortmethods(method='unsorted', mask='%D'):
-
     """
     Function to sort directory items
 
@@ -395,7 +400,8 @@ def sortmethods(method='unsorted', mask='%D'):
     elif method == 'video_sort_title':
         return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE, label2Mask=mask)
     elif method == 'video_sort_title_ignore_the':
-        return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE, label2Mask=mask)
+        return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE,
+                          label2Mask=mask)
     elif method == 'production_code':
         return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_PRODUCTIONCODE)
     elif method == 'song_rating':
@@ -439,7 +445,6 @@ def sortmethods(method='unsorted', mask='%D'):
 
 
 def json_rpc(command):
-
     # This function was taken from tknorris's kodi.py
 
     try:
@@ -455,7 +460,6 @@ def json_rpc(command):
 
 
 def addon_details(addon_id, fields=None):
-
     """
     :param addon_id: Any addon id as string
     :param fields: Possible fields as list [
@@ -494,29 +498,28 @@ def addon_details(addon_id, fields=None):
 
 
 def enable_addon(addon_id, enable=True):
-    
     """Enable/Disable an addon via json-rpc"""
 
     command = {
-        "jsonrpc":"2.0", "method": "Addons.SetAddonEnabled", "params": {"addonid": addon_id, "enabled": enable}, "id": 1
+        "jsonrpc": "2.0", "method": "Addons.SetAddonEnabled", "params": {"addonid": addon_id, "enabled": enable},
+        "id": 1
     }
 
     json_rpc(command)
 
 
 def set_gui_setting(_setting_, value):
-
     """Change a gui setting via json-rpc"""
 
     json_cmd = {
-        "jsonrpc": "2.0", "method": "Settings.SetSettingValue", "params": {"setting": _setting_, "value": value}, "id": 1
+        "jsonrpc": "2.0", "method": "Settings.SetSettingValue", "params": {"setting": _setting_, "value": value},
+        "id": 1
     }
 
     json_rpc(json_cmd)
 
 
 def get_a_setting(_setting_):
-    
     """Return the state of a gui setting as dictionary"""
 
     json_cmd = {
@@ -527,27 +530,22 @@ def get_a_setting(_setting_):
 
 
 def get_skin_bool_setting(setting_id):
-
     return bool(condVisibility('Skin.HasSetting({0})'.format(setting_id)))
 
 
 def set_skin_bool_setting(setting_id, state='true'):
-
     return execute('Skin.SetBool({0},{1})'.format(setting_id, state))
 
 
 def set_skin_string_setting(setting_id, string):
-
     return execute('Skin.SetString({0},{1})'.format(setting_id, string))
 
 
 def quit_kodi():
-
     execute('Quit')
 
 
 def android_activity(url, package=''):
-
     if package:
         package = '"' + package + '"'
 
@@ -555,7 +553,6 @@ def android_activity(url, package=''):
 
 
 def open_web_browser(url):
-
     if condVisibility('system.platform.android'):
 
         return android_activity(url)

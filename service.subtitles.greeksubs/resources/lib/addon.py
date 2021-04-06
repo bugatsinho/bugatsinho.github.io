@@ -20,17 +20,20 @@
 '''
 
 
-import urllib, re, os, xbmc
+import sys, re, os, xbmc, six
 from xbmc import getCleanMovieTitle
-import s4f
-import subztv
-import yifi
-import sys, urlparse
+from resources.lib import s4f, subztv, yifi
+from six.moves.urllib_parse import urlencode
 from resources.modules import control, workers
+import concurrent.futures
+try:
+    from urlparse import parse_qsl
+except ImportError:
+    from urllib.parse import parse_qsl
 
 syshandle = int(sys.argv[1])
 sysaddon = sys.argv[0]
-params = dict(urlparse.parse_qsl(sys.argv[2].replace('?','')))
+params = dict(parse_qsl(sys.argv[2].replace('?', '')))
 
 action = params.get('action')
 source = params.get('source')
@@ -43,7 +46,7 @@ class Search:
 
     def __init__(self):
 
-        self.list = []
+        self.list = list()
 
     def run(self, query=None):
 
@@ -51,9 +54,15 @@ class Search:
             control.directory(syshandle)
             control.infoDialog(control.lang(32002).encode('utf-8'))
             return
+
+        if control.kodi_version() >= 18.0 and not\
+                control.conditional_visibility('System.HasAddon(vfs.libarchive)')\
+                and not (control.condVisibility('System.Platform.Linux')):
+            control.execute('InstallAddon(vfs.libarchive)')
+
         if query:
-            query = '%s/imdb=0' % re.sub(r'[\(|\)]', '', query)
-            # xbmc.log('$#$QUERY-ELSE: %s' % query, xbmc.LOGNOTICE)
+            query = '{}/imdb=0'.format(re.sub(r'[\(|\)]', '', query))
+            # xbmc.log('$#$QUERY-ELSE: %s' % query, xbmc.LOGINFO)
         else:
             if control.condVisibility('Player.HasVideo'):
                 title = control.infoLabel('VideoPlayer.Title')
@@ -103,22 +112,39 @@ class Search:
             else:  # file
                 query, year = getCleanMovieTitle(title)
                 if not year == '':
-                    query = '%s (%s)/imdb=%s' % (query, year, str(imdb))
-            # xbmc.log('$#$QUERY-NONE-FINAL: %s' % query, xbmc.LOGNOTICE)
+                    query = '{} ({})/imdb={}'.format(query, year, str(imdb))
 
-        self.query = query
-        # xbmc.log('$#$QUERY: %s' % query, xbmc.LOGNOTICE)
+        self.query = six.ensure_str(query)
 
-        threads = []
-        if control.setting('provider.subztv.club'):
-            threads.append(workers.Thread(self.subztv))
-        if control.setting('provider.s4f'):
-            threads.append(workers.Thread(self.s4f))
-        if control.setting('provider.yifi'):
-            threads.append(workers.Thread(self.yifi))
+        with concurrent.futures.ThreadPoolExecutor(5) as executor:
+            threads = [
+                executor.submit(self.subztv),
+                executor.submit(self.s4f),
+                executor.submit(self.yifi)
+            ]
 
-        [i.start() for i in threads]
-        [i.join() for i in threads]
+            for future in concurrent.futures.as_completed(threads):
+
+                item = future.result()
+
+                if not item:
+                    continue
+
+                self.list.extend(item)
+        # threads = []
+        # if control.setting('provider.subztv.club'):
+        #     threads.append(workers.Thread(self.subztv))
+        # xbmc.log('$#$THREAD1: %s' % threads)
+        # if control.setting('provider.s4f'):
+        #     threads.append(workers.Thread(self.s4f))
+        # xbmc.log('$#$THREAD2: %s' % threads)
+        # if control.setting('provider.yifi'):
+        #     threads.append(workers.Thread(self.yifi))
+        # xbmc.log('$#$THREAD3: %s' % threads)
+        #
+        # [i.start() for i in threads]
+        # [i.join() for i in threads]
+        self.list = [i for i in self.list if i]
 
         f = []
 
@@ -129,31 +155,26 @@ class Search:
         f += [i for i in self.list if i['source'] == 'yifi']
 
         self.list = sorted(f, key=lambda k: k['rating'], reverse=True)
-
         for i in self.list:
-
             try:
 
                 if i['source'] == 'subztv':
-                    i['name'] = '[subztv] %s' % i['name']
+                    i['name'] = u'[SUBZTV] {0}'.format(i['name'])
 
                 elif i['source'] == 's4f':
-                    i['name'] = '[S4F] %s' % i['name']
+                    i['name'] = u'[S4F] {0}'.format(i['name'])
 
                 elif i['source'] == 'yifi':
-                    i['name'] = '[yifi] %s' % i['name']
+                    i['name'] = u'[YIFI] {0}'.format(i['name'])
             except BaseException:
                 pass
 
         for i in self.list:
-
             try:
-                name, url, source, rating = i['name'], i['url'], i['source'], i['rating']
-
-                u = {'action': 'download', 'url': url, 'source': source}
-                u = '%s?%s' % (sysaddon, urllib.urlencode(u))
-
-                item = control.item(label='Greek', label2=name, iconImage=str(rating), thumbnailImage='el')
+                u = {'action': 'download', 'url': i['url'], 'source': i['source']}
+                u = '%s?%s' % (sysaddon, urlencode(u))
+                item = control.item(label='Greek', label2=str(i['name']))
+                item.setArt({'icon': str(i['rating'])[:1], 'thumb': 'el'})
                 item.setProperty('sync', 'false')
                 item.setProperty('hearing_imp', 'false')
 

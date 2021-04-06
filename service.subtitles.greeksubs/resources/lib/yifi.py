@@ -15,9 +15,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+from __future__ import print_function
 
-import xbmc
-import urllib, urlparse, re, os, json
+import re
+import os
+from six.moves.urllib_parse import urljoin, quote_plus, quote
+
 from resources.modules import client, cleantitle
 from resources.modules import control
 
@@ -42,7 +45,7 @@ class yifi:
                     r = client.request(url)
 
                 else:
-                    url = urlparse.urljoin(self.base_link, self.search.format(urllib.quote_plus(title)))
+                    url = urljoin(self.base_link, self.search.format(quote_plus(title)))
                     r = client.request(url)
                     data = client.parseDOM(r, 'div', attrs={'class': 'media-body'})  # <div class="media-body">
                     for i in data:
@@ -55,7 +58,7 @@ class yifi:
                                 raise Exception()
                             url = client.parseDOM(i, 'a', ret='href')[0]
                             url = url.encode('utf-8')
-                            url = urlparse.urljoin(self.base_link, url)
+                            url = urljoin(self.base_link, url)
                             r = client.request(url)
                         except BaseException:
                             pass
@@ -86,7 +89,7 @@ class yifi:
 
         for i in urls:
             try:
-                r = client.request(urlparse.urljoin(self.base_link, i[1]))
+                r = client.request(urljoin(self.base_link, i[1]))
                 url = client.parseDOM(r, 'a', ret='href', attrs={'class': 'btn-icon download-subtitle'})[0]
                 url = 'https://yifysubtitles.org/' + url if url.startswith('/') else url
                 self.list.append({'name': i[0], 'url': url, 'source': 'yifi', 'rating': '5'})
@@ -99,7 +102,7 @@ class yifi:
 
         try:
             result = client.request(url)
-            # f = os.path.splitext(urlparse.urlparse(url).path)[1][1:]
+            # f = os.path.splitext(urlparse(url).path)[1][1:]
             f = os.path.join(path, url.rpartition('/')[2])
 
             with open(f, 'wb') as subFile:
@@ -114,9 +117,9 @@ class yifi:
                 control.execute('Extract("%s","%s")' % (f, path))
 
             if control.infoLabel('System.Platform.Windows'):
-                conversion = urllib.quote
+                conversion = quote
             else:
-                conversion = urllib.quote_plus
+                conversion = quote_plus
 
             if f.lower().endswith('.rar'):
 

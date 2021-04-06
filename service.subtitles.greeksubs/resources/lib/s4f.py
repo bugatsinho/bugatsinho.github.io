@@ -15,11 +15,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import xbmc
-import urllib, urlparse, re, os, requests
+import xbmc, six
+import re, os, requests
 from resources.modules import client
 from resources.modules import control
-
+from six.moves.urllib_parse import urljoin, quote_plus, quote
 
 class s4f:
     def __init__(self):
@@ -29,7 +29,7 @@ class s4f:
         self.search = 'search_report.php?search=%s&searchType=1'
 
     def get(self, query):
-        try:
+        #try:
             query, imdb = query.split('/imdb=')
             match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
             # xbmc.log('$#$MATCH-S4F: %s' % match, xbmc.LOGNOTICE)
@@ -41,14 +41,18 @@ class s4f:
 
                 title, year = match[0][0], match[0][1]
 
-                query = urllib.quote_plus('{} {}'.format(title, year))
+                query = quote_plus('{} {}'.format(title, year))
 
-                url = urlparse.urljoin(self.base_link, self.search % query)
+                url = urljoin(self.base_link, self.search % query)
 
                 req = requests.get(url, headers=hdr)
                 cj = req.cookies
-                r = req.content
-                r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                r = req.text
+                # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                try:
+                    r = r.decode('utf-8', errors='replace')
+                except AttributeError:
+                    pass
                 # xbmc.log('$#$HTML: %s' % r, xbmc.LOGNOTICE)
 
                 urls = client.parseDOM(r, 'div', attrs={'class': 'movie-download'})
@@ -60,7 +64,7 @@ class s4f:
                          client.parseDOM(i, 'a', ret='title')[0],
                          re.findall(r'<b>(\d+)</b>DLs', i, re.I)[0]) for i in urls if i]
                 # xbmc.log('$#$URLS: %s' % urls, xbmc.LOGNOTICE)
-                urls = [(urlparse.urljoin(self.base_link, i[0]), i[1].split('for ', 1)[1],
+                urls = [(urljoin(self.base_link, i[0]), i[1].split('for ', 1)[1],
                          i[2]) for i in urls if i]
                 urls = [(i[0], i[1], i[2]) for i in urls if i]
                 # xbmc.log('$#$URLS: %s' % urls, xbmc.LOGNOTICE)
@@ -75,14 +79,14 @@ class s4f:
 
                 # hdlr = 'S%02dE%02d' % (int(season), int(episode))
 
-                query = urllib.quote('{} {}'.format(title, hdlr))
+                query = quote('{} {}'.format(title, hdlr))
 
-                url = urlparse.urljoin(self.base_TVlink, self.search % query)
+                url = urljoin(self.base_TVlink, self.search % query)
 
                 req = requests.get(url, headers=hdr)
 
                 cj = req.cookies
-                r = req.content
+                r = req.text
                 r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 # xbmc.log('@@URL:%s' % r)
 
@@ -92,30 +96,29 @@ class s4f:
                 urls = [(client.parseDOM(i, 'tr')[0], re.findall(r'<B>(\d+)</B>DLs', i, re.I)[0]) for i in urls if i]
                 urls = [(client.parseDOM(i[0], 'a', ret='href')[0],
                          client.parseDOM(i[0], 'a', ret='title')[0], i[1]) for i in urls if i]
-                urls = [(urlparse.urljoin(self.base_TVlink, i[0]), re.sub('Greek subtitle[s] for ', '', i[1]),
+                urls = [(urljoin(self.base_TVlink, i[0]), re.sub('Greek subtitle[s] for ', '', i[1]),
                          i[2]) for i in urls if i]
                 urls = [(i[0], i[1], i[2]) for i in urls if i]
 
-        except BaseException:
-            return
+        # except BaseException:
+        #     return
 
-        for i in urls:
-            try:
-                rating = self._rating(i[2])
-                name = i[1].replace('_', '').replace('%20', '.')
-                name = client.replaceHTMLCodes(name)
-                name = name.encode('utf-8')
+            for i in urls:
+                # try:
+                    rating = self._rating(i[2])
+                    name = i[1].replace('_', '').replace('%20', '.')
+                    name = client.replaceHTMLCodes(name)
+                    name = six.ensure_str(name, 'utf-8')
+                    url = i[0]
+                    url = client.replaceHTMLCodes(url)
+                    url = six.ensure_str(url, 'utf-8')
 
-                url = i[0]
-                url = client.replaceHTMLCodes(url)
-                url = url.encode('utf-8')
+                    self.list.append({'name': name, 'url': '{}|{}|{}'.format(url, cj['PHPSESSID'], cj['__cfduid']),
+                                      'source': 's4f', 'rating': rating})
+                # except BaseException:
+                #     pass
 
-                self.list.append({'name': name, 'url': '{}|{}|{}'.format(url, cj['PHPSESSID'], cj['__cfduid']),
-                                  'source': 's4f', 'rating': rating})
-            except BaseException:
-                pass
-
-        return self.list
+            return self.list
 
     def _rating(self, downloads):
 
@@ -155,7 +158,7 @@ class s4f:
 
                 pos = re.findall(r'\/(getSub-\w+\.html)', r, re.I | re.DOTALL)[0]
                 # xbmc.log('@@POSSSSS:%s' % pos)
-                post_url = urlparse.urljoin(self.base_TVlink, pos)
+                post_url = urljoin(self.base_TVlink, pos)
                 # xbmc.log('@@POStttt:%s' % post_url)
                 r = requests.get(post_url, headers=headers, cookies=cj)
                 surl = r.url
@@ -187,10 +190,11 @@ class s4f:
                 result = client.request(surl)
                 # surl = self.base_link + surl if surl.startswith('/') else surl
 
+            # path = 'special://userdata/addon_data/service.subtitles.greeksubs/temp/'
             f = os.path.join(path, surl.rpartition('/')[2])
-            if f.lower().endswith('.rar') and not control.condVisibility('system.platform.osx'):
-                return control.okDialog('GreekSubs', 'Το αρχείο υποτίτλου είναι σε μορφή rar\n και δεν μπορεί να ληφθεί.\n'
-                                        'Δοκιμάστε άλλον υπότιτλο!')
+            # if f.lower().endswith('.rar') and not control.condVisibility('system.platform.osx'):
+            #     return control.okDialog('GreekSubs', 'Το αρχείο υποτίτλου είναι σε μορφή rar\n και δεν μπορεί να ληφθεί.\n'
+            #                             'Δοκιμάστε άλλον υπότιτλο!')
 
             with open(f, 'wb') as subFile:
                 subFile.write(result)
@@ -204,16 +208,18 @@ class s4f:
                 control.execute('Extract("{}","{}")'.format(f, path))
 
             if control.condVisibility('system.platform.windows'):
-                conversion = urllib.quote
+                conversion = quote
             else:
-                conversion = urllib.quote_plus
+                conversion = quote_plus
 
             if f.lower().endswith('.rar'):
-                if control.condVisibility('system.platform.osx'):
-                    uri = "rar://{0}/".format(conversion(f))
+                    import xbmcvfs
+                # if control.condVisibility('system.platform.osx'):
+                #     uri = "rar://{}/".format(conversion(f))
+                    uri = 'rar://%(archive_file)s' % {'archive_file': quote_plus(control.transPath(f))}
                     dirs, files = control.listDir(uri)
-                else:
-                    return
+                # else:
+                #     return
 
             else:
 
