@@ -60,6 +60,12 @@ class Search:
                 and not (control.condVisibility('System.Platform.Linux')):
             control.execute('InstallAddon(vfs.libarchive)')
 
+        if not control.conditional_visibility('System.HasAddon(script.module.futures)') and six.PY2:
+            if 17.0 <= control.kodi_version() <= 18.9:
+                control.execute('InstallAddon(script.module.futures)')
+                control.sleep(1500)
+
+
         if query:
             query = '{}/imdb=0'.format(re.sub(r'[\(|\)]', '', query))
             # xbmc.log('$#$QUERY-ELSE: %s' % query, xbmc.LOGINFO)
