@@ -29,7 +29,7 @@ class s4f:
         self.search = 'search_report.php?search=%s&searchType=1'
 
     def get(self, query):
-        #try:
+        try:
             query, imdb = query.split('/imdb=')
             match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
             # xbmc.log('$#$MATCH-S4F: %s' % match, xbmc.LOGNOTICE)
@@ -100,25 +100,25 @@ class s4f:
                          i[2]) for i in urls if i]
                 urls = [(i[0], i[1], i[2]) for i in urls if i]
 
-        # except BaseException:
-        #     return
+        except BaseException:
+            return
 
-            for i in urls:
-                # try:
-                    rating = self._rating(i[2])
-                    name = i[1].replace('_', '').replace('%20', '.')
-                    name = client.replaceHTMLCodes(name)
-                    name = six.ensure_str(name, 'utf-8')
-                    url = i[0]
-                    url = client.replaceHTMLCodes(url)
-                    url = six.ensure_str(url, 'utf-8')
+        for i in urls:
+            try:
+                rating = self._rating(i[2])
+                name = i[1].replace('_', '').replace('%20', '.')
+                name = client.replaceHTMLCodes(name)
+                name = six.ensure_str(name, 'utf-8')
+                url = i[0]
+                url = client.replaceHTMLCodes(url)
+                url = six.ensure_str(url, 'utf-8')
 
-                    self.list.append({'name': name, 'url': '{}|{}|{}'.format(url, cj['PHPSESSID'], cj['__cfduid']),
-                                      'source': 's4f', 'rating': rating})
-                # except BaseException:
-                #     pass
+                self.list.append({'name': name, 'url': '{}|{}|{}'.format(url, cj['PHPSESSID'], cj['__cfduid']),
+                                  'source': 's4f', 'rating': rating})
+            except BaseException:
+                pass
 
-            return self.list
+        return self.list
 
     def _rating(self, downloads):
 

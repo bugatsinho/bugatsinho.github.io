@@ -19,6 +19,8 @@ from __future__ import print_function
 
 import re
 import os
+import six
+import xbmc
 from six.moves.urllib_parse import urljoin, quote_plus, quote
 
 from resources.modules import client, cleantitle
@@ -37,16 +39,15 @@ class yifi:
         try:
             query, imdb = query.split('/imdb=')
             match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
-            #xbmc.log('$#$MATCH-YIFI: %s' % match, xbmc.LOGNOTICE)
             if len(match) > 0:
                 title, year = match[0][0], match[0][1]
                 if imdb.startswith('tt'):
                     url = 'https://yifysubtitles.org/movie-imdb/{}'.format(imdb)
-                    r = client.request(url)
+                    r = six.ensure_text(client.request(url))
 
                 else:
                     url = urljoin(self.base_link, self.search.format(quote_plus(title)))
-                    r = client.request(url)
+                    r = six.ensure_text(client.request(url))
                     data = client.parseDOM(r, 'div', attrs={'class': 'media-body'})  # <div class="media-body">
                     for i in data:
                         try:
@@ -65,6 +66,7 @@ class yifi:
 
                 data = client.parseDOM(r, 'tr', attrs={'data-id': r'\d+'})
                 items = [i for i in data if 'greek' in i.lower()]
+                # xbmc.log('$#$MATCH-YIFI-RRR: %s' % items)
                 urls = []
                 for item in items:
                     try:
@@ -72,13 +74,15 @@ class yifi:
                         name = client.parseDOM(item, 'a')[0]
                         name = re.sub(r'<.+?>', '', name).replace('subtitle', '')
                         name = client.replaceHTMLCodes(name)
-                        name = name.encode('utf-8')
+
 
                         url = client.parseDOM(item, 'a', ret='href')[0]
                         url = client.replaceHTMLCodes(url)
-                        url = url.encode('utf-8')
-                        urls += [(name, url)]
 
+                        if six.PY2:
+                            url = url.encode('utf-8')
+                            name = name.encode('utf-8')
+                        urls += [(name, url)]
                     except BaseException:
                         pass
             else:
@@ -89,7 +93,7 @@ class yifi:
 
         for i in urls:
             try:
-                r = client.request(urljoin(self.base_link, i[1]))
+                r = six.ensure_text(client.request(urljoin(self.base_link, i[1])))
                 url = client.parseDOM(r, 'a', ret='href', attrs={'class': 'btn-icon download-subtitle'})[0]
                 url = 'https://yifysubtitles.org/' + url if url.startswith('/') else url
                 self.list.append({'name': i[0], 'url': url, 'source': 'yifi', 'rating': '5'})

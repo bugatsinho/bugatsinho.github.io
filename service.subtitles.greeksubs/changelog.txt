@@ -1,3 +1,6 @@
+[B]2.0.3[/B] 13/04/2021
+-fix encoding issues
+
 [B]2.0.1[/B] 06/04/2021
 -compatible with Kodi18-19
 

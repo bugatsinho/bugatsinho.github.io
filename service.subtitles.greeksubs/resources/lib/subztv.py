@@ -51,7 +51,6 @@ class subztv:
         try:
             query, imdb = query.split('/imdb=')
             match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
-
             cookie = self.s.get(self.baseurl, headers=self.hdr)
             cj = requests.utils.dict_from_cookiejar(cookie.cookies)
             if len(match) > 0:
@@ -144,19 +143,13 @@ class subztv:
                 items = client.parseDOM(r, 'tbody')[0]
                 items = client.parseDOM(items, 'tr')
 
-        except Exception as e:
-
-            _, __, tb = sys.exc_info()
-
-            print(traceback.print_tb(tb))
-
-            xbmc.log('Greeksubs failed at get function, reason: ' + str(e))
-
+        except BaseException:
             return
 
         for item in items:
             try:
-                item = item.encode('utf-8')
+                if six.PY2:
+                    item = item.encode('utf-8')
                 # xbmc.log('$#$MATCH-SUBZ-ITEM: {}'.format(item))
                 try:
                     imdb = re.search(r'\/(tt\d+)\/', frame).groups()[0]
@@ -170,12 +163,12 @@ class subztv:
 
                 url = self.baseurl + 'dll/{}/0/{}'.format(data[0], secCode)
                 url = client.replaceHTMLCodes(url)
-
                 url = url.encode('utf-8')
+
                 url = six.ensure_str(url)
                 name = six.ensure_str(name)
                 down = data[1]
-                rating = self._rating(down)
+                rating = str(self._rating(down))
 
                 self.list.append(
                     {'name': name, 'url': '{}|{}|{}|{}|{}|{}'.format(frame, url, cj['__cfduid'], cj['PHPSESSID'], name, imdb),
