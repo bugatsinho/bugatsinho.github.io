@@ -105,7 +105,7 @@ class s4f:
 
         for i in urls:
             try:
-                rating = self._rating(i[2])
+                rating = str(self._rating(i[2]))
                 name = i[1].replace('_', '').replace('%20', '.')
                 name = client.replaceHTMLCodes(name)
                 name = six.ensure_str(name, 'utf-8')
@@ -216,7 +216,7 @@ class s4f:
                     import xbmcvfs
                 # if control.condVisibility('system.platform.osx'):
                 #     uri = "rar://{}/".format(conversion(f))
-                    uri = 'rar://%(archive_file)s' % {'archive_file': quote_plus(control.transPath(f))}
+                    uri = 'rar://%(archive_file)s' % {'archive_file': conversion(control.transPath(f))}
                     dirs, files = control.listDir(uri)
                 # else:
                 #     return
