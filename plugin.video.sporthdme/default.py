@@ -26,8 +26,8 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'http://sporthd.live/'
-Live_url = 'http://sporthd.live/index.php?'
+BASEURL = 'http://www.sporthd.live/'
+Live_url = 'http://www.sporthd.live/index.php?'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
@@ -202,14 +202,14 @@ xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 def get_stream(url):  # 4
     data = base64.b64decode(unquote(url))
-    xbmc.log('@#@DATAAAA:%s' % data, xbmc.LOGINFO)
+    # xbmc.log('@#@DATAAAA:%s' % data, xbmc.LOGINFO)
     if b'info_outline' in data:
         control.infoDialog("[COLOR gold]No Links available ATM.\n [COLOR lime]Try Again Later![/COLOR]", NAME,
                            iconimage, 5000)
         return
     else:
         links = list(zip(client.parseDOM(str(data), 'a', ret='href'), client.parseDOM(str(data), 'a')))
-        xbmc.log('@#@STREAMMMMMSSSSSS:%s' % links, xbmc.LOGINFO)
+        # xbmc.log('@#@STREAMMMMMSSSSSS:%s' % links, xbmc.LOGINFO)
         titles = []
         streams = []
         for link, title in links:
@@ -281,12 +281,14 @@ def resolve(url, name):
                 except IndexError:
                     streams = client.parseDOM(r, 'iframe', ret='src')
                     stream = [i for i in streams if not 'adca.' in i][0]
+                    # xbmc.log("[{}] - STREAM: {}".format(ADDON.getAddonInfo('id'), str(stream)))
             else:
                 stream = client.parseDOM(r, 'iframe', ret='src')[-1]
+                # xbmc.log("[{}] - STREAM-ELSE: {}".format(ADDON.getAddonInfo('id'), str(stream)))
         # xbmc.log("[{}] - STREAM: {}".format(ADDON.getAddonInfo('id'), str(stream)))
-        r = six.ensure_str(client.request(stream, referer=url)).replace('\t', '')
-        # xbmc.log("[{}] - STREAM-DATA: {}".format(ADDON.getAddonInfo('id'), str(r)))
-        if 'youtube' in r:
+        rr = client.request(stream, referer=url)
+        rr = six.ensure_text(rr).replace('\t', '')
+        if 'youtube' in rr:
             try:
                 flink = client.parseDOM(r, 'iframe', ret='src')[0]
                 fid = flink.split('/')[-1]
@@ -298,27 +300,27 @@ def resolve(url, name):
             # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
 
         else:
-            if '<script>eval' in r:
-                unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', str(r), re.DOTALL)[0].strip()
+            if '<script>eval' in rr and not '.m3u8?':
+                unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', rr, re.DOTALL)[0].strip()
                 # xbmc.log("[{}] - STREAM-UNPACK: {}".format(ADDON.getAddonInfo('id'), str(unpack)))
-                r = jsunpack.unpack(unpack)
+                rr = jsunpack.unpack(unpack)
                 # xbmc.log("[{}] - STREAM-UNPACK: {}".format(ADDON.getAddonInfo('id'), str(r)))
             # else:
             #     xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))
-            if 'player.src({src:' in r:
-                flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', str(r), re.DOTALL)[0]
+            if 'player.src({src:' in str(rr):
+                flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', rr, re.DOTALL)[0]
                 # xbmc.log('@#@STREAMMMMM: %s' % flink, xbmc.LOGNOTICE)
-            elif 'Clappr.Player' in r:
-                flink = re.findall(r'''source:\s*["'](.+?)['"]''', str(r), re.DOTALL)[0]
-            elif 'player.setSrc' in r:
-                flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', str(r), re.DOTALL)[0]
+            elif 'new Clappr' in rr:
+                flink = re.findall(r'''source\s*:\s*["'](.+?)['"]\,''', str(rr), re.DOTALL)[0]
+            elif 'player.setSrc' in rr:
+                flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', rr, re.DOTALL)[0]
             else:
                 try:
-                    flink = re.findall(r'''source:\s*["'](.+?)['"]''', str(r), re.DOTALL)[0]
+                    flink = re.findall(r'''source:\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
                 except IndexError:
-                    ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', r, re.DOTALL)[0]
-                    ea = client.request(ea).split('=')[1]
-                    flink = re.findall('''videoplayer.src = "(.+?)";''', r, re.DOTALL)[0]
+                    ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', rr, re.DOTALL)[0]
+                    ea = six.ensure_text(client.request(ea)).split('=')[1]
+                    flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
             flink += '|Referer={}'.format(quote(stream))
         # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
