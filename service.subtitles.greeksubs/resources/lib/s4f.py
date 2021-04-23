@@ -87,7 +87,11 @@ class s4f:
 
                 cj = req.cookies
                 r = req.text
-                r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                try:
+                    r = r.decode('utf-8', errors='replace')
+                except AttributeError:
+                    pass
                 # xbmc.log('@@URL:%s' % r)
 
                 urls = client.parseDOM(r, 'div', attrs={'class': ' seeDark'})
@@ -153,7 +157,11 @@ class s4f:
                       '__cfduid': cfd}
 
                 r = requests.get(url, headers=headers, cookies=cj).content
-                r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                try:
+                    r = r.decode('utf-8', errors='replace')
+                except AttributeError:
+                    pass
                 # xbmc.log('@@HTML:%s' % r)
 
                 pos = re.findall(r'\/(getSub-\w+\.html)', r, re.I | re.DOTALL)[0]
@@ -175,7 +183,11 @@ class s4f:
                 post_url = 'https://www.sf4-industry.com/getSub.php'
 
                 r = requests.get(url, headers=headers, cookies=cj).text
-                r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                try:
+                    r = r.decode('utf-8', errors='replace')
+                except AttributeError:
+                    pass
                 # xbmc.log('@@HTMLLL:%s' % r)
                 pos = client.parseDOM(r, 'div', attrs={'class': 'download-btn'})[0]
                 pos = client.parseDOM(pos, 'input', ret='value', attrs={'name': 'id'})[0]

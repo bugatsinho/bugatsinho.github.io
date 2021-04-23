@@ -152,9 +152,9 @@ class subztv:
                     item = item.encode('utf-8')
                 # xbmc.log('$#$MATCH-SUBZ-ITEM: {}'.format(item))
                 try:
-                    imdb = re.search(r'\/(tt\d+)\/', frame).groups()[0]
+                    imdb = re.search(r'\/(tt\d+)\/', str(frame)).groups()[0]
                 except BaseException:
-                    imdb = re.search(r'\/(tt\d+)', frame).groups()[0]
+                    imdb = re.search(r'\/(tt\d+)', str(frame)).groups()[0]
 
                 data = re.findall(r'''downloadMe\(['"](\w+-\w+).+?label.+?>(\d+).+?<td>(.+?)</td''',
                                   item, re.I | re.DOTALL)[0]
