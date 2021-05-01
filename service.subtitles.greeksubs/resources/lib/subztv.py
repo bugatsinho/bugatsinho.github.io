@@ -119,7 +119,7 @@ class subztv:
                         series_data = client.request(series_url % imdb, headers=_headers)
                         imdb = json.loads(series_data)['data']['imdbId']
                         r = self.s.get(self.baseurl + 'view/{}'.format(imdb)).text
-                        #r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                        # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                         frames = client.parseDOM(r, 'a', ret='href')
                         frame = [i for i in frames if hdlr in i][0]
                     else:
@@ -171,7 +171,8 @@ class subztv:
                 rating = str(self._rating(down))
 
                 self.list.append(
-                    {'name': name, 'url': '{}|{}|{}|{}|{}|{}'.format(frame, url, cj['__cfduid'], cj['PHPSESSID'], name, imdb),
+                    {'name': name,
+                     'url': '{}|{}|{}|{}|{}|{}'.format(frame, url, cj['__cfduid'], cj['PHPSESSID'], name, imdb),
                      'source': 'subztv', 'rating': rating})
 
             except BaseException:
@@ -231,7 +232,7 @@ class subztv:
             # xbmc.log('$#$ FRAME-POST: %s' % post)
 
             result = self.s.post(url, data=post)
-            #xbmc.log('$#$POST-RESUL: %s' % result.content)
+            # xbmc.log('$#$POST-RESUL: %s' % result.content)
             f = os.path.join(path, quote(sub_) + '.srt')
             with open(f, 'wb') as subFile:
                 subFile.write(result.content)
@@ -268,7 +269,13 @@ class subztv:
                     except BaseException:
                         pass
 
-            filename = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])][0].decode('utf-8')
+            filename = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])][0]
+
+            try:
+                filename = filename.decode('utf-8')
+            except Exception:
+                pass
+
             subtitle = os.path.join(path, filename)
 
             if f.lower().endswith('.rar'):
@@ -287,4 +294,4 @@ class subztv:
         except BaseException:
             pass
 
-  
+
