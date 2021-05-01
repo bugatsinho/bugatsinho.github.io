@@ -238,6 +238,9 @@ def resolve(name, url, iconimage, description):
         # name = '{0} - {1}'.format(head, title)
         poster = client.parseDOM(info, 'meta', ret='content', attrs={'property': 'og:image'})[0]
         link = re.findall(r'''source:['"](.+?)['"]\,''', info, re.DOTALL)[0]
+        # xbmc.log('LINKKKK: {}'.format(link))
+        if link.startswith('live'):
+            link = 'https://hd-auth.skylinewebcams.com/' + str(link)
         link += '|User-Agent={}&Referer={}'.format(quote_plus(client.agent()), quote_plus(url))
         if six.PY2:
             head = head.encode('utf-8')
