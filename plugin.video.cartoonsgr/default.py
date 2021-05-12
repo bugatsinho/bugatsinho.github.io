@@ -67,11 +67,11 @@ def Main_addDir():
 
 def gamatokids():
     addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]',
-           GAMATO + 'genre/%ce%bc%ce%b5%cf%84%ce%b1%ce%b3%ce%bb%cf%89%cf%84%ce%b9%cf%83%ce%bc%ce%ad%ce%bd%ce%b1/',
+           GAMATO + 'genre/gamato/',
            4, ART + 'dub.jpg', FANART, '')
-    # addDir('[B][COLOR yellow]' + Lang(32006).encode('utf-8') + '[/COLOR][/B]',
-    #        GAMATO, 3, ART + 'genre.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Προτεινόμενα[/COLOR][/B]', GAMATO, 21, ART + 'top.png', FANART, '')
+    addDir('[B][COLOR yellow]' + Lang(32010).encode('utf-8') + '[/COLOR][/B]',
+           GAMATO + 'genre/κινούμενα-σχέδια/', 4, ART + 'genre.jpg', FANART, '')
+    # addDir('[B][COLOR yellow]Προτεινόμενα[/COLOR][/B]', GAMATO, 21, ART + 'top.png', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002).encode('utf-8') + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
     views.selectView('menu', 'menu-view')
 
@@ -227,7 +227,7 @@ def Get_content(url):  # 5
             url = client.parseDOM(post, 'a', ret='href')[0]
             icon = client.parseDOM(post, 'img', ret='src')[0]
             name = client.parseDOM(post, 'span', attrs={'class': 'tt'})[0]
-            name = re.sub('\d{4}', '', name)
+            name = re.sub(r'\d{4}', '', name)
             desc = client.parseDOM(post, 'span', attrs={'class': 'ttx'})[0]
         except BaseException:
             pass
@@ -747,6 +747,54 @@ def gamato_links(url, name, poster):  # 12
         return
     views.selectView('movies', 'movie-view')
 
+def get_links(name, url, iconimage, description):
+    data = client.request(url)
+    try:
+        if 'Τρέιλερ' in data:
+            flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
+            if 'youtu' in flink:
+                addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
+        else:
+            addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
+    except BaseException:
+        pass
+    try:
+        if 'tvshows' not in url:
+            frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
+            frames = [(client.parseDOM(i, 'a', ret='href', attrs={'target': '_blank'})[0],
+                       client.parseDOM(i, 'img', ret='src')[0],
+                       client.parseDOM(i, 'strong', {'class': 'quality'})[0]) for i in frames if frames]
+            for frame, domain, quality in frames:
+                host = domain.split('=')[-1].encode('utf-8')
+                # if 'Μεταγλωτισμένο' in info.encode('utf-8', 'ignore'):
+                #     info = '[Μετ]'
+                # elif 'Ελληνικοί' in info.encode('utf-8', 'ignore'):
+                #     info = '[Υπο]'
+                # elif 'Χωρίς' in info.encode('utf-8', 'ignore'):
+                #     info = '[Χωρίς Υπ]'
+                # else:
+                #     info = '[N/A]'
+                quality = 'SD'
+                title = '{} | [B]{}[/B] | ({})'.format(name, host.capitalize(), quality)
+                addDir(title, frame, 100, iconimage, FANART, str(description))
+        else:
+            data = client.parseDOM(data, 'table', attrs={'class': 'easySpoilerTable'})
+            seasons = [dom.parse_dom(i, 'a', {'target': '_blank'}, req='href') for i in data[:-1] if i]
+            episodes = []
+            for season in seasons:
+                for epi in season:
+                    title = clear_Title(epi.content.replace('&#215;', 'x'))
+                    frame = epi.attrs['href']
+                    episodes.append((title, frame))
+
+            for title, frame in episodes:
+                addDir(title, frame, 100, iconimage, FANART, str(description))
+
+    except BaseException:
+        title = '[B][COLOR white]NO LINKS[/COLOR][/B]'
+        addDir(title, '', 'bug', iconimage, FANART, str(description))
+    views.selectView('movies', 'movie-view')
+
 
 ########################################
 
@@ -800,7 +848,7 @@ def resolve(name, url, iconimage, description):
     if host.split('|')[0].endswith('.mp4') and 'clou' in host:
         stream_url = host + '|User-Agent=%s&Referer=%s' % (urllib.quote_plus(client.agent(), ':/'), GAMATO)
         name = name
-    elif host.endswith('.mp4'):
+    elif host.endswith('.mp4') and not 'userload' in host:
         stream_url = host + '|User-Agent=%s&Referer=%s' % (urllib.quote_plus(client.agent(), ':/'), GAMATO)
     # stream_url = requests.get(host, headers=hdr).url
     elif '/aparat.' in host:
@@ -914,7 +962,8 @@ elif mode == 3:
 elif mode == 4:
     gamato_kids(url)
 elif mode == 12:
-    gamato_links(url, name, iconimage)
+    get_links(name, url, iconimage, description)
+    # gamato_links(url, name, iconimage)
 elif mode == 18:
     keyb = xbmc.Keyboard('', Lang(32002).encode('utf-8'))
     keyb.doModal()
