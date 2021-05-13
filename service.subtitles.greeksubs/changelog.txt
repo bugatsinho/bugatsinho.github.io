@@ -1,3 +1,6 @@
+[B]2.0.4[/B] 13/05/2021
+-fix cookie issues
+
 [B]2.0.3[/B] 13/04/2021
 -fix encoding issues
 

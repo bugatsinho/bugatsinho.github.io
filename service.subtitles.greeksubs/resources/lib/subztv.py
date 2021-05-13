@@ -51,8 +51,11 @@ class subztv:
         try:
             query, imdb = query.split('/imdb=')
             match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
+            xbmc.log('MATCH: {}'.format(match))
             cookie = self.s.get(self.baseurl, headers=self.hdr)
+
             cj = requests.utils.dict_from_cookiejar(cookie.cookies)
+
             if len(match) > 0:
 
                 title, year = match[0][0], match[0][1]
@@ -61,6 +64,7 @@ class subztv:
                     frame = self.baseurl + 'view/{}'.format(imdb)
                     r = self.s.get(frame).text
                     # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+
                     try:
                         r = r.decode('utf-8', errors='replace')
                     except AttributeError:
@@ -82,6 +86,7 @@ class subztv:
                         pass
                 secCode = client.parseDOM(r, 'input', ret='value', attrs={'id': 'secCode'})[0]
                 items = client.parseDOM(r, 'tbody')[0]
+                # xbmc.log('ITEMS: {}'.format(items))
                 items = client.parseDOM(items, 'tr')
 
             else:
@@ -136,12 +141,13 @@ class subztv:
                         frame = [i for i in frames if hdlr in i][0]
 
                 frame = client.replaceHTMLCodes(frame)
-                frame = frame.encode('utf-8')
+                frame = six.ensure_text(frame, encoding='utf-8')
                 r = self.s.get(frame).text
                 # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 secCode = client.parseDOM(r, 'input', ret='value', attrs={'id': 'secCode'})[0]
                 items = client.parseDOM(r, 'tbody')[0]
                 items = client.parseDOM(items, 'tr')
+                # xbmc.log('ITEMS: {}'.format(items))
 
         except BaseException:
             return
@@ -172,7 +178,7 @@ class subztv:
 
                 self.list.append(
                     {'name': name,
-                     'url': '{}|{}|{}|{}|{}|{}'.format(frame, url, cj['__cfduid'], cj['PHPSESSID'], name, imdb),
+                     'url': '{}|{}|{}|{}|{}'.format(frame, url, cj['PHPSESSID'], name, imdb),
                      'source': 'subztv', 'rating': rating})
 
             except BaseException:
@@ -202,12 +208,13 @@ class subztv:
     def download(self, path, url):
 
         try:
-            frame, url, cjcfduid, cjphp, sub_, imdb_ = url.split('|')
+            frame, url, cjphp, sub_, imdb_ = url.split('|')
             # xbmc.log('$#$ FRAME: %s | URL: %s | COOKIE: %s | SUB: %s | imdb: %s | ' % (frame, url, cjcfduid, sub_, imdb_))
 
             sub_ = unquote_plus(sub_)
 
-            self.s.cookies.update({'__cfduid': cjcfduid, 'PHPSESSID': cjphp})
+            # self.s.cookies.update({'__cfduid': cjcfduid, 'PHPSESSID': cjphp})
+            self.s.cookies.update({'PHPSESSID': cjphp})
             # xbmc.log('$#$ FRAME-COOKIES: %s' % self.s.cookies)
 
             self.s.headers['Referer'] = frame

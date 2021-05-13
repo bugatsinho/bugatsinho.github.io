@@ -153,8 +153,7 @@ class s4f:
                     'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
                     'Referer': url,
                     'Origin': 'https://www.subs4series.com/'}
-                cj = {'PHPSESSID': php,
-                      '__cfduid': cfd}
+                cj = {'PHPSESSID': php}
 
                 r = requests.get(url, headers=headers, cookies=cj).content
                 # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
@@ -164,7 +163,7 @@ class s4f:
                     pass
                 # xbmc.log('@@HTML:%s' % r)
 
-                pos = re.findall(r'\/(getSub-\w+\.html)', r, re.I | re.DOTALL)[0]
+                pos = re.findall(r'''href=["'](/getSub-.+?)["']''', r, re.I | re.DOTALL)[0]
                 # xbmc.log('@@POSSSSS:%s' % pos)
                 post_url = urljoin(self.base_TVlink, pos)
                 # xbmc.log('@@POStttt:%s' % post_url)
@@ -178,8 +177,7 @@ class s4f:
                     'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
                     'Referer': url,
                     'Origin': 'https://www.sf4-industry.com'}
-                cj = {'PHPSESSID': php,
-                      '__cfduid': cfd}
+                cj = {'PHPSESSID': php}
                 post_url = 'https://www.sf4-industry.com/getSub.php'
 
                 r = requests.get(url, headers=headers, cookies=cj).text
