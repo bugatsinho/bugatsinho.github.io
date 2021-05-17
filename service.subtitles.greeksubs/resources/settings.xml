@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="32211">
-		<setting id="provider.subztv.club" type="bool" label="SubzTV" default="true" />
+		<setting id="provider.subztv" type="bool" label="SubzTV" default="true" />
 		<setting id="provider.s4f" type="bool" label="Subs$NUMBER[4]Free" default="true" />
 		<setting id="provider.yifi" type="bool" label="YiFi" default="true" />
 	</category>

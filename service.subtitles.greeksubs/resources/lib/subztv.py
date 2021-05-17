@@ -19,9 +19,6 @@ import json
 import os
 import re
 import six
-import sys
-import traceback
-
 import xbmc
 from resources.modules import cleantitle, client, control
 from six.moves.urllib_parse import unquote_plus, quote_plus, quote
@@ -51,7 +48,7 @@ class subztv:
         try:
             query, imdb = query.split('/imdb=')
             match = re.findall(r'^(?P<title>.+)[\s+\(|\s+](?P<year>\d{4})', query)
-            xbmc.log('MATCH: {}'.format(match))
+            # xbmc.log('MATCH: {}'.format(match))
             cookie = self.s.get(self.baseurl, headers=self.hdr)
 
             cj = requests.utils.dict_from_cookiejar(cookie.cookies)
@@ -63,12 +60,13 @@ class subztv:
                 if imdb.startswith('tt'):
                     frame = self.baseurl + 'view/{}'.format(imdb)
                     r = self.s.get(frame).text
-                    # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                    if six.PY2:
+                        r = re.sub(r'[^\x00-\x7F]+', ' ', r)
 
-                    try:
-                        r = r.decode('utf-8', errors='replace')
-                    except AttributeError:
-                        pass
+                    # try:
+                    #     r = r.decode('utf-8', errors='replace')
+                    # except AttributeError:
+                    #     pass
                 else:
                     url = self.baseurl + 'search/{}/movies'.format(quote(title))
 
@@ -79,11 +77,12 @@ class subztv:
                     frame = [i[1] for i in data if cleantitle.get(i[0]) == cleantitle.get(title)][0]
 
                     r = self.s.get(frame).text
-                    # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-                    try:
-                        r = r.decode('utf-8', errors='replace')
-                    except AttributeError:
-                        pass
+                    if six.PY2:
+                        r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                    # try:
+                    #     r = r.decode('utf-8', errors='replace')
+                    # except AttributeError:
+                    #     pass
                 secCode = client.parseDOM(r, 'input', ret='value', attrs={'id': 'secCode'})[0]
                 items = client.parseDOM(r, 'tbody')[0]
                 # xbmc.log('ITEMS: {}'.format(items))
@@ -154,8 +153,7 @@ class subztv:
 
         for item in items:
             try:
-                if six.PY2:
-                    item = item.encode('utf-8')
+                item = six.ensure_str(item, encoding='utf-8')
                 # xbmc.log('$#$MATCH-SUBZ-ITEM: {}'.format(item))
                 try:
                     imdb = re.search(r'\/(tt\d+)\/', str(frame)).groups()[0]
@@ -169,9 +167,9 @@ class subztv:
 
                 url = self.baseurl + 'dll/{}/0/{}'.format(data[0], secCode)
                 url = client.replaceHTMLCodes(url)
-                url = url.encode('utf-8')
+                url = six.ensure_str(url, encoding='utf-8')
 
-                url = six.ensure_str(url)
+                url = six.ensure_str(url, encoding='utf-8')
                 name = six.ensure_str(name)
                 down = data[1]
                 rating = str(self._rating(down))

@@ -1,3 +1,7 @@
+[B]2.0.5[/B] 17/05/2021
+-fix encoding issues on kodi18.9
+-fix NoneType issue
+
 [B]2.0.4[/B] 13/05/2021
 -fix cookie issues
 

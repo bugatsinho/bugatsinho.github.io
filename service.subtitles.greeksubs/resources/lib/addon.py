@@ -120,13 +120,14 @@ class Search:
                 if not year == '':
                     query = '{} ({})/imdb={}'.format(query, year, str(imdb))
 
-        self.query = six.ensure_str(query)
+        self.query = six.ensure_str(query, encoding='utf-8')
 
         with concurrent.futures.ThreadPoolExecutor(5) as executor:
+            query = self.query
             threads = [
-                executor.submit(self.subztv),
-                executor.submit(self.s4f),
-                executor.submit(self.yifi)
+                executor.submit(self.subztv, query),
+                executor.submit(self.s4f, query),
+                executor.submit(self.yifi, query)
             ]
 
             for future in concurrent.futures.as_completed(threads):
@@ -165,7 +166,7 @@ class Search:
             try:
 
                 if i['source'] == 'subztv':
-                    i['name'] = u'[SUBZTV] {0}'.format(i['name'])
+                    i['name'] = u'[SUBZ] {0}'.format(i['name'])
 
                 elif i['source'] == 's4f':
                     i['name'] = u'[S4F] {0}'.format(i['name'])
@@ -178,26 +179,69 @@ class Search:
         for i in self.list:
             try:
                 u = {'action': 'download', 'url': i['url'], 'source': i['source']}
-                u = '%s?%s' % (sysaddon, urlencode(u))
-                item = control.item(label='Greek', label2=str(i['name']))
+                u = '{0}?{1}'.format(sysaddon, urlencode(u))
+                item = control.item(label='Greek', label2=i['name'])
                 item.setArt({'icon': str(i['rating'])[:1], 'thumb': 'el'})
-                item.setProperty('sync', 'false')
                 item.setProperty('hearing_imp', 'false')
-
                 control.addItem(handle=syshandle, url=u, listitem=item, isFolder=False)
             except BaseException:
                 pass
 
         control.directory(syshandle)
 
-    def s4f(self):
-        self.list.extend(s4f.s4f().get(self.query))
+    def s4f(self, query=None):
 
-    def subztv(self):
-        self.list.extend(subztv.subztv().get(self.query))
+        if not query:
+            query = self.query
 
-    def yifi(self):
-        self.list.extend(yifi.yifi().get(self.query))
+        try:
+
+            if control.setting('provider.s4f') == 'false':
+                raise TypeError
+
+            result = s4f.s4f().get(query)
+
+            return result
+
+        except TypeError:
+
+            pass
+        # self.list.extend(s4f.s4f().get(self.query))
+
+    def subztv(self, query=None):
+        if not query:
+            query = self.query
+
+        try:
+
+            if control.setting('provider.subztv') == 'false':
+                raise TypeError
+
+            result = subztv.subztv().get(query)
+
+            return result
+
+        except TypeError:
+            pass
+        # self.list.extend(subztv.subztv().get(self.query))
+
+    def yifi(self, query=None):
+        if not query:
+            query = self.query
+
+        try:
+
+            if control.setting('provider.yifi') == 'false':
+                raise TypeError
+
+            result = yifi.yifi().get(query)
+
+            return result
+
+        except TypeError:
+
+            pass
+        # self.list.extend(yifi.yifi().get(self.query))
 
 
 class Download:

@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
+from __future__ import print_function
 
 import xbmc, six
 import re, os, requests
@@ -49,10 +50,12 @@ class s4f:
                 cj = req.cookies
                 r = req.text
                 # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-                try:
-                    r = r.decode('utf-8', errors='replace')
-                except AttributeError:
-                    pass
+                if six.PY2:
+                    r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                # try:
+                #     r = r.decode('utf-8', errors='replace')
+                # except UnicodeEncodeError:
+                #     pass
                 # xbmc.log('$#$HTML: %s' % r, xbmc.LOGNOTICE)
 
                 urls = client.parseDOM(r, 'div', attrs={'class': 'movie-download'})
@@ -87,11 +90,12 @@ class s4f:
 
                 cj = req.cookies
                 r = req.text
-                # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-                try:
-                    r = r.decode('utf-8', errors='replace')
-                except AttributeError:
-                    pass
+                if six.PY2:
+                    r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                # try:
+                #     r = r.decode('utf-8', errors='replace')
+                # except UnicodeEncodeError:
+                #     pass
                 # xbmc.log('@@URL:%s' % r)
 
                 urls = client.parseDOM(r, 'div', attrs={'class': ' seeDark'})
@@ -117,7 +121,7 @@ class s4f:
                 url = client.replaceHTMLCodes(url)
                 url = six.ensure_str(url, 'utf-8')
 
-                self.list.append({'name': name, 'url': '{}|{}|{}'.format(url, cj['PHPSESSID'], cj['__cfduid']),
+                self.list.append({'name': name, 'url': '{}|{}'.format(url, cj['PHPSESSID']),
                                   'source': 's4f', 'rating': rating})
             except BaseException:
                 pass
@@ -147,7 +151,7 @@ class s4f:
     def download(self, path, url):
 
         try:
-            url, php, cfd = url.split('|')
+            url, php= url.split('|')
             if 'subs4series' in url:
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
@@ -157,10 +161,12 @@ class s4f:
 
                 r = requests.get(url, headers=headers, cookies=cj).content
                 # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-                try:
-                    r = r.decode('utf-8', errors='replace')
-                except AttributeError:
-                    pass
+                if six.PY2:
+                    r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                # try:
+                #     r = r.decode('utf-8', errors='replace')
+                # except AttributeError:
+                #     pass
                 # xbmc.log('@@HTML:%s' % r)
 
                 pos = re.findall(r'''href=["'](/getSub-.+?)["']''', r, re.I | re.DOTALL)[0]
@@ -181,11 +187,12 @@ class s4f:
                 post_url = 'https://www.sf4-industry.com/getSub.php'
 
                 r = requests.get(url, headers=headers, cookies=cj).text
-                # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
-                try:
-                    r = r.decode('utf-8', errors='replace')
-                except AttributeError:
-                    pass
+                if six.PY2:
+                    r = re.sub(r'[^\x00-\x7F]+', ' ', r)
+                # try:
+                #     r = r.decode('utf-8', errors='replace')
+                # except AttributeError:
+                #     pass
                 # xbmc.log('@@HTMLLL:%s' % r)
                 pos = client.parseDOM(r, 'div', attrs={'class': 'download-btn'})[0]
                 pos = client.parseDOM(pos, 'input', ret='value', attrs={'name': 'id'})[0]
