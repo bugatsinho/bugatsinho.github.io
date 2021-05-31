@@ -288,6 +288,12 @@ def resolve(url, name):
         # xbmc.log("[{}] - STREAM: {}".format(ADDON.getAddonInfo('id'), str(stream)))
         rr = client.request(stream, referer=url)
         rr = six.ensure_text(rr).replace('\t', '')
+        if 'script>eval' in rr:
+            unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', rr, re.DOTALL)[0]
+            rr = jsunpack.unpack(unpack.strip())
+            # xbmc.log('RESOLVE-UNPACK: %s' % str(r), xbmc.LOGNOTICE)
+        else:
+            r = rr
         if 'youtube' in rr:
             try:
                 flink = client.parseDOM(r, 'iframe', ret='src')[0]
