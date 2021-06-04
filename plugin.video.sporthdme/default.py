@@ -287,11 +287,13 @@ def resolve(url, name):
                 # xbmc.log("[{}] - STREAM-ELSE: {}".format(ADDON.getAddonInfo('id'), str(stream)))
         # xbmc.log("[{}] - STREAM: {}".format(ADDON.getAddonInfo('id'), str(stream)))
         rr = client.request(stream, referer=url)
-        rr = six.ensure_text(rr).replace('\t', '')
-        if 'script>eval' in rr:
-            unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', rr, re.DOTALL)[0]
-            rr = jsunpack.unpack(unpack.strip())
-            # xbmc.log('RESOLVE-UNPACK: %s' % str(r), xbmc.LOGNOTICE)
+        rr = six.ensure_text(rr, encoding='utf-8').replace('\t', '')
+        if 'eval' in rr:
+            unpack = re.findall(r'''script>(eval.+?\{\}\))\)''', rr, re.DOTALL)[0]
+            # unpack = client.parseDOM(rr, 'script')
+            # xbmc.log('UNPACK: %s' % str(unpack))
+            # unpack = [i.rstrip() for i in unpack if 'eval' in i][0]
+            rr = six.ensure_text(jsunpack.unpack(str(unpack) + ')'), encoding='utf-8')
         else:
             r = rr
         if 'youtube' in rr:
@@ -307,19 +309,23 @@ def resolve(url, name):
 
         else:
             if '<script>eval' in rr and not '.m3u8?':
-                unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', rr, re.DOTALL)[0].strip()
+                unpack = re.findall(r'''<script>(eval.+?\{\}\))\)''', rr, re.DOTALL)[0].strip()
                 # xbmc.log("[{}] - STREAM-UNPACK: {}".format(ADDON.getAddonInfo('id'), str(unpack)))
-                rr = jsunpack.unpack(unpack)
+                rr = jsunpack.unpack(str(unpack) + ')')
                 # xbmc.log("[{}] - STREAM-UNPACK: {}".format(ADDON.getAddonInfo('id'), str(r)))
             # else:
             #     xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))
-            if 'player.src({src:' in str(rr):
+            if 'player.src({src:' in rr:
                 flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', rr, re.DOTALL)[0]
                 # xbmc.log('@#@STREAMMMMM: %s' % flink, xbmc.LOGNOTICE)
+            elif 'hlsjsConfig' in rr:
+                xbmc.log('MALAKASSSSS26')
+                flink = re.findall(r'''src=\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
             elif 'new Clappr' in rr:
                 flink = re.findall(r'''source\s*:\s*["'](.+?)['"]\,''', str(rr), re.DOTALL)[0]
             elif 'player.setSrc' in rr:
                 flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', rr, re.DOTALL)[0]
+
             else:
                 try:
                     flink = re.findall(r'''source:\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
