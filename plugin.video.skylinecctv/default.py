@@ -25,7 +25,7 @@ BASEURL = 'https://www.skylinewebcams.com/{0}/webcam.html'
 base_url = 'https://www.skylinewebcams.com'
 new_url = 'https://www.skylinewebcams.com/{0}/new-livecams.html'
 
-headers = {'User-Agent': client.agent(),
+headers = {'User-Agent': 'iPad',
            'Referer': BASEURL}
 
 
@@ -221,27 +221,26 @@ def resolve(name, url, iconimage, description):
     # xbmc.log('URLLLL: {}'.format(url))
     if 'm3u8' in url:
         link = url
-        link += '|User-Agent={}&Referer={}'.format(quote_plus(client.agent()),
-                                                   quote_plus(headers['Referer']))
+        link += '|User-Agent={}&Referer={}'.format('iPad', quote_plus(headers['Referer']))
         liz = xbmcgui.ListItem(name, iconImage=ICON, thumbnailImage=iconimage)
     else:
         import requests
         url = base_url + url if url.startswith('/') else url
         # xbmc.log('URLLLL2: {}'.format(url))
-        cj = client.request(base_url, headers=headers, output='cookie')
+        # cj = client.request(base_url, headers=headers, output='cookie')
         # xbmc.log('COOKIES: {}'.format(str(cj)))
-        headers['Cookie'] = cj
-        info = six.ensure_str(requests.get(url, headers=headers).text)
+        # headers['Cookie'] = cj
+        info = requests.get(url, headers=headers).text
+        info = six.ensure_str(info, encoding='utf-8')
         # xbmc.log('INFOOOO: {}'.format(info))
         head = client.parseDOM(info, 'title')[0]
         # title = client.parseDOM(info, 'meta', ret='content', attrs={'name': 'description'})[0].encode('utf-8')
         # name = '{0} - {1}'.format(head, title)
         poster = client.parseDOM(info, 'meta', ret='content', attrs={'property': 'og:image'})[0]
         link = re.findall(r'''source:['"](.+?)['"]\,''', info, re.DOTALL)[0]
-        # xbmc.log('LINKKKK: {}'.format(link))
-        if link.startswith('live'):
-            link = 'https://hd-auth.skylinewebcams.com/' + str(link)
-        link += '|User-Agent={}&Referer={}'.format(quote_plus(client.agent()), quote_plus(url))
+        link = "https://hd-auth.skylinewebcams.com/" + link.replace('livee', 'live') if link.startswith('live') else link
+        # xbmc.log('LINK: {}'.format(link))
+        link += '|User-Agent=iPad&Referer={}'.format(BASEURL)
         if six.PY2:
             head = head.encode('utf-8')
             link = str(link)
