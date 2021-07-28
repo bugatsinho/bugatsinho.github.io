@@ -17,14 +17,19 @@
         You should have received a copy of the GNU General Public License
         along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
+import json
+import os
+import re
 import sys
 import urllib
 
 import init
-import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
-import os, json, re
+import xbmc
+import xbmcaddon
+import xbmcgui
+import xbmcplugin
+import xbmcvfs
 from init import syshandle
-
 
 integer = 1000
 lang = xbmcaddon.Addon().getLocalizedString
@@ -59,7 +64,6 @@ skinPath = xbmc.translatePath('special://skin/')
 addonPath = xbmc.translatePath(addonInfo('path'))
 dataPath = xbmc.translatePath(addonInfo('profile')).decode('utf-8')
 
-
 window = xbmcgui.Window(10000)
 dialog = xbmcgui.Dialog()
 progressDialog = xbmcgui.DialogProgress()
@@ -89,7 +93,6 @@ cacheFile = join(dataPath, 'cache.db')
 
 
 def infoDialog(message, heading=addonInfo('name'), icon='', time=3000):
-
     if icon == '':
         icon = addonInfo('icon')
 
@@ -115,7 +118,6 @@ def selectDialog(list, heading=addonInfo('name')):
 
 
 def openSettings(query=None, id=addonInfo('id')):
-
     try:
 
         idle()
@@ -133,7 +135,6 @@ def openSettings(query=None, id=addonInfo('id')):
 
 # Alternative method
 def Settings(id=addonInfo('id')):
-
     try:
         idle()
         xbmcaddon.Addon(id).openSettings()
@@ -142,7 +143,6 @@ def Settings(id=addonInfo('id')):
 
 
 def openPlaylist():
-
     return execute('ActivateWindow(VideoPlaylist)')
 
 
@@ -151,7 +151,6 @@ def refresh():
 
 
 def idle():
-
     if float(addon('xbmc.addon').getAddonInfo('version')[:4]) > 17.6:
         execute('Dialog.Close(busydialognocancel)')
     else:
@@ -159,7 +158,6 @@ def idle():
 
 
 def busy():
-
     if float(addon('xbmc.addon').getAddonInfo('version')[:4]) > 17.6:
         execute('ActivateWindow(busydialognocancel)')
     else:
@@ -188,7 +186,6 @@ def addonmedia(icon, addonid=addonInfo('id'), theme=None, media_subfolder=True):
 
 
 def sortmethods(method='unsorted', mask='%D'):
-
     """
     Function to sort directory items
 
@@ -253,7 +250,8 @@ def sortmethods(method='unsorted', mask='%D'):
     elif method == 'video_sort_title':
         return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE, label2Mask=mask)
     elif method == 'video_sort_title_ignore_the':
-        return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE, label2Mask=mask)
+        return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE,
+                          label2Mask=mask)
     elif method == 'production_code':
         return sortmethod(handle=syshandle, sortMethod=xbmcplugin.SORT_METHOD_PRODUCTIONCODE)
     elif method == 'song_rating':
@@ -297,7 +295,6 @@ def sortmethods(method='unsorted', mask='%D'):
 
 
 def json_rpc(command):
-
     # This function was taken from tknorris's kodi.py
 
     if not isinstance(command, basestring):
@@ -308,7 +305,6 @@ def json_rpc(command):
 
 
 def addon_details(addon_id, fields=None):
-
     """
     :param addon_id: Any addon id as string
     :param fields: Possible fields as list [
@@ -347,51 +343,54 @@ def addon_details(addon_id, fields=None):
 
 
 def enable_addon(addon_id, enable=True):
-
     command = {
-        "jsonrpc":"2.0", "method": "Addons.SetAddonEnabled", "params": {"addonid": addon_id, "enabled": enable}, "id": 1
+        "jsonrpc": "2.0", "method": "Addons.SetAddonEnabled", "params": {"addonid": addon_id, "enabled": enable},
+        "id": 1
     }
 
     json_rpc(command)
 
 
 def addDir(name, url, mode, iconimage, fanart, description):
-    Lang = lang
+    import six
+    name = six.ensure_str(name, encoding='utf-8', errors='ignore')
+    description = six.ensure_str(description, encoding='utf-8', errors='ignore')
     if mode == 6:
         u = '%s?url=%s&mode=%s&name=%s&iconimage=%s&description=%s' % \
             (sys.argv[0], urllib.quote_plus(url), str(mode), urllib.unquote(name),
-             urllib.quote_plus(iconimage), urllib.quote_plus(description.encode('utf-8', 'ignore')))
+             urllib.quote_plus(iconimage), urllib.quote_plus(description))
 
     else:
-        u = sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+\
-            "&iconimage="+urllib.quote_plus(iconimage)+"&description="+urllib.quote_plus(description)
+        u = sys.argv[0] + "?url=" + urllib.quote_plus(url) + "&mode=" + str(mode) + "&name=" + urllib.quote_plus(name) + \
+            "&iconimage=" + urllib.quote_plus(iconimage) + "&description=" + urllib.quote_plus(description)
     ok = True
     liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
     liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
     liz.setProperty('fanart_image', fanart)
     cm = []
-    cm.append((Lang(32020).encode('utf-8'), "RunPlugin(%s?mode=17)" % init.sysaddon))
-    cm.append((Lang(32021).encode('utf-8'), "RunPlugin(%s?mode=9)" % init.sysaddon))
+    cm.append((lang(32020).encode('utf-8') if six.PY2 else lang(32020), "RunPlugin(%s?mode=17)" % init.sysaddon))
+    cm.append((lang(32021).encode('utf-8') if six.PY2 else lang(32021), "RunPlugin(%s?mode=9)" % init.sysaddon))
 
     if mode == 100:
-        name = re.sub('\[.+?\]', '', name)
+        name = re.sub(r'\[.+?\]', '', name)
         liz.setProperty("IsPlayable", "true")
         cm.append(('GRecoTM Pair Tool', 'RunAddon(script.grecotm.pair)'))
-        downloads = setting('downloads') == 'true' and not\
+        downloads = setting('downloads') == 'true' and not \
             (setting('movie.download.path') == '' or setting('tv.download.path') == '')
         if downloads:
             _url = 'RunPlugin({0}?mode=41&name={1}&iconimage={2}&url={3})'.format(init.sysaddon,
                                                                                   urllib.quote_plus(name),
                                                                                   urllib.quote_plus(iconimage),
                                                                                   urllib.quote_plus(url))
-            cm.append((lang(32040).encode('utf-8'), _url))
+            cm.append((lang(32040).encode('utf-8') if six.PY2 else lang(32040), _url))
         liz.addContextMenuItems(cm)
-        ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
+        ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
     elif mode == 9 or mode == 17 or mode == 'bug' or mode == 29:
         ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
 
     elif mode == 26:
-        cm.append((Lang(32039).encode('utf-8'), "RunPlugin(%s?mode=%s&url=%s)" % (init.sysaddon, 28, url)))
+        cm.append((lang(32039).encode('utf-8') if six.PY2 else lang(32039),
+                   "RunPlugin(%s?mode=%s&url=%s)" % (init.sysaddon, 28, url)))
         liz.addContextMenuItems(cm)
         ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=True)
 
