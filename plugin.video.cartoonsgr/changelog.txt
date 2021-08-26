@@ -1,3 +1,6 @@
+[B]v1.0.22[/B] 26/08/2021
+  - add coverapi links resolver
+
 [B]v1.0.19[/B] 12/03/2021
   - αλλαγή domain για gamato
 
