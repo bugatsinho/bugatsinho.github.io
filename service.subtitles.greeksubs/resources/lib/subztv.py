@@ -216,7 +216,7 @@ class subztv:
             # xbmc.log('$#$ FRAME-COOKIES: %s' % self.s.cookies)
 
             self.s.headers['Referer'] = frame
-            init = self.s.get(url).text
+            init = six.ensure_text(self.s.get(url).content, encoding='utf-8')
             try:
                 imdb = client.parseDOM(init, 'input', ret='value', attrs={'name': 'uid'})[0]
             except IndexError:
@@ -237,7 +237,6 @@ class subztv:
             # xbmc.log('$#$ FRAME-POST: %s' % post)
 
             result = self.s.post(url, data=post)
-            # xbmc.log('$#$POST-RESUL: %s' % result.content)
             f = os.path.join(path, quote(sub_) + '.srt')
             with open(f, 'wb') as subFile:
                 subFile.write(result.content)

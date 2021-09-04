@@ -144,7 +144,13 @@ class yifi:
                     except BaseException:
                         pass
 
-            filename = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])][0].decode('utf-8')
+            filename = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])][0]
+
+            try:
+                filename = filename.decode('utf-8')
+            except Exception:
+                pass
+
             subtitle = os.path.join(path, filename)
 
             if f.lower().endswith('.rar'):

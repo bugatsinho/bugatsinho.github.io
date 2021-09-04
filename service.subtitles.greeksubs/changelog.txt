@@ -1,3 +1,6 @@
+[B]2.0.6[/B] 04/09/2021
+-fix encoding issues on kodi19.1
+
 [B]2.0.5[/B] 17/05/2021
 -fix encoding issues on kodi18.9
 -fix NoneType issue
