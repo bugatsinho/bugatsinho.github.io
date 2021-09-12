@@ -319,7 +319,6 @@ def resolve(url, name):
                 flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', rr, re.DOTALL)[0]
                 # xbmc.log('@#@STREAMMMMM: %s' % flink, xbmc.LOGNOTICE)
             elif 'hlsjsConfig' in rr:
-                xbmc.log('MALAKASSSSS26')
                 flink = re.findall(r'''src=\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
             elif 'new Clappr' in rr:
                 flink = re.findall(r'''source\s*:\s*["'](.+?)['"]\,''', str(rr), re.DOTALL)[0]
@@ -334,8 +333,9 @@ def resolve(url, name):
                     ea = six.ensure_text(client.request(ea)).split('=')[1]
                     flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
-            flink += '|Referer={}'.format(quote(stream))
-        # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
+
+            flink += '|Referer={}'.format(quote(stream)) #if not 'azcdn' in flink else ''
+        # xbmc.log('@#@STREAMMMMM111: %s' % flink)
         stream_url = flink
 
     else:
@@ -355,7 +355,7 @@ def resolve(url, name):
     #     liz.setContentLookup(True)
     xbmc.Player().play(stream_url, liz, False)
     quit()
-    # xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
+    xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
 
 
 def Open_settings():
