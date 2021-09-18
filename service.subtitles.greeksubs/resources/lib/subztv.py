@@ -103,8 +103,8 @@ class subztv:
                         frame = link[0]
                 else:
                     if len(imdb) > 1:
-                        baseurl = ' https://api.thetvdb.com/login'
-                        series_url = 'https://api.thetvdb.com/series/%s'
+                        baseurl = 'https://api.thetvdb.com/login'
+                        series_url = 'https://api.thetvdb.com/episodes/%s'
                         greek_api = '7d4261794838bb48a3122381811ecb42'
                         user_key = 'TJXB86PGDBYN0818'
                         username = 'filmnet'
@@ -115,9 +115,9 @@ class subztv:
 
                         post = {"apikey": greek_api, "username": username, "userkey": user_key}
 
-                        # data = requests.post(baseurl, data=json.dumps(post), headers=_headers).json()
-                        data = client.request(baseurl, post=json.dumps(post), headers=_headers)
-                        auth = 'Bearer {}'.format(unquote_plus(json.loads(data)['token']))
+                        # data = client.request(baseurl, post=json.dumps(post), headers=_headers)
+                        data = requests.post(baseurl, data=json.dumps(post), headers=_headers).json()
+                        auth = 'Bearer {}'.format(unquote_plus(data['token']))
                         _headers['Authorization'] = auth
 
                         series_data = client.request(series_url % imdb, headers=_headers)
@@ -125,7 +125,7 @@ class subztv:
                         r = self.s.get(self.baseurl + 'view/{}'.format(imdb)).text
                         # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                         frames = client.parseDOM(r, 'a', ret='href')
-                        frame = [i for i in frames if hdlr in i][0]
+                        frame = [i for i in frames if imdb in i][0]
                     else:
                         url = self.baseurl + 'search/{}/tv'.format(quote(title))
                         data = self.s.get(url).text
@@ -140,7 +140,8 @@ class subztv:
                         frame = [i for i in frames if hdlr in i][0]
 
                 frame = client.replaceHTMLCodes(frame)
-                frame = six.ensure_text(frame, encoding='utf-8')
+                frame = six.ensure_str(frame, errors='replace')
+                frame = quote(frame, safe=':/?')
                 r = self.s.get(frame).text
                 # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 secCode = client.parseDOM(r, 'input', ret='value', attrs={'id': 'secCode'})[0]
@@ -153,7 +154,7 @@ class subztv:
 
         for item in items:
             try:
-                item = six.ensure_str(item, encoding='utf-8')
+                item = six.ensure_str(item, errors='replace')
                 # xbmc.log('$#$MATCH-SUBZ-ITEM: {}'.format(item))
                 try:
                     imdb = re.search(r'\/(tt\d+)\/', str(frame)).groups()[0]
@@ -167,10 +168,8 @@ class subztv:
 
                 url = self.baseurl + 'dll/{}/0/{}'.format(data[0], secCode)
                 url = client.replaceHTMLCodes(url)
-                url = six.ensure_str(url, encoding='utf-8')
+                url = quote(url, safe=':/?')
 
-                url = six.ensure_str(url, encoding='utf-8')
-                name = six.ensure_str(name)
                 down = data[1]
                 rating = str(self._rating(down))
 
@@ -216,7 +215,7 @@ class subztv:
             # xbmc.log('$#$ FRAME-COOKIES: %s' % self.s.cookies)
 
             self.s.headers['Referer'] = frame
-            init = six.ensure_text(self.s.get(url).content, encoding='utf-8')
+            init = six.ensure_text(self.s.get(url).content, errors='replace')
             try:
                 imdb = client.parseDOM(init, 'input', ret='value', attrs={'name': 'uid'})[0]
             except IndexError:
