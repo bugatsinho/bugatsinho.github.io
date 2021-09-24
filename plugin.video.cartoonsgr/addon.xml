@@ -28,7 +28,7 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>[B]v1.0.22[/B] 26/08/2021
-  - add coverapi links resolver</news>
+    <news>[B]v1.0.23[/B] 24/09/2021
+  - fix search items</news>
   </extension>
 </addon>

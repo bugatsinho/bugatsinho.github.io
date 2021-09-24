@@ -38,7 +38,7 @@ ICON = ADDON.getAddonInfo('icon')
 ID = ADDON.getAddonInfo('id')
 NAME = ADDON.getAddonInfo('name')
 VERSION = ADDON.getAddonInfo('version')
-Lang = ADDON.getLocalizedString
+Lang = control.lang#ADDON.getLocalizedString
 Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
@@ -345,13 +345,13 @@ def __top_domain(url):
     return domain
 
 
-def Trailer(url):
-    lcookie = cache.get(_Login, 4, BASEURL)
-    OPEN = cache.get(client.request, 4, url, True, True, False, None, None, None, False, None, None, lcookie)
-    patron = 'class="youtube_id.+?src="([^"]+)".+?></iframe>'
-    trailer_link = find_single_match(OPEN, patron)
-    trailer_link = trailer_link.replace('//www.', 'http://')
-    return trailer_link
+# def Trailer(url):
+#     lcookie = cache.get(_Login, 4, BASEURL)
+#     OPEN = cache.get(client.request, 4, url, True, True, False, None, None, None, False, None, None, lcookie)
+#     patron = 'class="youtube_id.+?src="([^"]+)".+?></iframe>'
+#     trailer_link = find_single_match(OPEN, patron)
+#     trailer_link = trailer_link.replace('//www.', 'http://')
+#     return trailer_link
 
 
 def search_menu():  # 6
@@ -371,9 +371,14 @@ def search_menu():  # 6
 
     delete_option = False
     for (url, search) in dbcur.fetchall():
-        url = quote_plus(url)
-        domain = 'GAMATOKIDS' if 'gamato' in url else 'TENIES-ONLINE'
-        title = '[B]%s[/B] - [COLORgold][B]%s[/COLOR][/B]' % (six.ensure_text(search, encoding='utf-8'), domain)
+        search = six.ensure_str(search, errors='replace')
+        if 'gamato' in url:
+            _url = GAMATO + "?s={}".format(quote_plus(search))
+            domain = 'GAMATOKIDS'
+        else:
+            _url = Teniesonline + "?s={}".format(quote_plus(search))
+            domain = 'TENIES-ONLINE'
+        title = '[B]%s[/B] - [COLORgold][B]%s[/COLOR][/B]' % (search, domain)
         delete_option = True
         addDir(title, url, 26, ICON, FANART, '')
         lst += [(search)]
@@ -399,8 +404,8 @@ def Search(url):  # 26
             dbcur = dbcon.cursor()
 
             dp = xbmcgui.Dialog()
-            select = dp.select('Select Website', ['[COLORgold][B]Tenies-Online[/COLOR][/B]',
-                                                  '[COLORgold][B]Gamato-Kids[/COLOR][/B]'])
+            select = dp.select('Select Website', ['[COLORgold][B]Gamato-Kids[/COLOR][/B]'])
+            
             if select == 0:
                 from resources.lib.indexers import teniesonline
                 url = Teniesonline + "?s={}".format(search)
