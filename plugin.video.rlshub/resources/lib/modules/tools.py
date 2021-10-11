@@ -21,7 +21,7 @@ from resources.lib.modules.addon import Addon
 
 addon_id = 'plugin.video.rlshub'
 plugin = xbmcaddon.Addon(id=addon_id)
-DB = os.path.join(xbmcvfs.translatePath("special://database"), 'cache.db')
+DB = os.path.join(control.translatePath("special://database"), 'cache.db')
 addon = Addon(addon_id, sys.argv)
 
 ##### Queries ##########
