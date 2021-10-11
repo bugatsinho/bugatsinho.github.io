@@ -19,7 +19,7 @@
 '''
 
 import json, re
-
+import six
 
 def json_load_as_str(file_handle):
     return byteify(json.load(file_handle, object_hook=byteify), ignore_dicts=True)
@@ -30,7 +30,7 @@ def json_loads_as_str(json_text):
 
 
 def byteify(data, ignore_dicts=False):
-    if isinstance(data, unicode):
+    if six.PY2 and isinstance(data, unicode):
         return data.encode('utf-8')
     if isinstance(data, list):
         return [byteify(item, ignore_dicts=True) for item in data]

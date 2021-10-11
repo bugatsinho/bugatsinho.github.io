@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import xbmc
+import xbmcvfs
 import xbmcgui
 import xbmcaddon
 import xbmcplugin
@@ -21,7 +21,7 @@ from resources.lib.modules.addon import Addon
 
 addon_id = 'plugin.video.rlshub'
 plugin = xbmcaddon.Addon(id=addon_id)
-DB = os.path.join(xbmc.translatePath("special://database"), 'cache.db')
+DB = os.path.join(xbmcvfs.translatePath("special://database"), 'cache.db')
 addon = Addon(addon_id, sys.argv)
 
 ##### Queries ##########

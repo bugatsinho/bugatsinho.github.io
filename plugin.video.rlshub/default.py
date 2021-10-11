@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import xbmc
+import xbmcvfs
 import xbmcgui
 import xbmcaddon
 import xbmcplugin
@@ -8,7 +8,7 @@ import re
 import sys
 import os
 from sys import argv
-from six.moves.urllib.parse import parse_qsl, urlparse
+from six.moves.urllib.parse import parse_qsl, urlparse, unquote_plus, unquote, quote_plus
 from resources.lib.modules import client
 from resources.lib.modules import control, tools
 from resources.lib.modules import cache
@@ -18,7 +18,7 @@ from resources.lib.modules.addon import Addon
 
 addon_id = 'plugin.video.rlshub'
 plugin = xbmcaddon.Addon(id=addon_id)
-DB = os.path.join(xbmc.translatePath("special://database"), 'cache.db')
+DB = os.path.join(control.translatePath("special://database"), 'cache.db')
 addon = Addon(addon_id, sys.argv)
 
 ##### Queries ##########
@@ -51,9 +51,9 @@ BASE_URL = 'http://%s' % base.lower()
 
 tested_links = []
 allfun = [
-    (control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
-    (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
-    (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)
+    (control.get_lang(32007), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
+    (control.get_lang(32008), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
+    (control.get_lang(32009), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)
 ]
 
 
@@ -61,38 +61,38 @@ def MainMenu():  # homescreen
     addon.add_directory({'mode': 'open_news'}, {'title': '[COLOR lime][B]News - Updates[/COLOR][/B]'},
                         allfun, img=ICON, fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'scene'}, {'title': '[B][COLORwhite]SCENE RELEASE[/B][/COLOR]'},
-                        allfun, img=IconPath + 'tv_shows.png', fanart=FANART)
+                        allfun, img=IconPath + 'scenerls.png', fanart=FANART)
     addon.add_directory({'mode': 'twoddl'}, {'title': '[B][COLORwhite]TWODDL[/B][/COLOR]'},
-                        allfun, img=IconPath + 'tv_shows.png', fanart=FANART)
+                        allfun, img=IconPath + 'twoddl.png', fanart=FANART)
     addon.add_directory({'mode': 'ddlvalley',}, {'title': '[B][COLORwhite]DDLVALLEY[/B][/COLOR]'},
-                        allfun, img=IconPath + 'movies.png', fanart=FANART)
+                        allfun, img=IconPath + 'ddlvalley.png', fanart=FANART)
     addon.add_directory({'mode': 'scnsrc'}, {'title': '[B][COLORwhite]SCENESOURCE[/B][/COLOR]'},
-                        allfun, img=IconPath + 'tv_shows.png', fanart=FANART)
+                        allfun, img=IconPath + 'scnsrc.png', fanart=FANART)
     addon.add_directory({'mode': 'rlsbb'}, {'title': '[B][COLORwhite]RELEASEBB[/B][/COLOR]'},
-                        allfun, img=IconPath + 'tv_shows.png', fanart=FANART)
+                        allfun, img=IconPath + 'rlsbb.png', fanart=FANART)
     addon.add_directory({'mode': 'eztv'}, {'title': '[B][COLORwhite]EZTV[/B][/COLOR]'},
-                        allfun, img=IconPath + 'tv_shows.png', fanart=FANART)
-    addon.add_directory({'mode': 'search_menu'}, {'title': control.lang(32002).encode('utf-8')},
+                        allfun, img=IconPath + 'eztv.png', fanart=FANART)
+    addon.add_directory({'mode': 'search_menu'}, {'title': control.get_lang(32002)},
                         allfun, img=IconPath + 'search.png', fanart=FANART)
 
     downloads = True if control.setting('downloads') == 'true' and (
             len(control.listDir(control.setting('movie.download.path'))[0]) > 0 or
             len(control.listDir(control.setting('tv.download.path'))[0]) > 0) else False
     if downloads:
-        addon.add_directory({'mode': 'downloadlist'}, {'title': control.lang(32003).encode('utf-8')},
+        addon.add_directory({'mode': 'downloadlist'}, {'title': control.get_lang(32003)},
                             allfun, img=IconPath + 'downloads.png', fanart=FANART)
 
     # if control.setting('eztv_menu') == 'true':
     #     addon.add_directory({'mode': 'eztv'}, {'title': 'EZTV TV Shows'}, allfun,
     #                         img=IconPath + 'eztv.png', fanart=FANART)
 
-    addon.add_directory({'mode': 'settings'}, {'title': control.lang(32004).encode('utf-8')},
+    addon.add_directory({'mode': 'settings'}, {'title': control.get_lang(32004)},
                         allfun, img=IconPath + 'tools.png', fanart=FANART, is_folder=False)
-    addon.add_directory({'mode': 'setviews'}, {'title': control.lang(32005).encode('utf-8')},
+    addon.add_directory({'mode': 'setviews'}, {'title': control.get_lang(32005)},
                         allfun, img=IconPath + 'set_view.png', fanart=FANART)
 
-    # addon.add_directory({'mode': 'help'}, {'title': control.lang(32006).encode('utf-8')},
-    #                     [(control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)')],
+    # addon.add_directory({'mode': 'help'}, {'title': control.get_lang(32006)},
+    #                     [(control.get_lang(32008), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)')],
     #                     img=IconPath + 'github.png', fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'forceupdate'},
                         {'title': '[COLOR gold][B]Version: [COLOR lime]%s[/COLOR][/B]' % version},
@@ -106,9 +106,9 @@ def MainMenu():  # homescreen
 def downloads_root():
     movie_downloads = control.setting('movie.download.path')
     tv_downloads = control.setting('tv.download.path')
-    cm = [(control.lang(32007).encode('utf-8'),
+    cm = [(control.get_lang(32007),
            'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)'),
-          (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)')]
+          (control.get_lang(32008), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)')]
     if len(control.listDir(movie_downloads)[0]) > 0:
         item = control.item(label='Movies')
         item.addContextMenuItems(cm)
@@ -181,7 +181,7 @@ def download(title, img, url):
     ext = os.path.splitext(urlparse(url).path)[1][1:]
     if ext not in ['mp4', 'mkv', 'flv', 'avi', 'mpg']: ext = 'mp4'
     dest = os.path.join(dest, transname + '.' + ext)
-    headers = urllib.quote_plus(json.dumps(headers))
+    headers = quote_plus(json.dumps(headers))
 
     from resources.lib.modules import downloader
     control.idle()
@@ -197,17 +197,17 @@ def response_html(url, cachetime):
             html = cache.get(client.request, int(cachetime), url)
 
         if html is None:
-            control.infoDialog(control.lang(32011).encode('utf-8'), NAME, ICON, 5000)
+            control.infoDialog(control.get_lang(32011), NAME, ICON, 5000)
 
         else:
             return html
     except BaseException:
-        control.infoDialog(control.lang(32011).encode('utf-8'), NAME, ICON, 5000)
+        control.infoDialog(control.get_lang(32011), NAME, ICON, 5000)
 
 
 def search_menu():
     addon.add_directory({'mode': 'search_bb', 'url': 'new'},
-                        {'title': control.lang(32014).encode('utf-8')}, img=IconPath + 'search.png', fanart=FANART)
+                        {'title': control.get_lang(32014)}, img=IconPath + 'search.png', fanart=FANART)
     try:
         from sqlite3 import dbapi2 as database
     except ImportError:
@@ -227,17 +227,17 @@ def search_menu():
 
     delete_option = False
     for (url, search) in dbcur.fetchall():
-        title = '[B]%s[/B]' % urllib.unquote_plus(search).encode('utf-8')
+        title = '[B]{}[/B]'.format(unquote_plus(search))
         delete_option = True
         addon.add_directory({'mode': 'search_bb', 'url': search},
                             {'title': title},
-                            [(control.lang(32007).encode('utf-8'),
+                            [(control.get_lang(32007),
                               'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
-                             (control.lang(32015).encode('utf-8'),
+                             (control.get_lang(32015),
                               'RunPlugin(plugin://plugin.video.rlshub/?mode=del_search_item&query=%s)' % search,),
-                             (control.lang(32008).encode('utf-8'),
+                             (control.get_lang(32008),
                               'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
-                             (control.lang(32009).encode('utf-8'),
+                             (control.get_lang(32009),
                               'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)],
                             img=IconPath + 'search.png', fanart=FANART)
         lst += [(search)]
@@ -245,7 +245,7 @@ def search_menu():
 
     if delete_option:
         addon.add_directory({'mode': 'del_search_items'},
-                            {'title': control.lang(32016).encode('utf-8')},
+                            {'title': control.get_lang(32016)},
                             img=IconPath + 'search.png', fanart=FANART, is_folder=False)
 
     control.content(int(sys.argv[1]), 'videos')
@@ -323,7 +323,7 @@ elif mode == 'ResolverSettings':
 elif mode == 'ClearCache':
     cache.delete(control.cacheFile, False)
 elif mode == 'forceupdate':
-    control.infoDialog(control.lang(32021).encode('utf-8'))
+    control.infoDialog(control.get_lang(32021))
     control.execute('UpdateAddonRepos')
 elif mode == 'eztv':
     from resources.lib.sources import eztv

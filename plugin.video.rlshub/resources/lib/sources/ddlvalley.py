@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import control
 import xbmcgui
 import xbmcaddon
 import xbmc
 import re
 import sys
+import six
 from resources.lib.modules import client, user_agents
 from resources.lib.modules import control, tools
 from resources.lib.modules import view
@@ -28,9 +30,9 @@ ART = ADDON_PATH + "/resources/icons/"
 Baseurl = 'https://www.ddlvalley.me' #control.
 headers = {'User-Agent': user_agents.agent(), 'Referer': Baseurl}
 allfun = [
-    (control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
-    (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
-    (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)
+    (control.get_lang(32007), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
+    (control.get_lang(32008), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
+    (control.get_lang(32009), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)
 ]
 
 
@@ -57,10 +59,10 @@ def movies_menu():
     #                     {'title': '[B][COLOR gold]' + Lang(32034).encode('utf-8') + '[/COLOR][/B]'},
     #                     allfun, img=ICON, fanart=FANART)
     addon.add_directory({'mode': 'to_genre', 'url': Baseurl, 'section': 'movies'},
-                        {'title': '[B][COLOR gold]' + Lang(32035).encode('utf-8') + '[/COLOR][/B]'},
+                        {'title': '[B][COLOR gold]' + control.get_lang(32035) + '[/COLOR][/B]'},
                         allfun, img=ART + 'movies.png', fanart=FANART)
     addon.add_directory({'mode': 'to_items', 'url': Baseurl + '/category/movies/'},
-                        {'title': Lang(32000).encode('utf-8')},
+                        {'title': control.get_lang(32000)},
                         allfun, img=ART + 'movies.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
@@ -69,10 +71,10 @@ def movies_menu():
 
 def series_menu():
     addon.add_directory({'mode': 'to_genre', 'url': Baseurl, 'section': 'tvshows'},
-                        {'title': '[B][COLOR gold]' + Lang(32035).encode('utf-8') + '[/COLOR][/B]'},
+                        {'title': '[B][COLOR gold]' + control.get_lang(32035) + '[/COLOR][/B]'},
                         allfun, img=ART + 'tv_shows.png', fanart=FANART)
     addon.add_directory({'mode': 'to_items', 'url': Baseurl + '/category/tv-shows/'},
-                        {'title': Lang(32001).encode('utf-8')},
+                        {'title': control.get_lang(32001)},
                         allfun, img=ART + 'tv_shows.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
@@ -107,7 +109,7 @@ def genre(section):
             continue
         title = i[1]
         title = tools.clear_Title(title)
-        title = '{} ([COLORyellow]{}[/COLOR])'.format(title, str(i[2])).encode('utf-8')
+        title = '{} ([COLORyellow]{}[/COLOR])'.format(six.ensure_text(title, errors='ignore'), six.ensure_text(i[2], errors='ignore'))
         url = i[0]
         addon.add_directory({'mode': 'to_items', 'url': url},
                             {'title': title, 'plot': title}, allfun, img=ICON, fanart=FANART)
@@ -127,7 +129,7 @@ def to_items(url): #34
             plot = 'N/A'
         desc = client.replaceHTMLCodes(plot)
         desc = tools.clear_Title(desc)
-        desc = desc.encode('utf-8')
+        desc = six.ensure_text(desc, errors='ignore')
         try:
             title = client.parseDOM(name, 'a')[0]
         except BaseException:
@@ -139,11 +141,11 @@ def to_items(url): #34
         # except IndexError:
         #     year = '(N/A)'
         title = tools.clear_Title(title)
-        title = '[B][COLOR white]{}[/COLOR][/B]'.format(title).encode('utf-8')
+        title = '[B][COLOR white]{}[/COLOR][/B]'.format(six.ensure_text(title, errors='ignore'))
         link = client.parseDOM(name, 'a', ret='href')[0]
-        link = client.replaceHTMLCodes(link).encode('utf-8', 'ignore')
+        link = client.replaceHTMLCodes(six.ensure_text(link, errors='ignore'))
         poster = client.parseDOM(post, 'img', ret='src')[0]
-        poster = client.replaceHTMLCodes(poster).encode('utf-8', 'ignore')
+        poster = client.replaceHTMLCodes(six.ensure_text(poster, errors='ignore'))
         # if '/tvshows/' in link:
         #     addon.add_directory({'mode': 'to_seasons', 'url': link}, {'title': title, 'plot': str(desc)},
         #                         allfun, img=poster, fanart=FANART)
@@ -155,8 +157,7 @@ def to_items(url): #34
         # np = dom_parser.parse_dom(np, 'a', req='href')
         # np = [i.attrs['href'] for i in np if 'icon-chevron-right' in i.content][0]
         page = re.findall(r'page/(\d+)/', np)[0]
-        title = control.lang(32010).encode('utf-8') + \
-                ' [COLORwhite]([COLORlime]{}[/COLOR])[/COLOR]'.format(page)
+        title = control.get_lang(32010) + ' [COLORwhite]([COLORlime]{}[/COLOR])[/COLOR]'.format(page)
         addon.add_directory({'mode': 'to_items', 'url': np},
                             {'title': title},
                             img=ART + 'next_page.png', fanart=FANART)
@@ -228,9 +229,10 @@ def to_links(url, img, plot):  # Get Links
                     title = title.replace('mkv', '[COLOR gold][B][I]MKV[/B][/I][/COLOR] ')
                     title = title.replace('avi', '[COLOR pink][B][I]AVI[/B][/I][/COLOR] ')
                     title = title.replace('mp4', '[COLOR purple][B][I]MP4[/B][/I][/COLOR] ')
+                    title = six.ensure_text(title, errors='ignore')
                     host = host.replace('youtube.com', '[COLOR red][B][I]Movie Trailer[/B][/I][/COLOR]')
                     if 'railer' in host:
-                        title = host + ' : ' + title
+                        title = six.ensure_text(host) + ' : ' + title
                         addon.add_directory(
                             {'mode': 'PlayVideo', 'url': url, 'img': img, 'title': name,
                              'plot': plot},
@@ -254,16 +256,17 @@ def to_links(url, img, plot):  # Get Links
 
             for item in tools.tested_links:
                 link, title, name = item[0], item[1], item[2]
+                title = six.ensure_text(title, errors='ignore')
+                name = six.ensure_text(name, errors='ignore')
                 cm = [
-                    (control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
-                    (control.lang(32008).encode('utf-8'),
-                     'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
-                    (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)]
+                    (control.get_lang(32007), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
+                    (control.get_lang(32008), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
+                    (control.get_lang(32009), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)]
                 downloads = True if control.setting('downloads') == 'true' and not (control.setting(
                     'movie.download.path') == '' or control.setting('tv.download.path') == '') else False
                 if downloads:
                     # frame = resolveurl.resolve(link)
-                    cm.append((control.lang(32013).encode('utf-8'),
+                    cm.append((control.get_lang(32013),
                                'RunPlugin(plugin://plugin.video.rlshub/?mode=download&title=%s&img=%s&url=%s)' %
                                (name, img, link))
                               )
@@ -274,16 +277,17 @@ def to_links(url, img, plot):  # Get Links
         else:
             for item in links:
                 host, title, link, name = item[0], item[1], item[2], item[3]
+                title = six.ensure_text(title, errors='ignore')
+                name = six.ensure_text(name, errors='ignore')
                 title = '%s - %s' % (host, title)
                 cm = [
-                    (control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
-                    (control.lang(32008).encode('utf-8'),
-                     'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
-                    (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)]
+                    (control.get_lang(32007), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
+                    (control.get_lang(32008), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
+                    (control.get_lang(32009), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)]
                 downloads = True if control.setting('downloads') == 'true' and not (control.setting(
                     'movie.download.path') == '' or control.setting('tv.download.path') == '') else False
                 if downloads:
-                    cm.append((control.lang(32013).encode('utf-8'),
+                    cm.append((control.get_lang(32013),
                                'RunPlugin(plugin://plugin.video.rlshub/?mode=download&title=%s&img=%s&url=%s)' %
                                (name, img, link))
                               )

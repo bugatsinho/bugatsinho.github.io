@@ -16,7 +16,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import cgi
 import re
 import os
 try:
@@ -24,12 +23,13 @@ try:
 except:
    import pickle
 import unicodedata
-import urllib
 import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
-    
+import six
+from six.moves.urllib_parse import parse_qs, urlencode
+
 class Addon:
     '''
     This class provides a lot of code that is used across many XBMC addons
@@ -116,7 +116,13 @@ class Addon:
         Returns the full path to the addon profile directory 
         (useful for storing files needed by the addon such as cookies).
         '''
-        return xbmc.translatePath(self.addon.getAddonInfo('profile'))
+        if six.PY2:
+            translatePath = xbmc.translatePath
+        else:
+            import xbmcvfs
+            translatePath = xbmcvfs.translatePath
+
+        return translatePath(self.addon.getAddonInfo('profile'))
             
 
     def get_stars(self):    
@@ -187,7 +193,7 @@ class Addon:
             from the query string. If a key is repeated in the query string
             its value will be a list containing all of that keys values.  
         '''
-        queries = cgi.parse_qs(query)
+        queries = parse_qs(query)
         q = defaults
         for key, value in queries.items():
             if len(value) == 1:
@@ -216,17 +222,21 @@ class Addon:
             A string containing a fully formed ``plugin://`` URL.
         '''
         out_dict = {}
-        for k, v in queries.iteritems():
-            if isinstance(v, unicode):
-                v = v.encode('utf8')
-            elif isinstance(v, str):
-                # Must be encoded in UTF-8
-                v.decode('utf8')
+        for k, v in queries.items():
+            if six.PY2:
+                if isinstance(v, unicode):
+                    v = v.encode('utf8')
+                elif isinstance(v, str):
+                    # Must be encoded in UTF-8
+                    v.decode('utf8')
+            else:
+                if isinstance(v, bytes):
+                    v = v.decode('utf8')
             out_dict[k] = v
-        return self.url + '?' + urllib.urlencode(out_dict)
+        return self.url + '?' + urlencode(out_dict)
 
 
-    def log(self, msg, level=xbmc.LOGNOTICE):
+    def log(self, msg, level=xbmc.LOGINFO):
         '''
         Writes a string to the XBMC log file. The addon name is inserted into 
         the beginning of the message automatically to help you find relevent 
@@ -240,7 +250,6 @@ class Addon:
             xbmc.LOGFATAL = 6
             xbmc.LOGINFO = 1
             xbmc.LOGNONE = 7
-            xbmc.LOGNOTICE = 2
             xbmc.LOGSEVERE = 5
             xbmc.LOGWARNING = 3
         
@@ -252,6 +261,9 @@ class Addon:
         '''
         #msg = unicodedata.normalize('NFKD', unicode(msg)).encode('ascii',
         #                                                         'ignore')
+        #backwards compatibility - LOGNOTICE has been removed
+        if level == 2:
+            level = 1
         xbmc.log('%s: %s' % (self.get_name(), msg), level)
         
 
@@ -279,11 +291,11 @@ class Addon:
     def log_notice(self, msg):
         '''
         Convenience method to write to the XBMC log file at the 
-        ``xbmc.LOGNOTICE`` error level. Use for general log messages. This will
+        ``xbmc.LOGINFO`` error level. Use for general log messages. This will
         show up in the log prefixed with 'NOTICE:' whether you have debugging 
         switched on or not.
         '''
-        self.log(msg, xbmc.LOGNOTICE)    
+        self.log(msg, xbmc.LOGINFO)    
 
 
     def show_ok_dialog(self, msg, title=None, is_error=False):
@@ -596,11 +608,15 @@ class Addon:
             play = self.build_plugin_url(queries)
         else: 
             play = resolved
-        listitem = xbmcgui.ListItem(infolabels['title'], iconImage=img, 
-                                    thumbnailImage=img)
+        listitem = xbmcgui.ListItem(infolabels['title'])
+        listitem.setArt({
+            "icon":img,
+            "poster":img,
+            "thumbnail":img,
+            "fanart":fanart,
+        });
         listitem.setInfo(item_type, infolabels)
         listitem.setProperty('IsPlayable', 'true')
-        listitem.setProperty('fanart_image', fanart)
         if contextmenu_items:
             listitem.addContextMenuItems(contextmenu_items, replaceItems=context_replace)        
         if playlist is not False:
@@ -771,7 +787,7 @@ class Addon:
         '''
         profile_path = self.get_profile()
         load_path = os.path.join(profile_path, filename)
-        print profile_path
+        print(profile_path)
         if not os.path.isfile(load_path):
             self.log_debug('%s does not exist' % load_path)
             return False

@@ -4,6 +4,7 @@ import xbmcaddon
 import xbmc
 import re
 import sys
+import six
 from resources.lib.modules import client, user_agents
 from resources.lib.modules import control, tools
 from resources.lib.modules import view
@@ -28,9 +29,9 @@ ART = ADDON_PATH + "/resources/icons/"
 Baseurl = 'https://scene-rls.net/'
 headers = {'User-Agent': user_agents.agent(), 'Referer': Baseurl}
 allfun = [
-    (control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
-    (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
-    (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)
+    (control.get_lang(32007), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
+    (control.get_lang(32008), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
+    (control.get_lang(32009), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)
 ]
 
 
@@ -75,7 +76,7 @@ def to_items(url): #34
         # match = re.compile('postHeader.+?href="(.+?)".+?>(.+?)<.+?src=.+? src="(.+?).+?(Plot:.+?)</p>"', re.DOTALL).findall(html)
         # for movieUrl, name, img, desc in match:
         desc = tools.Sinopsis(desc)
-        name = '[B][COLORgold]{0}[/COLOR][/B]'.format(name.encode('utf-8'))
+        name = '[B][COLORgold]{0}[/COLOR][/B]'.format(six.ensure_text(name, errors='ignore'))
         mode = 'scene_tvpacks_items' if 'tv-packs' in url else 'scene_links'
         addon.add_directory({'mode': mode, 'url': movieUrl, 'img': img, 'plot': desc},
                             {'title': name, 'plot': desc}, allfun, img=img, fanart=FANART)
@@ -88,7 +89,7 @@ def to_items(url): #34
         url = client.parseDOM(data, 'span', attrs={'id': 'olderEntries'})[0]
         url = client.parseDOM(url, 'a', ret='href')[0]
         addon.add_directory({'mode': 'scene_items', 'url': url},
-                            {'title': control.lang(32010).encode('utf-8')},
+                            {'title': control.get_lang(32010)},
                             img=ART + 'next_page.png', fanart=FANART)
 
     control.content(int(sys.argv[1]), 'movies')
@@ -108,7 +109,7 @@ def to_links(url, img, plot):  # Get Links
             match = client.parseDOM(html, 'h2')[0]
             match = re.sub('<.+?>', '', match)
             listitem = match
-        name = '%s (%s)' % (listitem[0].replace('.', ' '), listitem[1])
+        name = '{} ({})'.format(six.ensure_text(listitem[0], errors='ignore').replace('.', ' '), six.ensure_text(listitem[1], errors='ignore'))
         main = list()
         try:
             main = client.parseDOM(html, 'div', {'class': 'postContent'})
@@ -153,18 +154,19 @@ def to_links(url, img, plot):  # Get Links
                 title = title.replace('mkv', '[COLOR gold][B][I]MKV[/B][/I][/COLOR] ')
                 title = title.replace('avi', '[COLOR pink][B][I]AVI[/B][/I][/COLOR] ')
                 title = title.replace('mp4', '[COLOR purple][B][I]MP4[/B][/I][/COLOR] ')
+                title = six.ensure_text(title, errors='ignore')
                 host = host.replace('youtube.com', '[COLOR red][B][I]Movie Trailer[/B][/I][/COLOR]')
                 if 'railer' in host:
-                    title = host + ' : ' + title
+                    title = six.ensure_text(host) + ' : ' + title
                     addon.add_directory(
                         {'mode': 'PlayVideo', 'url': url, 'img': img, 'title': name,
                          'plot': plot},
                         {'title': title, 'plot': plot},
-                        [(control.lang(32007).encode('utf-8'),
+                        [(control.get_lang(32007),
                           'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
-                         (control.lang(32008).encode('utf-8'),
+                         (control.get_lang(32008),
                           'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
-                         (control.lang(32009).encode('utf-8'),
+                         (control.get_lang(32009),
                           'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)],
                         img=img, fanart=FANART, is_folder=False)
                 else:
@@ -179,17 +181,19 @@ def to_links(url, img, plot):  # Get Links
 
             for item in tools.tested_links:
                 link, title, name = item[0], item[1], item[2]
+                title = six.ensure_text(title, errors='ignore')
+                name = six.ensure_text(name, errors='ignore')
                 cm = [
-                    (control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                    (control.lang(32008).encode('utf-8'),
-                     'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                    (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)]
+                    (control.get_lang(32007), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
+                    (control.get_lang(32008),
+                     'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
+                    (control.get_lang(32009), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)]
                 downloads = True if control.setting('downloads') == 'true' and not (control.setting(
                     'movie.download.path') == '' or control.setting('tv.download.path') == '') else False
                 if downloads:
                     # frame = resolveurl.resolve(link)
-                    cm.append((control.lang(32013).encode('utf-8'),
-                               'RunPlugin(plugin://plugin.video.releaseBB/?mode=download&title=%s&img=%s&url=%s)' %
+                    cm.append((control.get_lang(32013),
+                               'RunPlugin(plugin://plugin.video.rlshub/?mode=download&title=%s&img=%s&url=%s)' %
                                (name, img, link))
                               )
                 addon.add_directory(
@@ -199,17 +203,18 @@ def to_links(url, img, plot):  # Get Links
         else:
             for item in links:
                 host, title, link, name = item[0], item[1], item[2], item[3]
-                title = '%s - %s' % (host, title)
+                title = six.ensure_text(title, errors='ignore')
+                name = six.ensure_text(name, errors='ignore')
+                title = '{} - {}'.format(host, title)
                 cm = [
-                    (control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=settings)',),
-                    (control.lang(32008).encode('utf-8'),
-                     'RunPlugin(plugin://plugin.video.releaseBB/?mode=ClearCache)',),
-                    (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.releaseBB/?mode=setviews)',)]
+                    (control.get_lang(32007), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
+                    (control.get_lang(32008), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
+                    (control.get_lang(32009), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)]
                 downloads = True if control.setting('downloads') == 'true' and not (control.setting(
                     'movie.download.path') == '' or control.setting('tv.download.path') == '') else False
                 if downloads:
-                    cm.append((control.lang(32013).encode('utf-8'),
-                               'RunPlugin(plugin://plugin.video.releaseBB/?mode=download&title=%s&img=%s&url=%s)' %
+                    cm.append((control.get_lang(32013),
+                               'RunPlugin(plugin://plugin.video.rlshub/?mode=download&title=%s&img=%s&url=%s)' %
                                (name, img, link))
                               )
                 addon.add_directory(
@@ -218,7 +223,7 @@ def to_links(url, img, plot):  # Get Links
 
     except BaseException:
         control.infoDialog(
-            control.lang(32012).encode('utf-8'),
+            control.get_lang(32012),
             NAME, ICON, 5000)
 
     control.content(int(sys.argv[1]), 'videos')
@@ -237,17 +242,17 @@ def to_get_pack(url, img, plot):  # TV packs links
         for i in data:
             title = i[0]
             title = tools.clear_Title(title)
-            title = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
+            title = '[B][COLORgold]{0}[/COLOR][/B]'.format(six.ensure_text(title, errors='ignore'))
             frames = dom.parse_dom(i[1], 'a', req='href')
             frames = [i.attrs['href'] for i in frames if not 'uploadgig' in i.content.lower()]
             frames = [i for i in frames if 'nfo.' in i]
             addon.add_directory({'mode': 'scene_tvpacks_links', 'url': frames, 'img': img, 'plot': plot},
                                 {'title': title, 'plot': plot},
-                                [(control.lang(32007).encode('utf-8'),
+                                [(control.get_lang(32007),
                                   'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
-                                 (control.lang(32008).encode('utf-8'),
+                                 (control.get_lang(32008),
                                   'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
-                                 (control.lang(32009).encode('utf-8'),
+                                 (control.get_lang(32009),
                                   'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)],
                                 img=img, fanart=FANART)
 
@@ -292,15 +297,15 @@ def to_get_links_pack(url, img, plot, listitem):
         for frame in frames:
             title = frame.split('/')[-1]
             host = tools.GetDomain(frame)
-            host = '[B][COLORcyan]{0}[/COLOR][/B]'.format(host.encode('utf-8'))
-            title = '{0}-[B][COLORgold]{1}[/COLOR][/B]'.format(host, title.encode('utf-8'))
-            cm = [(control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
-                  (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
-                  (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)]
+            host = '[B][COLORcyan]{0}[/COLOR][/B]'.format(six.ensure_text(host, errors='ignore'))
+            title = '{0}-[B][COLORgold]{1}[/COLOR][/B]'.format(host, six.ensure_text(title, errors='ignore'))
+            cm = [(control.get_lang(32007), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
+                  (control.get_lang(32008), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
+                  (control.get_lang(32009), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)]
             downloads = True if control.setting('downloads') == 'true' and not (control.setting(
                 'movie.download.path') == '' or control.setting('tv.download.path') == '') else False
             if downloads:
-                cm.append((control.lang(32013).encode('utf-8'),
+                cm.append((control.get_lang(32013),
                            'RunPlugin(plugin://plugin.video.rlshub/?mode=download&title=%s&img=%s&url=%s)' %
                            (title.split('-')[1], img, frame))
                           )
@@ -310,7 +315,7 @@ def to_get_links_pack(url, img, plot, listitem):
 
     except BaseException:
         control.infoDialog(
-            control.lang(32012).encode('utf-8'),
+            control.get_lang(32012),
             NAME, ICON, 5000)
 
     control.content(int(sys.argv[1]), 'videos')

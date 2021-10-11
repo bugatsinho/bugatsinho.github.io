@@ -22,14 +22,16 @@ import json
 import random
 import sys
 import re
-from six.moves.urllib.parse import urlparse, urljoin, quote_plus, quote, unquote, unquote_plus
 from resources.lib.modules import control
 from resources.lib.modules import cache
 from resources.lib.modules import client
 from resources.lib.modules import view
 from resources.lib.modules.addon import Addon
+import six
+# from six.moves import urllib
+from six.moves.urllib_parse import urlparse, urljoin, quote_plus, unquote, unquote_plus
 
-addon = Addon('plugin.video.rlshub', sys.argv)
+addon = Addon('plugin.video.releaseBB', sys.argv)
 Lang = control.lang
 ADDON = control.addon()
 FANART = ADDON.getAddonInfo('fanart')
@@ -39,7 +41,7 @@ version = ADDON.getAddonInfo('version')
 IconPath = control.addonPath + "/resources/icons/"
 base = control.setting('domain')
 BASE_URL = 'http://%s' % base.lower()
-OLD_URL = 'http://old2.proxybb.com/'
+OLD_URL = 'http://old3.proxybb.com/'
 
 try:
     from sqlite3 import dbapi2 as database
@@ -48,8 +50,6 @@ except ImportError:
 
 
 def Search_bb(url):
-    from cloudscraper2 import CloudScraper as cfscrape
-    scraper = cfscrape.create_scraper()
     if 'new' == url:
         keyboard = xbmc.Keyboard()
         keyboard.setHeading(control.lang(32002).encode('utf-8'))
@@ -64,7 +64,11 @@ def Search_bb(url):
                 url = 'http://search.proxybb.com/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
                 url = url.format(query, random.randint(33333333333333333, 99999999999999999))
                 #########save in Database#########
-                term = unquote_plus(query).decode('utf-8')
+                if six.PY2:
+                    term = unquote_plus(query).decode('utf-8')
+                else:
+                    term = unquote_plus(query)
+
                 dbcon = database.connect(control.searchFile)
                 dbcur = dbcon.cursor()
                 dbcur.execute("DELETE FROM Search WHERE search = ?", (term,))
@@ -75,14 +79,16 @@ def Search_bb(url):
                 #########search in website#########
                 headers = {'Referer': referer_link,
                            'X-Requested-With': 'XMLHttpRequest'}
-                first = scraper.get(referer_link, headers=headers).text
+                first = client.request(referer_link, headers=headers)
                 xbmc.sleep(10)
-                html = scraper.get(url, headers=headers).text
+                html = client.request(url, headers=headers)
                 posts = json.loads(html)['results']
                 posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
                 for movieUrl, title, infos, domain in posts:
+                    if not 'imdb.com/title' in infos:
+                        continue
                     base = BASE_URL if 'old' not in domain else OLD_URL
-                    movieUrl = urlparse.urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
+                    movieUrl = urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
                     title = title.encode('utf-8')
                     infos = infos.replace('\\', '')
                     try:
@@ -97,12 +103,15 @@ def Search_bb(url):
                         fan = FANART
 
                     try:
-                        desc = re.search(r'Plot:(.+?)</p><p> <img', infos, re.DOTALL).group(0)
+                        # desc = client.parseDOM(infos, 'div', attrs={'class': 'entry-summary'})[0]
+                        desc = re.findall(r'>(Plot:.+?)</p>', infos, re.DOTALL)[0]
                     except:
                         desc = 'N/A'
 
                     desc = Sinopsis(desc)
-                    name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
+                    # title = six.python_2_unicode_compatible(six.ensure_str(title))
+                    title = six.ensure_str(title, 'utf-8')
+                    name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title)
 
                     mode = 'GetPack' if re.search(r'\s+S\d+\s+', name) else 'GetLinks'
                     addon.add_directory(
@@ -126,7 +135,6 @@ def Search_bb(url):
                     {'title': control.lang(32010).encode('utf-8')},
                     img=IconPath + 'next_page.png', fanart=FANART)
 
-
             except BaseException:
                 control.infoDialog(control.lang(32022).encode('utf-8'), NAME, ICON, 5000)
 
@@ -135,16 +143,16 @@ def Search_bb(url):
         referer_link = referer_link.split('=', 1)[1]
         headers = {'Referer': referer_link,
                    'X-Requested-With': 'XMLHttpRequest'}
-        first = scraper.get(referer_link, headers=headers).text
+        first = client.request(referer_link, headers=headers)
         xbmc.sleep(10)
-        html = scraper.get(url, headers=headers).content
+        html = client.request(url, headers=headers)
         # xbmc.log('NEXT HTMLLLLL: {}'.format(html))
         posts = json.loads(html)['results']
         posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
         for movieUrl, title, infos, domain in posts:
             base = BASE_URL if 'old' not in domain else OLD_URL
-            movieUrl = urlparse.urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
-            title = title.encode('utf-8')
+            movieUrl = urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
+            title = six.ensure_str(title, 'utf-8')
             infos = infos.replace('\\', '')
             try:
                 img = client.parseDOM(infos, 'img', ret='src')[0]
@@ -158,12 +166,12 @@ def Search_bb(url):
                 fan = FANART
 
             try:
-                desc = re.search(r'Plot:(.+?)</p><p> <img', infos, re.DOTALL).group(0)
+                desc = re.search(r'>(Plot:.+?)</p>', infos, re.DOTALL).group(0)
             except:
                 desc = 'N/A'
 
             desc = Sinopsis(desc)
-            name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
+            name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title)
             mode = 'GetPack' if re.search(r'\s+S\d+\s+', name) else 'GetLinks'
             addon.add_directory(
                 {'mode': mode, 'url': movieUrl, 'img': img, 'plot': desc},
@@ -188,8 +196,6 @@ def Search_bb(url):
 
     else:
         try:
-            from cloudscraper2 import CloudScraper as cfscrape
-            scraper = cfscrape.create_scraper()
             url = quote_plus(url)
             referer_link = 'http://search.proxybb.com?s={0}'.format(url)
             headers = {'Referer': referer_link,
@@ -198,13 +204,13 @@ def Search_bb(url):
             xbmc.sleep(10)
             s_url = 'http://search.proxybb.com/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
             s_url = s_url.format(url, random.randint(33333333333333333, 99999999999999999))
-            html = scraper.get(s_url, headers=headers).text
+            html = client.request(s_url, headers=headers)
             posts = json.loads(html)['results']
             posts = [(i['post_name'], i['post_title'], i['post_content'], i['domain']) for i in posts if i]
             for movieUrl, title, infos, domain in posts:
                 base = BASE_URL if 'old' not in domain else OLD_URL
-                movieUrl = urlparse.urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
-                title = title.encode('utf-8')
+                movieUrl = urljoin(base, movieUrl) if not movieUrl.startswith('http') else movieUrl
+                title = six.ensure_str(title, 'utf-8')
                 infos = infos.replace('\\', '')
                 try:
                     img = client.parseDOM(infos, 'img', ret='src')[0]
@@ -218,12 +224,12 @@ def Search_bb(url):
                     fan = FANART
 
                 try:
-                    desc = re.search(r'Plot:(.+?)</p><p> <img', infos, re.DOTALL).group(0)
+                    desc = re.search(r'>(Plot:.+?)</p>', infos, re.DOTALL).group(0)
                 except:
                     desc = 'N/A'
 
                 desc = Sinopsis(desc)
-                name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title.encode('utf-8'))
+                name = '[B][COLORgold]{0}[/COLOR][/B]'.format(title)
 
                 mode = 'GetPack' if re.search(r'\s+S\d+\s+', name) else 'GetLinks'
                 addon.add_directory(
@@ -256,7 +262,7 @@ def Search_bb(url):
 
 def del_search(query):
     control.busy()
-    #xbmc.log('$#$DEL-search:%s' % query, xbmc.LOGNOTICE)
+    # xbmc.log('$#$DEL-search:%s' % query, xbmc.LOGNOTICE)
     search = quote_plus(query)
 
     dbcon = database.connect(control.searchFile)
@@ -275,23 +281,27 @@ def search_clear():
 
 
 def Sinopsis(txt):
-    OPEN = txt.encode('utf8')
+    OPEN = six.ensure_str(txt, 'utf-8')
     try:
-        try:
-            if 'Plot:' in OPEN:
-                Sinopsis = re.findall('(Plot:.+?)</p>', OPEN, re.DOTALL)[0]
-            else:
-                Sinopsis = re.findall('</p>\n<p>(.+?)</p><p>', OPEN, re.DOTALL)[0]
-
-        except:
-            Sinopsis = re.findall('</p>\n<p>(.+?)</p>\n<p style', OPEN, re.DOTALL)[0]
-        part = re.sub('<.*?>', '', Sinopsis)
-        part = re.sub('\.\s+', '.', part)
+        # try:
+        #     if 'Plot:' in OPEN:
+        #         Sinopsis = re.findall('(Plot:.+?)</p>', OPEN, re.DOTALL)[0]
+        #     else:
+        #         Sinopsis = re.findall('</p>\n<p>(.+?)</p><p>', OPEN, re.DOTALL)[0]
+        #
+        # except:
+        #     Sinopsis = re.findall('</p>\n<p>(.+?)</p>\n<p style', OPEN, re.DOTALL)[0]
+        part = re.sub('<.*?>', '', OPEN)
+        part = re.sub(r'\.\s+', '.', part)
         desc = clear_Title(part)
-        desc = desc.decode('ascii', errors='ignore')
+        if six.PY2:
+            desc = desc.decode('ascii', errors='ignore')
+        else:
+            desc = six.python_2_unicode_compatible(six.ensure_str(desc))
         return desc
     except BaseException:
         return 'N/A'
+
 
 def clear_Title(txt):
     txt = re.sub('<.+?>', '', txt)

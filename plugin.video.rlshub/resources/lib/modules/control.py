@@ -20,8 +20,8 @@
 
 
 import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
-import os, json, threading
-
+import os, json
+import six
 
 integer = 1000
 lang = xbmcaddon.Addon().getLocalizedString
@@ -51,10 +51,15 @@ monitor = xbmc.Monitor()
 wait = monitor.waitForAbort
 aborted = monitor.abortRequested
 
-transPath = xbmc.translatePath
-skinPath = xbmc.translatePath('special://skin/')
-addonPath = xbmc.translatePath(addonInfo('path'))
-dataPath = xbmc.translatePath(addonInfo('profile')).decode('utf-8')
+if six.PY2:
+    translatePath = xbmc.translatePath
+else:
+    import xbmcvfs
+    translatePath = xbmcvfs.translatePath
+
+skinPath = translatePath('special://skin/')
+addonPath = translatePath(addonInfo('path'))
+dataPath = translatePath(addonInfo('profile'))
 
 
 window = xbmcgui.Window(10000)
@@ -78,7 +83,7 @@ exists = xbmcvfs.exists
 copy = xbmcvfs.copy
 
 join = os.path.join
-DatabasePath = xbmc.translatePath("special://userdata/Database")
+DatabasePath = translatePath("special://userdata/Database")
 settingsFile = join(dataPath, 'settings.xml')
 bookmarksFile = join(dataPath, 'bookmarks.db')
 viewsFile = join(dataPath, 'views.db')
@@ -267,7 +272,7 @@ def platform():
 def open_git(url=None):
     try:
         if not url:
-            git_url = 'https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.releaseBB'
+            git_url = 'https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.rlshub'
         else:
             git_url = url
         if platform() == 'android':  # Android
@@ -279,5 +284,10 @@ def open_git(url=None):
         return
 
 
-
+def get_lang(lang_id):
+    lang_id = int(lang_id)
+    if six.PY2:
+        return lang(lang_id).encode('utf-8')
+    else:
+        return lang(lang_id)
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.rlshub" version="0.0.3" name="Release[COLOR gold][B]HUB[/B][/COLOR]" provider-name="Bugatsinho">
+<addon id="plugin.video.rlshub" version="1.0.0" name="Release[COLOR gold][B]HUB[/B][/COLOR]" provider-name="Bugatsinho">
   <requires>
-    <import addon="xbmc.python" version="2.1.0" />
+    <import addon="xbmc.addon" version="18.0.000"/>
     <import addon="script.module.resolveurl" />
     <import addon="script.module.requests" />
     <import addon="script.module.pyxbmct" />

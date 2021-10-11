@@ -46,9 +46,9 @@ eztv_base = control.setting('eztv.domain')
 eztv_base = 'https://%s' % eztv_base.lower()
 headers = {'User-Agent': client.agent(), 'Referer': eztv_base}
 allfun = [
-    (control.lang(32007).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
-    (control.lang(32008).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
-    (control.lang(32009).encode('utf-8'), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)
+    (control.get_lang(32007), 'RunPlugin(plugin://plugin.video.rlshub/?mode=settings)',),
+    (control.get_lang(32008), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)',),
+    (control.get_lang(32009), 'RunPlugin(plugin://plugin.video.rlshub/?mode=setviews)',)
 ]
 
 
@@ -81,7 +81,7 @@ def eztv_latest(url):
         np = [i.attrs['href'] for i in np if 'next page' in i.content][0]
         np = urljoin(eztv_base, np)
         addon.add_directory({'mode': 'eztv_latest', 'url': np},
-                            {'title': control.lang(32010).encode('utf-8')},
+                            {'title': control.get_lang(32010)},
                             img=ART + 'eztv.png', fanart=FANART)
     except BaseException:
         pass
@@ -183,7 +183,7 @@ def eztv_search():
     url = 'https://eztv.io/search/?q1={}&q2=&search=Search'
     search_url = 'https://eztv.io/search/{}'
     keyboard = xbmc.Keyboard()
-    keyboard.setHeading(control.lang(32002).encode('utf-8'))
+    keyboard.setHeading(control.get_lang(32002))
     keyboard.doModal()
     if keyboard.isConfirmed():
         _query = keyboard.getText()
