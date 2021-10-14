@@ -118,7 +118,8 @@ def PlayVideo(url, title, img, plot):
     try:
         import resolveurl
         stream_url = resolveurl.resolve(url)
-        liz = xbmcgui.ListItem(title, iconImage="DefaultVideo.png", thumbnailImage=img)
+        liz = xbmcgui.ListItem(title)
+        liz.setArt({"icon": "DefaultVideo.png", "thumbnail": img})
         liz.setInfo(type="Video", infoLabels={"Title": title, "Plot": plot})
         liz.setProperty("IsPlayable", "true")
         liz.setPath(str(stream_url))
