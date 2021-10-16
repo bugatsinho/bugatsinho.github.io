@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.rlshub" version="1.0.1" name="Release[COLOR gold][B]HUB[/B][/COLOR]" provider-name="Bugatsinho">
+<addon id="plugin.video.rlshub" version="1.0.3" name="Release[COLOR gold][B]HUB[/B][/COLOR]" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.addon" version="18.0.000"/>
     <import addon="script.module.resolveurl" />
@@ -21,7 +21,7 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>1.0.1</news>
+    <news>1.0.3</news>
     <assets>
         <icon>icon.png</icon>
         <fanart>fanart.jpg</fanart>
