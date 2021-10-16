@@ -6,14 +6,13 @@ import xbmcvfs
 import xbmcgui
 import xbmcaddon
 import xbmcplugin
-import urllib
 import re
 import sys
 import os
 import threading
 from sys import argv
 from six.moves.urllib.parse import urljoin, parse_qsl, urlparse, unquote_plus, quote_plus, quote, unquote
-from six.moves import zip
+from six.moves import zip, urllib
 from resources.lib.modules import client
 from resources.lib.modules import control
 from resources.lib.modules import cache
@@ -24,7 +23,7 @@ from resources.lib.modules.addon import Addon
 
 addon_id = 'plugin.video.rlshub'
 plugin = xbmcaddon.Addon(id=addon_id)
-DB = os.path.join(control.transPath("special://database"), 'cache.db')
+DB = os.path.join(control.translatePath("special://database"), 'cache.db')
 addon = Addon(addon_id, sys.argv)
 
 ##### Queries ##########
@@ -664,7 +663,7 @@ def download(title, img, url):
 
     if len(content) == 0:
         dest = control.setting('movie.download.path')
-        dest = control.transPath(dest)
+        dest = control.translatePath(dest)
         for level in levels:
             try:
                 control.makeFile(os.path.abspath(os.path.join(dest, level)))
@@ -675,7 +674,7 @@ def download(title, img, url):
         control.makeFile(dest)
     else:
         dest = control.setting('tv.download.path')
-        dest = control.transPath(dest)
+        dest = control.translatePath(dest)
         for level in levels:
             try:
                 control.makeFile(os.path.abspath(os.path.join(dest, level)))

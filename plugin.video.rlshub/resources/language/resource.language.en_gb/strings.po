@@ -1,6 +1,6 @@
 # Kodi Media Center language file
 # Addon Name: ReleaseBB
-# Addon id: plugin.video.releaseBB
+# Addon id: plugin.video.rlshub
 # Addon Provider: Bugatsinho
 
 #This is a comment

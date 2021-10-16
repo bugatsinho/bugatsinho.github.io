@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import control
 import xbmcgui
 import xbmcaddon
 import xbmc

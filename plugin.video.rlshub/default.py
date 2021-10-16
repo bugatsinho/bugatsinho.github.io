@@ -153,7 +153,7 @@ def download(title, img, url):
 
     if len(content) == 0:
         dest = control.setting('movie.download.path')
-        dest = control.transPath(dest)
+        dest = control.translatePath(dest)
         for level in levels:
             try:
                 control.makeFile(os.path.abspath(os.path.join(dest, level)))
@@ -164,7 +164,7 @@ def download(title, img, url):
         control.makeFile(dest)
     else:
         dest = control.setting('tv.download.path')
-        dest = control.transPath(dest)
+        dest = control.translatePath(dest)
         for level in levels:
             try:
                 control.makeFile(os.path.abspath(os.path.join(dest, level)))

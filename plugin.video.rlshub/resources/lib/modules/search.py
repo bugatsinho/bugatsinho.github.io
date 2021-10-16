@@ -31,7 +31,7 @@ import six
 # from six.moves import urllib
 from six.moves.urllib_parse import urlparse, urljoin, quote_plus, unquote, unquote_plus
 
-addon = Addon('plugin.video.releaseBB', sys.argv)
+addon = Addon('plugin.video.rlshub', sys.argv)
 Lang = control.lang
 ADDON = control.addon()
 FANART = ADDON.getAddonInfo('fanart')
