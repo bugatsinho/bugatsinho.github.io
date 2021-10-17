@@ -41,17 +41,17 @@
 
 	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.23.1" provider-name="Bugatsinho">
 	  <requires>
-		<import addon="xbmc.python" version="2.19.0"/>
+		<import addon="xbmc.addon" version="16.1.000"/>
+		<import addon="script.module.six" />
 		<import addon="script.module.resolveurl" version="5.0.00"/>
 		<import addon="script.module.pyxbmct" version="1.2.0"/>
-	    <import addon="script.module.requests" version="2.19.1"/>
+		<import addon="script.module.requests" version="2.19.1"/>
 	  </requires>
 	  <extension point="xbmc.python.pluginsource" library="default.py">
 			<provides>video</provides>
 	  </extension>
-	  <extension point="xbmc.service" library="service.py" start="startup" />
+	  <!--extension point="xbmc.service" library="service.py" start="startup" /-->
 	  <extension point="xbmc.addon.metadata">
-		<reuselanguageinvoker>false</reuselanguageinvoker>
 		<platform>all</platform>
 		<summary lang="el">ΠΑΙΔΙΚΑ</summary>
 		<description lang="el">ΤΑΙΝΙΕΣ κ ΣΕΙΡΕΣ για τα παιδιά ΜΕΤΑΓΛΩΤΙΣΜΕΝΑ ή με ΥΠΟΤΙΤΛΟΥΣ</description>
@@ -68,13 +68,15 @@
 		<twitter>https://twitter.com/bugatsinho</twitter>
 		<repo>https://bugatsinho.github.io/repo/</repo>
 		<email>bugatsinho@protonmail.com</email>
-		<news>[B]v1.0.10[/B] (29/04/2020)
-	  - Αλλαγή domain για το gamatokids
-	  - Λειτουργία για ανακτηση των domain απο το gamato &amp; tenies-online
-	  - Δυνατότητα χειροκίνητης αλλαγής domain στις ρυθμίσεις
-	  - Διόρθωση του επιλυτή στα λινκς του gamato</news>
+		<news>[B]v1.0.18[/B] 09/12/2020)
+	  - αλλαγή domain για gamato</news>
+		<assets>
+			<icon>icon.png</icon>
+			<fanart>fanart.jpg</fanart>
+		</assets>
 	  </extension>
 	</addon>
+
 
 	<addon id="plugin.video.rlshub" version="1.0.4" name="Release[COLOR gold][B]HUB[/B][/COLOR]" provider-name="Bugatsinho">
 	  <requires>
