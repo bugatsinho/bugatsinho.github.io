@@ -45,6 +45,8 @@ def menu():
     addon.add_directory({'mode': 'scene_tvpacks', 'url': Baseurl + 'category/tv-packs/'},
                         {'title': '[B][COLOR gold]TV PACKS[/COLOR][/B]'},
                         allfun, img=ART + 'tv_shows.png', fanart=FANART)
+    addon.add_directory({'mode': 'search_menu_scene'}, {'title': control.get_lang(32002)},
+                        allfun, img=ART + 'search.png', fanart=FANART)
     control.content(int(sys.argv[1]), 'addons')
     control.directory(int(sys.argv[1]))
     view.setView('addons', {'skin.estuary': 55, 'skin.confluence': 500})
@@ -318,6 +320,34 @@ def to_get_links_pack(url, img, plot, listitem):
             control.get_lang(32012),
             NAME, ICON, 5000)
 
+    control.content(int(sys.argv[1]), 'videos')
+    control.directory(int(sys.argv[1]))
+    view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500})
+
+def scene_search():
+    url = 'http://scene-rls.net/'
+    search_url = 'http://scene-rls.net/?s={}&submit=Find'
+    from resources.lib.modules import user_agents
+    from resources.lib.modules.compat import quote_plus
+    headers = {'User-Agent': user_agents.randomagent(),
+               'Referer': url}
+    keyboard = xbmc.Keyboard()
+    keyboard.setHeading(control.get_lang(32002))
+    keyboard.doModal()
+    if keyboard.isConfirmed():
+        _query = keyboard.getText()
+        query = six.ensure_text(_query, encoding='utf-8')
+        query = quote_plus(query)
+        # get_link = client.request(url.format(query), output='location')
+        search_url = search_url.format(query)
+        # xbmc.log('SEARCH-URL: {}'.format(search_url))
+        # data = client.request(query)
+        try:
+            to_items(search_url)
+        except IndexError:
+            pass
+    else:
+        return
     control.content(int(sys.argv[1]), 'videos')
     control.directory(int(sys.argv[1]))
     view.setView('videos', {'skin.estuary': 55, 'skin.confluence': 500})

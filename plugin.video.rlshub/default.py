@@ -95,7 +95,7 @@ def MainMenu():  # homescreen
     #                     [(control.get_lang(32008), 'RunPlugin(plugin://plugin.video.rlshub/?mode=ClearCache)')],
     #                     img=IconPath + 'github.png', fanart=FANART, is_folder=False)
     addon.add_directory({'mode': 'forceupdate'},
-                        {'title': '[COLOR gold][B]Version: [COLOR lime]%s[/COLOR][/B]' % version},
+                        {'title': '[COLOR gold][B]Version: [COLOR lime]{}[/COLOR][/B]'.format(version)},
                         allfun, img=ICON, fanart=FANART, is_folder=False)
 
     control.content(int(sys.argv[1]), 'addons')
@@ -430,3 +430,6 @@ elif mode == 'scene_items':
 elif mode == 'scene_links':
     from resources.lib.sources import scenerls
     scenerls.to_links(url, img, plot)
+elif mode == 'search_menu_scene':
+    from resources.lib.sources import scenerls
+    scenerls.scene_search()

@@ -78,7 +78,7 @@
 	</addon>
 
 
-	<addon id="plugin.video.rlshub" version="1.0.4" name="Release[COLOR gold][B]HUB[/B][/COLOR]" provider-name="Bugatsinho">
+	<addon id="plugin.video.rlshub" version="1.0.5" name="Release[COLOR gold][B]HUB[/B][/COLOR]" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.addon" version="18.0.000"/>
 		<import addon="script.module.resolveurl" />
@@ -90,7 +90,7 @@
 		<provides>video</provides>
 	  </extension>
 	  <extension point="xbmc.addon.metadata">
-		<summary>Browse Release[COLOR orange][B]BB[/B][/COLOR]</summary>
+		<summary>Browse Releases in various Websites</summary>
 		<description>Stream a wide selection of scene release movies and Tv shows from various websites....
 		  [COLOR red][B][I]YOU will need a Real-Debrid / Premiumize / Alldebrid account for this add-on[/B][/I][/COLOR]
 		</description>

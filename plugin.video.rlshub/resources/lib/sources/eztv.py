@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import six
+
 import xbmcgui
 import xbmcaddon
 import xbmc
@@ -180,23 +182,26 @@ def open_episode_page(url):
 
 
 def eztv_search():
-    url = 'https://eztv.io/search/?q1={}&q2=&search=Search'
-    search_url = 'https://eztv.io/search/{}'
+    url = 'https://eztv.io/search/'
+    search_url = 'https://eztv.re/search/{}'
+    from resources.lib.modules import user_agents
+    headers = {'User-Agent': user_agents.randomagent(),
+               'Referer': url}
     keyboard = xbmc.Keyboard()
     keyboard.setHeading(control.get_lang(32002))
     keyboard.doModal()
     if keyboard.isConfirmed():
         _query = keyboard.getText()
-        query = _query.encode('utf-8')
+        query = six.ensure_text(_query, encoding='utf-8')
         query = quote_plus(query).replace('+', '-')
         # get_link = client.request(url.format(query), output='location')
         search_url = search_url.format(query)
-        # xbmc.log('SEARCH-URL: {}'.format(search_url))
-        data = client.request(query)
+        data = client.request(search_url, headers=headers)
         try:
-            alts = client.parseDOM(data, 'tr', attrs={'class': 'forum_header_border'})
-            alts = [dom.parse_dom(str(i), 'a', req=['href', 'title'])[0] for i in alts if alts]
-            # xbmc.log('SEARCH-ALTSL: {}'.format(alts))
+            alts = client.parseDOM(data, 'table', attrs={'class': 'forum_header_border'})[-1]
+            alts = client.parseDOM(alts, 'tr', attrs={'name': 'hover'})
+            # alts = client.parseDOM(alts, 'td', attrs={'class': 'forum_thread_post'})
+            alts = [dom.parse_dom(str(i), 'a', req=['href', 'title'])[1] for i in alts if alts]
             for alt in alts:
                 link, title = alt.attrs['href'], alt.attrs['title']
                 link = urljoin(eztv_base, link) if link.startswith('/') else link
