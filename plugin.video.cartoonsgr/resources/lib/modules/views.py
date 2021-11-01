@@ -23,7 +23,7 @@ try:
 except ImportError:
     from pysqlite2 import dbapi2 as database
 
-import control
+from resources.lib.modules import control
 
 
 def addView(content):
@@ -80,7 +80,7 @@ def selectView(content, viewtype):
         xbmcplugin.setContent(int(sys.argv[1]), content)
     if control.setting('auto-view') == 'true':
 
-        print control.setting(viewtype)
+        print(control.setting(viewtype))
         if control.setting(viewtype) == 'Info':
             VT = '504'
         elif control.setting(viewtype) == 'Info2':
@@ -114,7 +114,7 @@ def selectView(content, viewtype):
         elif control.setting(viewtype) == 'Default Anime View':
             VT = control.setting('default-view7')
 
-        print viewtype
-        print VT
+        print(viewtype)
+        print(VT)
 
         xbmc.executebuiltin("Container.SetViewMode(%s)" % (int(VT)))

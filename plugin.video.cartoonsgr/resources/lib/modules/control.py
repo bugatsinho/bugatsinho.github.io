@@ -21,15 +21,16 @@ import json
 import os
 import re
 import sys
-import urllib
+import six
 
-import init
+from resources.lib.modules import init
+from six.moves.urllib_parse import quote_plus, unquote
 import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
 import xbmcvfs
-from init import syshandle
+from resources.lib.modules.init import syshandle
 
 integer = 1000
 lang = xbmcaddon.Addon().getLocalizedString
@@ -59,10 +60,15 @@ monitor = xbmc.Monitor()
 wait = monitor.waitForAbort
 aborted = monitor.abortRequested
 
-transPath = xbmc.translatePath
-skinPath = xbmc.translatePath('special://skin/')
-addonPath = xbmc.translatePath(addonInfo('path'))
-dataPath = xbmc.translatePath(addonInfo('profile')).decode('utf-8')
+if six.PY2:
+    transPath = xbmc.translatePath
+else:
+    import xbmcvfs
+    transPath = xbmcvfs.translatePath
+
+skinPath = transPath('special://skin/')
+addonPath = transPath(addonInfo('path'))
+dataPath = transPath(addonInfo('profile'))
 
 window = xbmcgui.Window(10000)
 dialog = xbmcgui.Dialog()
@@ -355,16 +361,19 @@ def addDir(name, url, mode, iconimage, fanart, description):
     import six
     name = six.ensure_str(name, encoding='utf-8', errors='ignore')
     description = six.ensure_str(description, encoding='utf-8', errors='ignore')
+    iconimage = six.ensure_str(iconimage, encoding='utf-8', errors='ignore')
+    fanart = six.ensure_str(fanart, encoding='utf-8', errors='ignore')
     if mode == 6:
         u = '%s?url=%s&mode=%s&name=%s&iconimage=%s&description=%s' % \
-            (sys.argv[0], urllib.quote_plus(url), str(mode), urllib.unquote(name),
-             urllib.quote_plus(iconimage), urllib.quote_plus(description))
+            (sys.argv[0], quote_plus(url), str(mode), unquote(name),
+             quote_plus(iconimage), quote_plus(description))
 
     else:
-        u = sys.argv[0] + "?url=" + urllib.quote_plus(url) + "&mode=" + str(mode) + "&name=" + urllib.quote_plus(name) + \
-            "&iconimage=" + urllib.quote_plus(iconimage) + "&description=" + urllib.quote_plus(description)
+        u = sys.argv[0] + "?url=" + quote_plus(url) + "&mode=" + str(mode) + "&name=" + quote_plus(name) + \
+            "&iconimage=" + quote_plus(iconimage) + "&description=" + quote_plus(description)
     ok = True
-    liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
+    liz = xbmcgui.ListItem(name)
+    liz.setArt({"icon": iconimage, "fanart": fanart})
     liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
     liz.setProperty('fanart_image', fanart)
     cm = []
@@ -379,9 +388,9 @@ def addDir(name, url, mode, iconimage, fanart, description):
             (setting('movie.download.path') == '' or setting('tv.download.path') == '')
         if downloads:
             _url = 'RunPlugin({0}?mode=41&name={1}&iconimage={2}&url={3})'.format(init.sysaddon,
-                                                                                  urllib.quote_plus(name),
-                                                                                  urllib.quote_plus(iconimage),
-                                                                                  urllib.quote_plus(url))
+                                                                                  quote_plus(name),
+                                                                                  quote_plus(iconimage),
+                                                                                  quote_plus(url))
             cm.append((lang(32040).encode('utf-8') if six.PY2 else lang(32040), _url))
         liz.addContextMenuItems(cm)
         ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)

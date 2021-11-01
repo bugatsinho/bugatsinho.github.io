@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.23.1" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.24" provider-name="Bugatsinho">
   <requires>
-    <import addon="xbmc.addon" version="16.1.000"/>
+    <import addon="xbmc.addon" version="17.0.000"/>
     <import addon="script.module.six" />
     <import addon="script.module.resolveurl" version="5.0.00"/>
     <import addon="script.module.pyxbmct" version="1.2.0"/>
@@ -28,7 +28,11 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>[B]v1.0.23[/B] 24/09/2021
-  - fix search items</news>
+    <news>[B]v1.0.24[/B] 01/11/2021
+  - Kodi 19.x compatibility</news>
+    <assets>
+        <icon>icon.png</icon>
+        <fanart>fanart.jpg</fanart>
+    </assets>
   </extension>
 </addon>

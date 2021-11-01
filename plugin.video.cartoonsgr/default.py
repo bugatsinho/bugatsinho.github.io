@@ -74,12 +74,9 @@ def Main_addDir():
 
 
 def gamatokids():
-    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]',
-           GAMATO + 'genre/gamato/',
-           4, ART + 'dub.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]',
-           GAMATO + 'genre/κινούμενα-σχέδια/', 4, ART + 'genre.jpg', FANART, '')
-    # addDir('[B][COLOR yellow]Προτεινόμενα[/COLOR][/B]', GAMATO, 21, ART + 'top.png', FANART, '')
+    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + 'genre/gamato/', 4, ART + 'dub.jpg', FANART, '')
+    addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + 'genre/κινούμενα-σχέδια/', 4, ART + 'genre.jpg', FANART, '')
+    addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + 'genre/οικογενειακή/', 4, ART + 'top.png', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
     views.selectView('menu', 'menu-view')
 
@@ -603,11 +600,13 @@ def Search_gamato(url):  # 18
 
 def gamato_kids(url):  # 4
     data = requests.get(url).text
-    posts = client.parseDOM(data, 'article', attrs={'class': 'item movies'})
+    posts = client.parseDOM(data, 'article', attrs={'id': 'post-\d+'})
     for post in posts:
         try:
             plot = re.findall('''texto["']>(.+?)</div> <div''', post, re.DOTALL)[0]
         except IndexError:
+            plot = client.parseDOM(post, 'div', attrs={'class': 'texto'})[0]
+        if len(plot) < 1:
             plot = 'N/A'
         desc = client.replaceHTMLCodes(plot)
         desc = six.ensure_str(desc, encoding='utf-8')
@@ -657,61 +656,66 @@ def gamatokids_top(url):  # 21
 
 
 def gamato_links(url, name, poster):  # 12
-    try:
+    # try:
+        xbmc.log('MALAKASSSSS')
+        xbmc.log('URLLLL: {}'.format(url))
         url = quote(url, ':/.')
-        data = requests.get(url).text
-        # xbmc.log('DATA: {}'.format(str(data)))
+        xbmc.log('URLLLL2: {}'.format(url))
+
+        data = six.ensure_text(client.request(url))
+        xbmc.log('DATA: {}'.format(str(data)))
         try:
             desc = client.parseDOM(data, 'div', attrs={'itemprop': 'description'})[0]
             desc = clear_Title(desc)
         except IndexError:
             desc = 'N/A'
 
+        # try:
+        #     # Playerjs({id:"playerjs14892",file:"https://gamato1.com/s/Aladdin%20and%20the%20King%20of%20Thieves%201996.mp4"})
+        #     link = re.findall(r'''Playerjs\(\{.+?file\s*:\s*['"](.+?\.mp4)['"]\}''', data, re.DOTALL)[0]
+        #     link = quote(link, ':/.')
+        #     # link += '|User-Agent={}&Referer={}'.format(quote(client.agent()), quote(url))
+        #     xbmc.log('FRAME1: {}'.format(str(link)))
+        # except IndexError:
+        # try:
         try:
-            # Playerjs({id:"playerjs14892",file:"https://gamato1.com/s/Aladdin%20and%20the%20King%20of%20Thieves%201996.mp4"})
-            link = re.findall(r'''Playerjs\(\{.+?file\s*:\s*['"](.+?\.mp4)['"]\}''', data, re.DOTALL)[0]
-            link = quote(link, ':/.')
-            # link += '|User-Agent={}&Referer={}'.format(quote(client.agent()), quote(url))
-            # xbmc.log('FRAME1: {}'.format(link))
+            match = re.findall(r'''file\s*:\s*['"](.+?)['"],poster\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
+            link, _poster = match[0], match[1]
         except IndexError:
-            try:
-                try:
-                    match = re.findall(r'''file\s*:\s*['"](.+?)['"],poster\s*:\s*['"](.+?)['"]\}''', data, re.DOTALL)[0]
-                    link, _poster = match[0], match[1]
-                except IndexError:
-                    # 'http://gamatotv2.com/kids/jwplayer/?source=http%3A%2F%2F161.97.109.217%2FSonic%2520%2520%2520-%2520Gamato%2520%2520.mp4&id=16449&type=mp4
-                    link = re.findall(r'''/jwplayer/.+source=(.+?)&id=''', data, re.DOTALL)[0]
+            # 'http://gamatotv2.com/kids/jwplayer/?source=http%3A%2F%2F161.97.109.217%2FSonic%2520%2520%2520-%2520Gamato%2520%2520.mp4&id=16449&type=mp4
+            link = re.findall(r'''/jwplayer/\?source=(.+?)&id=''', data, re.DOTALL)[0]
 
-                # xbmc.log('FRAME2: {}'.format(link))
-            except IndexError:
-                frame = client.parseDOM(data, 'div', attrs={'id': r'option-\d+'})[0]
-                frame = client.parseDOM(frame, 'iframe', ret='src')[0]
-                # xbmc.log('FRAME3: {}'.format(frame))
-
-                if 'cloud' in frame:
-                    # sources: ["http://cloudb.me/4fogdt6l4qprgjzd2j6hymoifdsky3tfskthk76ewqbtgq4aml3ior7bdjda/v.mp4"],
-                    match = client.request(frame, referer=url)
-                    # xbmc.log('MATCH3: {}'.format(match))
-                    if 'meta name="robots"' in match:
-                        cloudid = frame.split('html?')[-1].split('=')[0]
-                        cloud = 'http://cloudb2.me/embed-{}.html?auto=1&referer={}'.format(cloudid, url)
-                        match = client.request(cloud)
-                    try:
-                        from resources.lib.modules import jsunpack
-                        if jsunpack.detect(match):
-                            match = jsunpack.unpack(match)
-                        match = re.findall(r'sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
-                        # match += '|User-Agent=%s&Referer=%s' % (quote(client.agent()), frame)
-                    except IndexError:
-                        from resources.lib.modules import jsunpack as jsun
-                        if jsun.detect(match):
-                            match = jsun.unpack(match)
-                            match = re.findall(r'sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
-                            # match += '|User-Agent=%s&Referer=%s' % (quote(client.agent()), frame)
-                else:
-                    match = frame
-                link, _poster = match, poster
-
+        xbmc.log('FRAME2: {}'.format(str(link)))
+        # except IndexError:
+        #     frame = client.parseDOM(data, 'div', attrs={'id': r'option-\d+'})[0]
+        #     frame = client.parseDOM(frame, 'iframe', ret='src')[0]
+        #     xbmc.log('FRAME3: {}'.format(str(frame)))
+        #
+        #     if 'cloud' in frame:
+        #         # sources: ["http://cloudb.me/4fogdt6l4qprgjzd2j6hymoifdsky3tfskthk76ewqbtgq4aml3ior7bdjda/v.mp4"],
+        #         match = client.request(frame, referer=url)
+        #         # xbmc.log('MATCH3: {}'.format(match))
+        #         if 'meta name="robots"' in match:
+        #             cloudid = frame.split('html?')[-1].split('=')[0]
+        #             cloud = 'http://cloudb2.me/embed-{}.html?auto=1&referer={}'.format(cloudid, url)
+        #             match = client.request(cloud)
+        #         try:
+        #             from resources.lib.modules import jsunpack
+        #             if jsunpack.detect(match):
+        #                 match = jsunpack.unpack(match)
+        #             match = re.findall(r'sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
+        #             # match += '|User-Agent=%s&Referer=%s' % (quote(client.agent()), frame)
+        #         except IndexError:
+        #             from resources.lib.modules import jsunpack as jsun
+        #             if jsun.detect(match):
+        #                 match = jsun.unpack(match)
+        #                 match = re.findall(r'sources:\s*\[[\'"](.+?)[\'"]\]', match, re.DOTALL)[0]
+        #                 # match += '|User-Agent=%s&Referer=%s' % (quote(client.agent()), frame)
+        #     else:
+        #         match = frame
+        #     link, _poster = match, poster
+        link = unquote_plus(link)
+        xbmc.log('Finally LINK: {}'.format(link))
         try:
             fanart = client.parseDOM(data, 'div', attrs={'class': 'g-item'})[0]
             fanart = client.parseDOM(fanart, 'a', ret='href')[0]
@@ -725,13 +729,15 @@ def gamato_links(url, name, poster):  # 12
             pass
 
         addDir(name, link, 100, poster, fanart, str(desc))
-    except BaseException:
-        return
-    views.selectView('movies', 'movie-view')
+    # except BaseException:
+    #     return
+        views.selectView('movies', 'movie-view')
 
 
 def get_links(name, url, iconimage, description):
-    data = requests.get(url).text
+    hdrs = {'Referer': GAMATO,
+            'User-Agent': client.agent()}
+    data = requests.get(url, headers=hdrs).text
     try:
         if 'Trailer' in data:
             flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
@@ -741,50 +747,61 @@ def get_links(name, url, iconimage, description):
             addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
     except BaseException:
         pass
-    # try:
-    if 'tvshows' not in url:
-        try:
-            frame = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'metaframe rptss'})[0]
-            html = requests.get(frame).text
-            post_url = 'https://coverapi.store/engine/ajax/controller.php'
-            postdata = re.findall(r'''data: \{mod: 'players', news_id: '(\d+)'\},''', html, re.DOTALL)[0]
-            # xbmc.log('POSR-DATA: {}'.format(str(postdata)))
-            postdata = {'mod': 'players',
-                        'news_id': postdata}
-            hdrs = {'Origin': 'https://coverapi.store',
-                    'Referer': frame,
-                    'User-Agent': client.agent()}
-            post_html = requests.post(post_url, data=postdata, headers=hdrs).text.replace('\\', '')
-            # xbmc.log('POSR-HTML: {}'.format(str(post_html)))
-            frame = re.findall(r'''file:\s*['"](http.+?)['"]''', post_html, re.DOTALL)[0]
-            title = '{} | [B]{}[/B]'.format(name, 'Gamato')
-            addDir(title, frame, 100, iconimage, FANART, str(description))
-        except IndexError:
-            pass
-        try:
-            frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
-            frames = [(client.parseDOM(i, 'a', ret='href', attrs={'target': '_blank'})[0],
-                       client.parseDOM(i, 'img', ret='src')[0],
-                       client.parseDOM(i, 'strong', {'class': 'quality'})[0]) for i in frames if frames]
-            for frame, domain, quality in frames:
-                host = domain.split('=')[-1]
-                host = six.ensure_str(host, 'utf-8')
-                # if 'Μεταγλωτισμένο' in info.encode('utf-8', 'ignore'):
-                #     info = '[Μετ]'
-                # elif 'Ελληνικοί' in info.encode('utf-8', 'ignore'):
-                #     info = '[Υπο]'
-                # elif 'Χωρίς' in info.encode('utf-8', 'ignore'):
-                #     info = '[Χωρίς Υπ]'
-                # else:
-                #     info = '[N/A]'
-                quality = 'SD'
-                title = '{} | [B]{}[/B] | ({})'.format(name, host.capitalize(), quality)
-                addDir(title, frame, 100, iconimage, FANART, str(description))
-        except BaseException:
-            pass
-    else:
+    try:
+        if 'tvshows' not in url:
+            try:
+                frame = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'metaframe rptss'})[0]
+                if 'coverapi' in frame:
+                    html = requests.get(frame).text
+                    post_url = 'https://coverapi.store/engine/ajax/controller.php'
+                    postdata = re.findall(r'''data: \{mod: 'players', news_id: '(\d+)'\},''', html, re.DOTALL)[0]
+                    # xbmc.log('POSR-DATA: {}'.format(str(postdata)))
+                    postdata = {'mod': 'players',
+                                'news_id': postdata}
+                    hdrs = {'Origin': 'https://coverapi.store',
+                            'Referer': frame,
+                            'User-Agent': client.agent()}
+                    post_html = requests.post(post_url, data=postdata, headers=hdrs).text.replace('\\', '')
+                    # xbmc.log('POSR-HTML: {}'.format(str(post_html)))
+                    frame = re.findall(r'''file:\s*['"](http.+?)['"]''', post_html, re.DOTALL)[0]
+                    title = '{} | [B]{}[/B]'.format(name, 'Gamato')
+                    addDir(title, frame, 100, iconimage, FANART, str(description))
+                elif '/jwplayer/?source' in frame:
+                    frame = re.findall(r'''/jwplayer/\?source=(.+?)&id=''', frame, re.DOTALL)[0]
+                    # xbmc.log('FRAME-JWPLAYER: {}'.format(str(frame)))
+                    # frame = unquote_plus(frame)
+                    title = '{} | [B]{}[/B]'.format(name, 'Gamato')
+                    addDir(title, frame, 100, iconimage, FANART, str(description))
+                else:
+                    host = GetDomain(frame)
+                    title = '{} | [B]{}[/B]'.format(name, host.capitalize())
+                    addDir(title, frame, 100, iconimage, FANART, str(description))
+            except IndexError:
+                pass
+            try:
+                frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
+                frames = [(client.parseDOM(i, 'a', ret='href', attrs={'target': '_blank'})[0],
+                           client.parseDOM(i, 'img', ret='src')[0],
+                           client.parseDOM(i, 'strong', {'class': 'quality'})[0]) for i in frames if frames]
+                for frame, domain, quality in frames:
+                    host = domain.split('=')[-1]
+                    host = six.ensure_str(host, 'utf-8')
+                    # if 'Μεταγλωτισμένο' in info.encode('utf-8', 'ignore'):
+                    #     info = '[Μετ]'
+                    # elif 'Ελληνικοί' in info.encode('utf-8', 'ignore'):
+                    #     info = '[Υπο]'
+                    # elif 'Χωρίς' in info.encode('utf-8', 'ignore'):
+                    #     info = '[Χωρίς Υπ]'
+                    # else:
+                    #     info = '[N/A]'
+                    quality = 'SD'
+                    title = '{} | [B]{}[/B] | ({})'.format(name, host.capitalize(), quality)
+                    addDir(title, frame, 100, iconimage, FANART, str(description))
+            except BaseException:
+                pass
+        else:
             data = client.parseDOM(data, 'table', attrs={'class': 'easySpoilerTable'})
-            seasons = [dom.parse_dom(i, 'a', {'target': '_blank'}, req='href') for i in data[:-1] if i]
+            seasons = [dom.parse_dom(i, 'a', {'target': '_blank'}, req='href') for i in str(data)[:-1] if i]
             episodes = []
             for season in seasons:
                 for epi in season:
@@ -795,9 +812,9 @@ def get_links(name, url, iconimage, description):
             for title, frame in episodes:
                 addDir(title, frame, 100, iconimage, FANART, str(description))
 
-    # except BaseException:
-    #     title = '[B][COLOR white]NO LINKS[/COLOR][/B]'
-    #     addDir(title, '', 'bug', iconimage, FANART, str(description))
+    except BaseException:
+        title = '[B][COLOR white]NO LINKS[/COLOR][/B]'
+        addDir(title, '', 'bug', iconimage, FANART, str(description))
     views.selectView('movies', 'movie-view')
 
 
@@ -815,6 +832,8 @@ def clear_Title(txt):
     import six
     if six.PY2:
         txt = txt.encode('utf-8', 'ignore')
+    else:
+        txt = six.ensure_text(txt, encoding='utf-8', errors='ignore')
     txt = re.sub(r'<.+?>', '', txt)
     txt = re.sub(r'var\s+cp.+?document.write\(\'\'\);\s*', '', txt)
     txt = txt.replace("&quot;", "\"").replace('()', '').replace("&#038;", "&").replace('&#8211;', ':').replace('\n',
@@ -887,15 +906,51 @@ def resolve(name, url, iconimage, description):
     #     # except BaseException:
     #     #     stream_url = evaluate(stream_url)
     elif 'coverapi' in host:
-        html = client.request(host)
+        html = requests.get(host).text
+        xbmc.log('ΠΟΣΤ_html: {}'.format(html))
         postdata = re.findall(r'''['"]players['"], news_id: ['"](\d+)['"]}''', html, re.DOTALL)[0]
+        xbmc.log('ΠΟΣΤ_html: {}'.format(postdata))
         postdata = {'mod': 'players',
-                    'news_id': postdata}
+                    'news_id': str(postdata)}
         post_url = 'https://coverapi.store/engine/ajax/controller.php'
         post_html = requests.post(post_url, data=postdata).text.replace('\\', '')
         xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(post_html))
         stream_url = re.findall(r'''file\s*:\s*['"](.+?)['"]''', post_html, re.DOTALL)[0]
         xbmc.log('ΠΟΣΤ_URL: {}'.format(stream_url))
+        if 'http' in stream_url:
+            stream_url = stream_url
+        else:
+            playlist_url = 'https://coverapi.store/' + stream_url
+            data = requests.get(playlist_url).json()
+            xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(data))
+            comments = []
+            streams = []
+
+            data = data['playlist']
+            for dat in data:
+                url = dat['file']
+                com = dat['comment']
+                comments.append(com)
+                streams.append(url)
+
+            if len(comments) > 1:
+                dialog = xbmcgui.Dialog()
+                ret = dialog.select('[COLORgold][B]ΔΙΑΛΕΞΕ ΠΗΓΗ[/B][/COLOR]', comments)
+                if ret == -1:
+                    return
+                elif ret > -1:
+                    host = streams[ret]
+                    xbmc.log('@#@HDPRO:{}'.format(host))
+                    stream_url = host + '|User-Agent={}&Referer={}'.format(quote_plus(client.agent()), 'https://coverapi.store/')
+                else:
+                    return
+
+            else:
+                host = streams[0]
+                stream_url = host + '|User-Agent={}&Referer={}'.format(quote_plus(client.agent()), 'https://coverapi.store/')
+
+
+
     else:
         stream_url = evaluate(host)
         name = name.split(' [B]|')[0]
@@ -929,6 +984,18 @@ def evaluate(host):
         return host
     except BaseException:
         pass
+
+
+def GetDomain(url):
+    elements = urlparse(url)
+    domain = elements.netloc or elements.path
+    domain = domain.split('@')[-1].split(':')[0]
+    regex = r"(?:www\.)?([\w\-]*\.[\w\-]{2,3}(?:\.[\w\-]{2,3})?)$"
+    res = re.search(regex, domain)
+    if res:
+        domain = res.group(1)
+    domain = domain.lower()
+    return domain
 
 
 params = init.params
