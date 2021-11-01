@@ -907,22 +907,22 @@ def resolve(name, url, iconimage, description):
     #     #     stream_url = evaluate(stream_url)
     elif 'coverapi' in host:
         html = requests.get(host).text
-        xbmc.log('ΠΟΣΤ_html: {}'.format(html))
+        # xbmc.log('ΠΟΣΤ_html: {}'.format(html))
         postdata = re.findall(r'''['"]players['"], news_id: ['"](\d+)['"]}''', html, re.DOTALL)[0]
-        xbmc.log('ΠΟΣΤ_html: {}'.format(postdata))
+        # xbmc.log('ΠΟΣΤ_html: {}'.format(postdata))
         postdata = {'mod': 'players',
                     'news_id': str(postdata)}
         post_url = 'https://coverapi.store/engine/ajax/controller.php'
         post_html = requests.post(post_url, data=postdata).text.replace('\\', '')
-        xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(post_html))
+        # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(post_html))
         stream_url = re.findall(r'''file\s*:\s*['"](.+?)['"]''', post_html, re.DOTALL)[0]
-        xbmc.log('ΠΟΣΤ_URL: {}'.format(stream_url))
+        # xbmc.log('ΠΟΣΤ_URL: {}'.format(stream_url))
         if 'http' in stream_url:
             stream_url = stream_url
         else:
             playlist_url = 'https://coverapi.store/' + stream_url
             data = requests.get(playlist_url).json()
-            xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(data))
+            # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(data))
             comments = []
             streams = []
 
@@ -940,14 +940,14 @@ def resolve(name, url, iconimage, description):
                     return
                 elif ret > -1:
                     host = streams[ret]
-                    xbmc.log('@#@HDPRO:{}'.format(host))
-                    stream_url = host + '|User-Agent={}&Referer={}'.format(quote_plus(client.agent()), 'https://coverapi.store/')
+                    # xbmc.log('@#@HDPRO:{}'.format(host))User-Agent=iPad&verifypeer=false
+                    stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
                 else:
                     return
 
             else:
                 host = streams[0]
-                stream_url = host + '|User-Agent={}&Referer={}'.format(quote_plus(client.agent()), 'https://coverapi.store/')
+                stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
 
 
 
