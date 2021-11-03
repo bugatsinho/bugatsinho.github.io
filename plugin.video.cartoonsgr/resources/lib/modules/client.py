@@ -26,7 +26,7 @@ from resources.lib.modules import cache, dom_parser, control, utils
 
 import six
 from six import BytesIO
-from six.moves import urllib, urllib_parse, html_parser as HTMLParser
+from six.moves import urllib, urllib_parse
 from six.moves.urllib_parse import quote_plus, urlencode, urlparse
 from six.moves.urllib_response import addinfourl
 if six.PY3:
@@ -418,6 +418,7 @@ def replaceHTMLCodes(txt):
         import html
         txt = html.unescape(txt)
     else:
+        from six.moves import html_parser as HTMLParser
         txt = HTMLParser.HTMLParser().unescape(txt)
     txt = HTMLParser.HTMLParser().unescape(txt)
     txt = txt.replace("&quot;", "\"")
