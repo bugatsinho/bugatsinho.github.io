@@ -379,7 +379,7 @@ def search_menu():  # 6
             domain = 'TENIES-ONLINE'
         title = '[B]%s[/B] - [COLORgold][B]%s[/COLOR][/B]' % (search, domain)
         delete_option = True
-        addDir(title, url, 26, ICON, FANART, '')
+        addDir(title, _url, 26, ICON, FANART, '')
         lst += [(search)]
     dbcur.close()
 
