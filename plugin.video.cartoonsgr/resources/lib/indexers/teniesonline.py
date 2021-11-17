@@ -5,10 +5,12 @@ import xbmcaddon
 import xbmc
 import re
 import requests
+import six
+from six.moves.urllib_parse import quote_plus
 from resources.lib.modules import client
 from resources.lib.modules import control
 from resources.lib.modules import views
-from resources.lib.modules import domparser as dom
+from resources.lib.modules import dom_parser as dom
 from resources.lib.modules.control import addDir
 ADDON       = xbmcaddon.Addon()
 ADDON_DATA  = ADDON.getAddonInfo('profile')
@@ -19,35 +21,42 @@ ICON        = ADDON.getAddonInfo('icon')
 ID          = ADDON.getAddonInfo('id')
 NAME        = ADDON.getAddonInfo('name')
 VERSION     = ADDON.getAddonInfo('version')
-Lang        = ADDON.getLocalizedString
+Lang        = control.lang
 Dialog      = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-Baseurl = 'https://tenies-online.gr/'
+Baseurl = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 def menu():
-    addDir('[B][COLOR yellow]' + Lang(32004).encode('utf-8') + '[/COLOR][/B]', Baseurl + 'genre/kids/',
+    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', Baseurl + 'genre/kids/',
            34, ART + 'dub.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32010).encode('utf-8') + '[/COLOR][/B]', Baseurl + 'genre/κινούμενα-σχέδια/',
+    addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', Baseurl + 'genre/κινούμενα-σχέδια/',
            34, ART + 'dub.jpg', FANART, '')
-    addDir('[B][COLOR gold]' + Lang(32022).encode('utf-8') + '[/COLOR][/B]', Baseurl + 'genre/christmas/',
+    addDir('[B][COLOR yellow]Family[/COLOR][/B]', Baseurl + 'genre/ikogeniaki/',
+           34, ART + 'dub.jpg', FANART, '')
+    addDir('[B][COLOR gold]' + Lang(32022) + '[/COLOR][/B]', Baseurl + 'genre/christmas/',
            34, ART + 'mas.jpg', FANART, '')
-    addDir('[B][COLOR gold]' + Lang(32002).encode('utf-8') + '[/COLOR][/B]', Baseurl, 35, ICON, FANART, '')
+    addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', Baseurl, 35, ICON, FANART, '')
     views.selectView('menu', 'menu-view')
 
 
 def metaglotismeno(url): #34
-    data = client.request(url)
-    posts = client.parseDOM(data, 'div', attrs={'class': 'items'})[0]
+    #data = client.request(url)
+    data = requests.get(url, timeout=10)
+    if not data.ok:
+        return control.infoDialog('Μη διαθέσιμο αυτή τη στιγμή', NAME, ICON)
+    data.encoding = 'utf-8'
+    posts = client.parseDOM(data.text, 'div', attrs={'class': 'items'})[0]
     posts = client.parseDOM(posts, 'article', attrs={'id': r'post-\d+'})
     for post in posts:
+        post = six.ensure_str(post, errors='ignore')
         try:
             plot = client.parseDOM(post, 'div', attrs={'class': 'texto'})[0]
         except IndexError:
             plot = 'N/A'
         desc = client.replaceHTMLCodes(plot)
-        desc = desc.encode('utf-8')
+        #desc = six.ensure_str(desc, errors='ignore')
         try:
             title = client.parseDOM(post, 'h3')[0]
         except BaseException:
@@ -61,26 +70,30 @@ def metaglotismeno(url): #34
         title = clear_Title(title)
         title = '[B][COLOR white]{}[/COLOR][/B]'.format(title)
         link = client.parseDOM(post, 'a', ret='href')[0]
-        link = client.replaceHTMLCodes(link).encode('utf-8', 'ignore')
+        link = client.replaceHTMLCodes(link)
         poster = client.parseDOM(post, 'img', ret='src')[0]
-        poster = client.replaceHTMLCodes(poster).encode('utf-8', 'ignore')
+        poster = client.replaceHTMLCodes(poster)
 
         addDir(title, link, 33, poster, FANART, desc)
     try:
-        np = client.parseDOM(data, 'div', attrs={'class': 'resppages'})[0]
+        np = client.parseDOM(data.text, 'div', attrs={'class': 'resppages'})[0]
         np = dom.parse_dom(np, 'a', req='href')
         np = [i.attrs['href'] for i in np if 'icon-chevron-right' in i.content][0]
         page = re.findall(r'page/(\d+)/', np)[0]
-        title = '[B][COLORgold]>>>' + Lang(32011).encode('utf-8') +\
+        title = '[B][COLORgold]>>>' + Lang(32011) +\
                 ' [COLORwhite]([COLORlime]{}[/COLOR])[/COLOR][/B]'.format(page)
-        addDir(title, np.encode('utf-8'), 34, ART + 'next.jpg', FANART, '')
+        addDir(title, np, 34, ART + 'next.jpg', FANART, '')
     except BaseException:
         pass
     views.selectView('movies', 'movie-view')
 
 
 def get_links(name, url, iconimage, description):
-    data = client.request(url)
+    #data = client.request(url)
+    data = requests.get(url, timeout=10)
+    if not data.ok:
+        return control.infoDialog('Μη διαθέσιμο αυτή τη στιγμή', NAME, ICON)
+    data = six.ensure_str(data.text, errors='ignore')
     try:
         if 'Τρέιλερ' in data:
             flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
@@ -98,18 +111,21 @@ def get_links(name, url, iconimage, description):
                        client.parseDOM(i, 'strong', {'class': 'quality'})[0],
                        client.parseDOM(i, 'td')[-3]) for i in frames if frames]
             for frame, domain, quality, info in frames:
-                xbmc.log('INFO: {}'.format(str(info.encode('utf-8', 'ignore'))))
-                host = domain.split('=')[-1].encode('utf-8')
-                if 'Μεταγλωτισμένο' in info.encode('utf-8', 'ignore'):
+                info = six.ensure_str(info, errors='ignore')
+                #xbmc.log('INFO: {}'.format(info))
+                host = domain.split('=')[-1]
+                if 'tenies' in host:
+                    continue
+                if 'Μεταγλωτισμένο' in info:
                     info = '[Μετ]'
-                elif 'Ελληνικοί' in info.encode('utf-8', 'ignore'):
+                elif 'Ελληνικοί' in info:
                     info = '[Υπο]'
-                elif 'Χωρίς' in info.encode('utf-8', 'ignore'):
+                elif 'Χωρίς' in info:
                     info = '[Χωρίς Υπ]'
                 else:
                     info = '[N/A]'
 
-                title = '[COLOR lime]{}[/COLOR] | [B]{}[/B] | ({})'.format(info, host.capitalize(), quality.encode('utf-8'))
+                title = '[COLOR lime]{0}[/COLOR] | [B]{1}[/B] | ({2})'.format(six.ensure_str(info, errors='ignore'), host.capitalize(), six.ensure_str(quality, errors='ignore'))
                 addDir(title, frame, 100, iconimage, FANART, str(description))
         else:
             data = client.parseDOM(data, 'table', attrs={'class': 'easySpoilerTable'})
@@ -124,7 +140,8 @@ def get_links(name, url, iconimage, description):
             for title, frame in episodes:
                 addDir(title, frame, 100, iconimage, FANART, str(description))
 
-    except BaseException:
+    except Exception as e:
+        xbmc.log('tenies-online exc: ' + repr(e))
         title = '[B][COLOR white]NO LINKS[/COLOR][/B]'
         addDir(title, '', 'bug', iconimage, FANART, str(description))
     views.selectView('movies', 'movie-view')
@@ -132,8 +149,12 @@ def get_links(name, url, iconimage, description):
 
 def search(url): #35
     control.busy()
-    data = client.request(url)
-    posts = client.parseDOM(data, 'div', attrs={'class': 'result-item'})
+    #data = client.request(url)
+    data = requests.get(url, timeout=10)
+    if not data.ok:
+        return control.infoDialog('Μη διαθέσιμο αυτή τη στιγμή', NAME, ICON)
+    data.encoding = 'utf-8'
+    posts = client.parseDOM(data.text, 'div', attrs={'class': 'result-item'})
     for post in posts:
         link = client.parseDOM(post, 'a', ret='href')[0]
         poster = client.parseDOM(post, 'img', ret='src')[0]
@@ -143,7 +164,7 @@ def search(url): #35
             year = client.parseDOM(post, 'span', attrs={'class': 'year'})[0]
             desc = client.parseDOM(post, 'div', attrs={'class': 'contenido'})[0]
             desc = re.sub('<.+?>', '', desc)
-            desc = desc.encode('utf-8', 'ignore')
+            desc = six.ensure_str(desc, errors='ignore')
         except BaseException:
             year = 'N/A'
             desc = 'N/A'
@@ -151,9 +172,9 @@ def search(url): #35
         addDir('[B][COLOR white]{0} [{1}][/COLOR][/B]'.format(title, year), link, 33, poster, FANART, str(desc))
 
     try:
-        np = client.parseDOM(data, 'a', ret='href', attrs={'class': 'arrow_pag'})[-1]
+        np = client.parseDOM(data.text, 'a', ret='href', attrs={'class': 'arrow_pag'})[-1]
         page = np.split('/')[-1]
-        title = '[B][COLORgold]>>>' + Lang(32011).encode('utf-8') + ' [COLORwhite]([COLORlime]%s[/COLOR])[/COLOR][/B]' % page
+        title = '[B][COLORgold]>>>' + Lang(32011) + ' [COLORwhite]([COLORlime]%s[/COLOR])[/COLOR][/B]' % page
         addDir(title, np, 34, ART + 'next.jpg', FANART, '')
     except BaseException:
         pass
@@ -174,7 +195,7 @@ def __top_domain(url):
 
 
 def clear_Title(txt):
-    txt = txt.encode('utf-8', 'ignore')
+    txt = six.ensure_str(txt, errors='ignore')
     txt = re.sub('<.+?>', '', txt)
     txt = txt.replace('Δες το ', '').replace(' online', '')
     txt = txt.replace("&quot;", "\"").replace('()','').replace("&#038;", "&").replace('&#8211;',':').replace('\n',' ')

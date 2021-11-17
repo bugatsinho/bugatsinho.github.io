@@ -25,9 +25,9 @@ from resources.lib.modules import views
 from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
 
-BASEURL = 'https://tenies-online.gr/genre/kids/'  # 'https://paidikestainies.online/'
-GAMATO = control.setting('gamato.domain')  # 'https://gamatokid.com/'
-Baseurl = Teniesonline = control.setting('tenies.domain')
+BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
+GAMATO = control.setting('gamato.domain') or 'http://gamatotv.info/'  # 'https://gamatokid.com/'
+Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 ADDON = xbmcaddon.Addon()
 ADDON_DATA = ADDON.getAddonInfo('profile')
@@ -45,7 +45,7 @@ ART = ADDON_PATH + "/resources/icons/"
 
 
 def Main_addDir():
-    addDir('[B][COLOR yellow]' + Lang(32022) + '[/COLOR][/B]', Baseurl + 'genre/christmas/', 34,
+    addDir('[B][COLOR yellow]' + Lang(32022) + '[/COLOR][/B]', Teniesonline + 'genre/christmas/', 34,
            ART + 'mas.jpg', FANART, '')
     addDir('[B][COLOR yellow]Gamato ' + Lang(32000) + '[/COLOR][/B]', '', 20, ART + 'dub.jpg',
            FANART, '')
@@ -56,7 +56,7 @@ def Main_addDir():
     # addDir('[B][COLOR yellow]' + Lang(32003) + '[/COLOR][/B]', BASEURL+'quality/ellinikoi-ypotitloi/',
     #        5, ART + 'sub.jpg', FANART, '')
 
-    # addDir('[B][COLOR yellow]Tenies-Online[/COLOR][/B]', '', 30, ART + 'dub.jpg', FANART, '')
+    addDir('[B][COLOR yellow]Tenies-Online[/COLOR][/B]', '', 30, ART + 'dub.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32000) + '[/COLOR][/B]', '', 13, ART + 'movies.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32001) + '[/COLOR][/B]', '', 14, ART + 'tvshows.jpg', FANART, '')
     downloads = True if control.setting('downloads') == 'true' and (
@@ -286,7 +286,8 @@ def get_tenies_online_links(url):
 
     headers = {'User-Agent': client.randomagent(),
                'Referer': url}
-    r = client.request(url)
+    #r = client.request(url)
+    r = requests.get(url).text
     try:
         frames = client.parseDOM(r, 'div', {'id': 'playeroptions'})[0]
         frames = dom.parse_dom(frames, 'li', attrs={'class': 'dooplay_player_option'},
@@ -295,9 +296,10 @@ def get_tenies_online_links(url):
             post = 'action=doo_player_ajax&post=%s&nume=%s&type=%s' % \
                    (frame.attrs['data-post'], frame.attrs['data-nume'], frame.attrs['data-type'])
             if '=trailer' in post: continue
-            p_link = 'https://tenies-online.gr/wp-admin/admin-ajax.php'
+            p_link = 'https://tenies-online1.gr/wp-admin/admin-ajax.php'
 
-            flink = client.request(p_link, post=post, headers=headers)
+            #flink = client.request(p_link, post=post, headers=headers)
+            flink = requests.post(p_link, data=post, headers=headers).text
             flink = client.parseDOM(flink, 'iframe', ret='src')[0]
 
             host = __top_domain(flink)
@@ -401,8 +403,8 @@ def Search(url):  # 26
             dbcur = dbcon.cursor()
 
             dp = xbmcgui.Dialog()
-            select = dp.select('Select Website', ['[COLORgold][B]Gamato-Kids[/COLOR][/B]'])
-            
+            select = dp.select('Select Website', ['[COLORgold][B]Tenies-Online[/COLOR][/B]', '[COLORgold][B]Gamato-Kids[/COLOR][/B]'])
+
             if select == 0:
                 from resources.lib.indexers import teniesonline
                 url = Teniesonline + "?s={}".format(search)
