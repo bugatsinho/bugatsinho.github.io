@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.25" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.26" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.addon" version="17.0.000"/>
     <import addon="script.module.six" />
@@ -28,8 +28,10 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>[B]v1.0.24[/B] 01/11/2021
-  - Kodi 19.x compatibility</news>
+    <news>[B]v1.0.26[/B] 17/11/2021
+  - Kodi 19.x compatibility
+  - fix gamato link regex
+  - fix trailer link regex</news>
     <assets>
         <icon>icon.png</icon>
         <fanart>fanart.jpg</fanart>

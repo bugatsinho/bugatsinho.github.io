@@ -738,19 +738,37 @@ def get_links(name, url, iconimage, description):
     hdrs = {'Referer': GAMATO,
             'User-Agent': client.agent()}
     data = requests.get(url, headers=hdrs).text
-    try:
-        if 'Trailer' in data:
+    # try:
+    if 'Trailer' in data:
+        try:
             flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
-            if 'youtu' in flink:
-                addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
+        except IndexError:
+            # http://gamatotv.info/wp-json/dooplayer/v1/post/45755?type=movie&source=trailer
+            ylink = ' http://gamatotv.info/wp-json/dooplayer/v1/post/{}?type=movie&source=trailer'
+            #li id='player-option-trailer'
+            yid = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-trailer'})[0]
+            flink = ylink.format(yid)
+            flink = client.request(flink)
+            flink = json.loads(flink)['embed_url']
+        if 'youtu' in flink:
+            addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
         else:
             addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
-    except BaseException:
-        pass
+
+    else:
+        addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
+    # except BaseException:
+    #     pass
     try:
         if 'tvshows' not in url:
             try:
-                frame = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'metaframe rptss'})[0]
+                try:
+                    frame = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'metaframe rptss'})[0]
+                except IndexError:
+                    get_vid = 'http://gamatotv.info/wp-json/dooplayer/v1/post/{}?type=movie&source=1'
+                    id = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-1'})[0]
+                    frame = client.request(get_vid.format(id))
+                    frame = json.loads(frame)['embed_url']
                 if 'coverapi' in frame:
                     html = requests.get(frame).text
                     post_url = 'https://coverapi.store/engine/ajax/controller.php'

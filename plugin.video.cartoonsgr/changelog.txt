@@ -1,3 +1,8 @@
+[B]v1.0.26[/B] 17/11/2021
+  - Kodi 19.x compatibility
+  - fix gamato link regex
+  - fix trailer link regex
+
 [B]v1.0.23[/B] 24/09/2021
   - fix search items
 
