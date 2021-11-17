@@ -891,88 +891,88 @@ def resolve(name, url, iconimage, description):
     else:
         host = host
 
-    if host.split('|')[0].endswith('.mp4') and 'clou' in host:
-        stream_url = host + '|User-Agent=%s&Referer=%s' % (quote_plus(client.agent(), ':/'), GAMATO)
-        name = name
-    elif host.endswith('.mp4') and 'vidce.net' in host:
-        stream_url = host + '|User-Agent={}'.format(quote_plus(client.agent()))
-    elif host.endswith('.mp4'):
-        stream_url = host + '|User-Agent=%s&Referer=%s' % (quote_plus(client.agent(), ':/'), GAMATO)
-    # stream_url = requests.get(host, headers=hdr).url
-    elif '/aparat.' in host:
-        try:
-            from resources.lib.resolvers import aparat
-            stream_url = aparat.get_video(host)
-            stream_url, sub = stream_url.split('|')
-            liz.setSubtitles([sub])
-        except BaseException:
-            stream_url = evaluate(host)
-    # elif '/clipwatching.' in host:
-    #     xbmc.log('HOST: {}'.format(host))
-    #     # try:
-    #     data = requests.get(host).text
-    #     xbmc.log('DATA: {}'.format(data))
-    #     try:
-    #         sub = client.parseDOM(data, 'track', ret='src', attrs={'label': 'Greek'})[0]
-    #         xbmc.log('SUBS: {}'.format(sub))
-    #         liz.setSubtitles([sub])
-    #     except IndexError:
-    #         pass
-    #
-    #     stream_url = re.findall(r'''sources:\s*\[\{src:\s*['"](.+?)['"]\,''', data, re.DOTALL)[0]
-    #     xbmc.log('HOST111: {}'.format(stream_url))
-    #
-    #
-    #     # except BaseException:
-    #     #     stream_url = evaluate(stream_url)
-    elif 'coverapi' in host:
-        html = requests.get(host).text
-        # xbmc.log('ΠΟΣΤ_html: {}'.format(html))
-        postdata = re.findall(r'''['"]players['"], news_id: ['"](\d+)['"]}''', html, re.DOTALL)[0]
-        # xbmc.log('ΠΟΣΤ_html: {}'.format(postdata))
-        postdata = {'mod': 'players',
-                    'news_id': str(postdata)}
-        post_url = 'https://coverapi.store/engine/ajax/controller.php'
-        post_html = requests.post(post_url, data=postdata).text.replace('\\', '')
-        # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(post_html))
-        stream_url = re.findall(r'''file\s*:\s*['"](.+?)['"]''', post_html, re.DOTALL)[0]
-        # xbmc.log('ΠΟΣΤ_URL: {}'.format(stream_url))
-        if 'http' in stream_url:
-            stream_url = stream_url
-        else:
-            playlist_url = 'https://coverapi.store/' + stream_url
-            data = requests.get(playlist_url).json()
-            # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(data))
-            comments = []
-            streams = []
-
-            data = data['playlist']
-            for dat in data:
-                url = dat['file']
-                com = dat['comment']
-                comments.append(com)
-                streams.append(url)
-
-            if len(comments) > 1:
-                dialog = xbmcgui.Dialog()
-                ret = dialog.select('[COLORgold][B]ΔΙΑΛΕΞΕ ΠΗΓΗ[/B][/COLOR]', comments)
-                if ret == -1:
-                    return
-                elif ret > -1:
-                    host = streams[ret]
-                    # xbmc.log('@#@HDPRO:{}'.format(host))User-Agent=iPad&verifypeer=false
-                    stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
-                else:
-                    return
-
+    # try resolveurl first:
+    stream_url = evaluate(host)
+    if not stream_url:
+        if host.split('|')[0].endswith('.mp4') and 'clou' in host:
+            stream_url = host + '|User-Agent=%s&Referer=%s' % (quote_plus(client.agent(), ':/'), GAMATO)
+            name = name
+        elif host.endswith('.mp4') and 'vidce.net' in host:
+            stream_url = host + '|User-Agent={}'.format(quote_plus(client.agent()))
+        elif host.endswith('.mp4'):
+            stream_url = host + '|User-Agent=%s&Referer=%s' % (quote_plus(client.agent(), ':/'), GAMATO)
+        # stream_url = requests.get(host, headers=hdr).url
+        elif '/aparat.' in host:
+            try:
+                from resources.lib.resolvers import aparat
+                stream_url = aparat.get_video(host)
+                stream_url, sub = stream_url.split('|')
+                liz.setSubtitles([sub])
+            except BaseException:
+                stream_url = evaluate(host)
+        # elif '/clipwatching.' in host:
+        #     xbmc.log('HOST: {}'.format(host))
+        #     # try:
+        #     data = requests.get(host).text
+        #     xbmc.log('DATA: {}'.format(data))
+        #     try:
+        #         sub = client.parseDOM(data, 'track', ret='src', attrs={'label': 'Greek'})[0]
+        #         xbmc.log('SUBS: {}'.format(sub))
+        #         liz.setSubtitles([sub])
+        #     except IndexError:
+        #         pass
+        #
+        #     stream_url = re.findall(r'''sources:\s*\[\{src:\s*['"](.+?)['"]\,''', data, re.DOTALL)[0]
+        #     xbmc.log('HOST111: {}'.format(stream_url))
+        #
+        #
+        #     # except BaseException:
+        #     #     stream_url = evaluate(stream_url)
+        elif 'coverapi' in host:
+            html = requests.get(host).text
+            # xbmc.log('ΠΟΣΤ_html: {}'.format(html))
+            postdata = re.findall(r'''['"]players['"], news_id: ['"](\d+)['"]}''', html, re.DOTALL)[0]
+            # xbmc.log('ΠΟΣΤ_html: {}'.format(postdata))
+            postdata = {'mod': 'players',
+                        'news_id': str(postdata)}
+            post_url = 'https://coverapi.store/engine/ajax/controller.php'
+            post_html = requests.post(post_url, data=postdata).text.replace('\\', '')
+            # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(post_html))
+            stream_url = re.findall(r'''file\s*:\s*['"](.+?)['"]''', post_html, re.DOTALL)[0]
+            # xbmc.log('ΠΟΣΤ_URL: {}'.format(stream_url))
+            if 'http' in stream_url:
+                stream_url = stream_url + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
             else:
-                host = streams[0]
-                stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
+                playlist_url = 'https://coverapi.store/' + stream_url
+                data = requests.get(playlist_url).json()
+                # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(data))
+                comments = []
+                streams = []
 
+                data = data['playlist']
+                for dat in data:
+                    url = dat['file']
+                    com = dat['comment']
+                    comments.append(com)
+                    streams.append(url)
 
+                if len(comments) > 1:
+                    dialog = xbmcgui.Dialog()
+                    ret = dialog.select('[COLORgold][B]ΔΙΑΛΕΞΕ ΠΗΓΗ[/B][/COLOR]', comments)
+                    if ret == -1:
+                        return
+                    elif ret > -1:
+                        host = streams[ret]
+                        # xbmc.log('@#@HDPRO:{}'.format(host))User-Agent=iPad&verifypeer=false
+                        stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
+                    else:
+                        return
+
+                else:
+                    host = streams[0]
+                    stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
 
     else:
-        stream_url = evaluate(host)
         name = name.split(' [B]|')[0]
     try:
         liz.setArt({'icon': iconimage, 'fanart': FANART})
@@ -987,23 +987,21 @@ def resolve(name, url, iconimage, description):
 def evaluate(host):
     import resolveurl
     try:
+        url = None
         if 'openload' in host:
             try:
                 from resources.lib.resolvers import openload
                 oplink = openload.get_video_openload(host)
-                host = resolveurl.resolve(oplink) if oplink == '' else oplink
+                url = resolveurl.resolve(oplink) if oplink == '' else oplink
             except BaseException:
-                host = resolveurl.resolve(host)
-
-            # except BaseException:
-            #     host = resolveurl.resolve(host)
+                url = resolveurl.resolve(host)
 
         elif resolveurl.HostedMediaFile(host):
-            host = resolveurl.resolve(host)
+            url = resolveurl.resolve(host)
 
-        return host
+        return url
     except BaseException:
-        pass
+        return
 
 
 def GetDomain(url):
