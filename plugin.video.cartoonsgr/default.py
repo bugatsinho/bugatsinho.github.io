@@ -659,13 +659,11 @@ def gamatokids_top(url):  # 21
 
 def gamato_links(url, name, poster):  # 12
     # try:
-        xbmc.log('MALAKASSSSS')
-        xbmc.log('URLLLL: {}'.format(url))
         url = quote(url, ':/.')
-        xbmc.log('URLLLL2: {}'.format(url))
+        # xbmc.log('URLLLL2: {}'.format(url))
 
         data = six.ensure_text(client.request(url))
-        xbmc.log('DATA: {}'.format(str(data)))
+        # xbmc.log('DATA: {}'.format(str(data)))
         try:
             desc = client.parseDOM(data, 'div', attrs={'itemprop': 'description'})[0]
             desc = clear_Title(desc)
@@ -687,7 +685,7 @@ def gamato_links(url, name, poster):  # 12
             # 'http://gamatotv2.com/kids/jwplayer/?source=http%3A%2F%2F161.97.109.217%2FSonic%2520%2520%2520-%2520Gamato%2520%2520.mp4&id=16449&type=mp4
             link = re.findall(r'''/jwplayer/\?source=(.+?)&id=''', data, re.DOTALL)[0]
 
-        xbmc.log('FRAME2: {}'.format(str(link)))
+        # xbmc.log('FRAME2: {}'.format(str(link)))
         # except IndexError:
         #     frame = client.parseDOM(data, 'div', attrs={'id': r'option-\d+'})[0]
         #     frame = client.parseDOM(frame, 'iframe', ret='src')[0]
@@ -717,7 +715,7 @@ def gamato_links(url, name, poster):  # 12
         #         match = frame
         #     link, _poster = match, poster
         link = unquote_plus(link)
-        xbmc.log('Finally LINK: {}'.format(link))
+        # xbmc.log('Finally LINK: {}'.format(link))
         try:
             fanart = client.parseDOM(data, 'div', attrs={'class': 'g-item'})[0]
             fanart = client.parseDOM(fanart, 'a', ret='href')[0]
