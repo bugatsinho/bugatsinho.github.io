@@ -738,18 +738,22 @@ def get_links(name, url, iconimage, description):
     hdrs = {'Referer': GAMATO,
             'User-Agent': client.agent()}
     data = requests.get(url, headers=hdrs).text
-    # try:
+
     if 'Trailer' in data:
         try:
             flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
         except IndexError:
-            # http://gamatotv.info/wp-json/dooplayer/v1/post/45755?type=movie&source=trailer
-            ylink = ' http://gamatotv.info/wp-json/dooplayer/v1/post/{}?type=movie&source=trailer'
-            #li id='player-option-trailer'
-            yid = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-trailer'})[0]
-            flink = ylink.format(yid)
-            flink = client.request(flink)
-            flink = json.loads(flink)['embed_url']
+            try:
+                # http://gamatotv.info/wp-json/dooplayer/v1/post/45755?type=movie&source=trailer
+                ylink = ' http://gamatotv.info/wp-json/dooplayer/v1/post/{}?type=movie&source=trailer'
+                #li id='player-option-trailer'
+                yid = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-trailer'})[0]
+                flink = ylink.format(yid)
+                flink = client.request(flink)
+                flink = json.loads(flink)['embed_url']
+            except IndexError:
+                flink = ''
+
         if 'youtu' in flink:
             addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
         else:
@@ -757,8 +761,7 @@ def get_links(name, url, iconimage, description):
 
     else:
         addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
-    # except BaseException:
-    #     pass
+
     try:
         if 'tvshows' not in url:
             try:
