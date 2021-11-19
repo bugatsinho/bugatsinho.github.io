@@ -25,9 +25,9 @@ from resources.lib.modules import views
 from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
 
-BASEURL = 'https://tenies-online.gr/genre/kids/'  # 'https://paidikestainies.online/'
-GAMATO = control.setting('gamato.domain')  # 'https://gamatokid.com/'
-Baseurl = Teniesonline = control.setting('tenies.domain')
+BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
+GAMATO = control.setting('gamato.domain') or 'http://gamatotv.info/'  # 'https://gamatokid.com/'
+Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 ADDON = xbmcaddon.Addon()
 ADDON_DATA = ADDON.getAddonInfo('profile')
@@ -45,7 +45,7 @@ ART = ADDON_PATH + "/resources/icons/"
 
 
 def Main_addDir():
-    addDir('[B][COLOR yellow]' + Lang(32022) + '[/COLOR][/B]', Baseurl + 'genre/christmas/', 34,
+    addDir('[B][COLOR yellow]' + Lang(32022) + '[/COLOR][/B]', Teniesonline + 'genre/christmas/', 34,
            ART + 'mas.jpg', FANART, '')
     addDir('[B][COLOR yellow]Gamato ' + Lang(32000) + '[/COLOR][/B]', '', 20, ART + 'dub.jpg',
            FANART, '')
@@ -56,7 +56,7 @@ def Main_addDir():
     # addDir('[B][COLOR yellow]' + Lang(32003) + '[/COLOR][/B]', BASEURL+'quality/ellinikoi-ypotitloi/',
     #        5, ART + 'sub.jpg', FANART, '')
 
-    # addDir('[B][COLOR yellow]Tenies-Online[/COLOR][/B]', '', 30, ART + 'dub.jpg', FANART, '')
+    addDir('[B][COLOR yellow]Tenies-Online[/COLOR][/B]', '', 30, ART + 'dub.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32000) + '[/COLOR][/B]', '', 13, ART + 'movies.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32001) + '[/COLOR][/B]', '', 14, ART + 'tvshows.jpg', FANART, '')
     downloads = True if control.setting('downloads') == 'true' and (
@@ -286,7 +286,8 @@ def get_tenies_online_links(url):
 
     headers = {'User-Agent': client.randomagent(),
                'Referer': url}
-    r = client.request(url)
+    #r = client.request(url)
+    r = requests.get(url).text
     try:
         frames = client.parseDOM(r, 'div', {'id': 'playeroptions'})[0]
         frames = dom.parse_dom(frames, 'li', attrs={'class': 'dooplay_player_option'},
@@ -295,9 +296,10 @@ def get_tenies_online_links(url):
             post = 'action=doo_player_ajax&post=%s&nume=%s&type=%s' % \
                    (frame.attrs['data-post'], frame.attrs['data-nume'], frame.attrs['data-type'])
             if '=trailer' in post: continue
-            p_link = 'https://tenies-online.gr/wp-admin/admin-ajax.php'
+            p_link = 'https://tenies-online1.gr/wp-admin/admin-ajax.php'
 
-            flink = client.request(p_link, post=post, headers=headers)
+            #flink = client.request(p_link, post=post, headers=headers)
+            flink = requests.post(p_link, data=post, headers=headers).text
             flink = client.parseDOM(flink, 'iframe', ret='src')[0]
 
             host = __top_domain(flink)
@@ -377,7 +379,7 @@ def search_menu():  # 6
             domain = 'TENIES-ONLINE'
         title = '[B]%s[/B] - [COLORgold][B]%s[/COLOR][/B]' % (search, domain)
         delete_option = True
-        addDir(title, url, 26, ICON, FANART, '')
+        addDir(title, _url, 26, ICON, FANART, '')
         lst += [(search)]
     dbcur.close()
 
@@ -401,8 +403,8 @@ def Search(url):  # 26
             dbcur = dbcon.cursor()
 
             dp = xbmcgui.Dialog()
-            select = dp.select('Select Website', ['[COLORgold][B]Gamato-Kids[/COLOR][/B]'])
-            
+            select = dp.select('Select Website', ['[COLORgold][B]Tenies-Online[/COLOR][/B]', '[COLORgold][B]Gamato-Kids[/COLOR][/B]'])
+
             if select == 0:
                 from resources.lib.indexers import teniesonline
                 url = Teniesonline + "?s={}".format(search)
@@ -889,88 +891,88 @@ def resolve(name, url, iconimage, description):
     else:
         host = host
 
-    if host.split('|')[0].endswith('.mp4') and 'clou' in host:
-        stream_url = host + '|User-Agent=%s&Referer=%s' % (quote_plus(client.agent(), ':/'), GAMATO)
-        name = name
-    elif host.endswith('.mp4') and 'vidce.net' in host:
-        stream_url = host + '|User-Agent={}'.format(quote_plus(client.agent()))
-    elif host.endswith('.mp4'):
-        stream_url = host + '|User-Agent=%s&Referer=%s' % (quote_plus(client.agent(), ':/'), GAMATO)
-    # stream_url = requests.get(host, headers=hdr).url
-    elif '/aparat.' in host:
-        try:
-            from resources.lib.resolvers import aparat
-            stream_url = aparat.get_video(host)
-            stream_url, sub = stream_url.split('|')
-            liz.setSubtitles([sub])
-        except BaseException:
-            stream_url = evaluate(host)
-    # elif '/clipwatching.' in host:
-    #     xbmc.log('HOST: {}'.format(host))
-    #     # try:
-    #     data = requests.get(host).text
-    #     xbmc.log('DATA: {}'.format(data))
-    #     try:
-    #         sub = client.parseDOM(data, 'track', ret='src', attrs={'label': 'Greek'})[0]
-    #         xbmc.log('SUBS: {}'.format(sub))
-    #         liz.setSubtitles([sub])
-    #     except IndexError:
-    #         pass
-    #
-    #     stream_url = re.findall(r'''sources:\s*\[\{src:\s*['"](.+?)['"]\,''', data, re.DOTALL)[0]
-    #     xbmc.log('HOST111: {}'.format(stream_url))
-    #
-    #
-    #     # except BaseException:
-    #     #     stream_url = evaluate(stream_url)
-    elif 'coverapi' in host:
-        html = requests.get(host).text
-        # xbmc.log('ΠΟΣΤ_html: {}'.format(html))
-        postdata = re.findall(r'''['"]players['"], news_id: ['"](\d+)['"]}''', html, re.DOTALL)[0]
-        # xbmc.log('ΠΟΣΤ_html: {}'.format(postdata))
-        postdata = {'mod': 'players',
-                    'news_id': str(postdata)}
-        post_url = 'https://coverapi.store/engine/ajax/controller.php'
-        post_html = requests.post(post_url, data=postdata).text.replace('\\', '')
-        # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(post_html))
-        stream_url = re.findall(r'''file\s*:\s*['"](.+?)['"]''', post_html, re.DOTALL)[0]
-        # xbmc.log('ΠΟΣΤ_URL: {}'.format(stream_url))
-        if 'http' in stream_url:
-            stream_url = stream_url
-        else:
-            playlist_url = 'https://coverapi.store/' + stream_url
-            data = requests.get(playlist_url).json()
-            # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(data))
-            comments = []
-            streams = []
-
-            data = data['playlist']
-            for dat in data:
-                url = dat['file']
-                com = dat['comment']
-                comments.append(com)
-                streams.append(url)
-
-            if len(comments) > 1:
-                dialog = xbmcgui.Dialog()
-                ret = dialog.select('[COLORgold][B]ΔΙΑΛΕΞΕ ΠΗΓΗ[/B][/COLOR]', comments)
-                if ret == -1:
-                    return
-                elif ret > -1:
-                    host = streams[ret]
-                    # xbmc.log('@#@HDPRO:{}'.format(host))User-Agent=iPad&verifypeer=false
-                    stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
-                else:
-                    return
-
+    # try resolveurl first:
+    stream_url = evaluate(host)
+    if not stream_url:
+        if host.split('|')[0].endswith('.mp4') and 'clou' in host:
+            stream_url = host + '|User-Agent=%s&Referer=%s' % (quote_plus(client.agent(), ':/'), GAMATO)
+            name = name
+        elif host.endswith('.mp4') and 'vidce.net' in host:
+            stream_url = host + '|User-Agent={}'.format(quote_plus(client.agent()))
+        elif host.endswith('.mp4'):
+            stream_url = host + '|User-Agent=%s&Referer=%s' % (quote_plus(client.agent(), ':/'), GAMATO)
+        # stream_url = requests.get(host, headers=hdr).url
+        elif '/aparat.' in host:
+            try:
+                from resources.lib.resolvers import aparat
+                stream_url = aparat.get_video(host)
+                stream_url, sub = stream_url.split('|')
+                liz.setSubtitles([sub])
+            except BaseException:
+                stream_url = evaluate(host)
+        # elif '/clipwatching.' in host:
+        #     xbmc.log('HOST: {}'.format(host))
+        #     # try:
+        #     data = requests.get(host).text
+        #     xbmc.log('DATA: {}'.format(data))
+        #     try:
+        #         sub = client.parseDOM(data, 'track', ret='src', attrs={'label': 'Greek'})[0]
+        #         xbmc.log('SUBS: {}'.format(sub))
+        #         liz.setSubtitles([sub])
+        #     except IndexError:
+        #         pass
+        #
+        #     stream_url = re.findall(r'''sources:\s*\[\{src:\s*['"](.+?)['"]\,''', data, re.DOTALL)[0]
+        #     xbmc.log('HOST111: {}'.format(stream_url))
+        #
+        #
+        #     # except BaseException:
+        #     #     stream_url = evaluate(stream_url)
+        elif 'coverapi' in host:
+            html = requests.get(host).text
+            # xbmc.log('ΠΟΣΤ_html: {}'.format(html))
+            postdata = re.findall(r'''['"]players['"], news_id: ['"](\d+)['"]}''', html, re.DOTALL)[0]
+            # xbmc.log('ΠΟΣΤ_html: {}'.format(postdata))
+            postdata = {'mod': 'players',
+                        'news_id': str(postdata)}
+            post_url = 'https://coverapi.store/engine/ajax/controller.php'
+            post_html = requests.post(post_url, data=postdata).text.replace('\\', '')
+            # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(post_html))
+            stream_url = re.findall(r'''file\s*:\s*['"](.+?)['"]''', post_html, re.DOTALL)[0]
+            # xbmc.log('ΠΟΣΤ_URL: {}'.format(stream_url))
+            if 'http' in stream_url:
+                stream_url = stream_url + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
             else:
-                host = streams[0]
-                stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
+                playlist_url = 'https://coverapi.store/' + stream_url
+                data = requests.get(playlist_url).json()
+                # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(data))
+                comments = []
+                streams = []
 
+                data = data['playlist']
+                for dat in data:
+                    url = dat['file']
+                    com = dat['comment']
+                    comments.append(com)
+                    streams.append(url)
 
+                if len(comments) > 1:
+                    dialog = xbmcgui.Dialog()
+                    ret = dialog.select('[COLORgold][B]ΔΙΑΛΕΞΕ ΠΗΓΗ[/B][/COLOR]', comments)
+                    if ret == -1:
+                        return
+                    elif ret > -1:
+                        host = streams[ret]
+                        # xbmc.log('@#@HDPRO:{}'.format(host))User-Agent=iPad&verifypeer=false
+                        stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
+                    else:
+                        return
+
+                else:
+                    host = streams[0]
+                    stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
 
     else:
-        stream_url = evaluate(host)
         name = name.split(' [B]|')[0]
     try:
         liz.setArt({'icon': iconimage, 'fanart': FANART})
@@ -985,23 +987,21 @@ def resolve(name, url, iconimage, description):
 def evaluate(host):
     import resolveurl
     try:
+        url = None
         if 'openload' in host:
             try:
                 from resources.lib.resolvers import openload
                 oplink = openload.get_video_openload(host)
-                host = resolveurl.resolve(oplink) if oplink == '' else oplink
+                url = resolveurl.resolve(oplink) if oplink == '' else oplink
             except BaseException:
-                host = resolveurl.resolve(host)
-
-            # except BaseException:
-            #     host = resolveurl.resolve(host)
+                url = resolveurl.resolve(host)
 
         elif resolveurl.HostedMediaFile(host):
-            host = resolveurl.resolve(host)
+            url = resolveurl.resolve(host)
 
-        return host
+        return url
     except BaseException:
-        pass
+        return
 
 
 def GetDomain(url):
