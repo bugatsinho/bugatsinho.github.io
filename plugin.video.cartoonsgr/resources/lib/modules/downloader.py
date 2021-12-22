@@ -21,12 +21,11 @@
 
 
 import json
-import urllib
-import urllib2
 import xbmc
 import xbmcgui
 import xbmcvfs
 import os
+from six.moves import urllib_parse, urllib_request, urllib_error
 
 
 def getResponse(url, headers, size):
@@ -34,12 +33,20 @@ def getResponse(url, headers, size):
         if size > 0:
             size = int(size)
             headers['Range'] = 'bytes=%d-' % size
+        req = urllib_request.Request(url, headers=headers)
 
-        req = urllib2.Request(url, headers=headers)
+        try:
+            resp = urllib_request.urlopen(req, timeout=30)
+        except urllib_error.HTTPError:
+            import ssl
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            resp = urllib_request.urlopen(req, timeout=30, context=ctx)
 
-        resp = urllib2.urlopen(req, timeout=30)
         return resp
-    except:
+    except Exception as e:
+        xbmc.log('getResponse fail: ' + str(e))
         return None
 
 
@@ -65,22 +72,22 @@ def done(title, dest, downloaded):
 
 def doDownload(url, dest, title, image, headers):
 
-    headers = json.loads(urllib.unquote_plus(headers))
+    headers = json.loads(urllib_parse.unquote_plus(headers))
 
-    url = urllib.unquote_plus(url)
+    #url = urllib_parse.unquote_plus(url)
 
-    title = urllib.unquote_plus(title)
+    title = urllib_parse.unquote_plus(title)
 
-    image = urllib.unquote_plus(image)
+    image = urllib_parse.unquote_plus(image)
 
-    dest = urllib.unquote_plus(dest)
+    dest = urllib_parse.unquote_plus(dest)
 
     file = dest.rsplit(os.sep, 1)[-1]
 
     resp = getResponse(url, headers, 0)
 
     if not resp:
-        xbmcgui.Dialog().ok('CartoonsGR', dest, 'Download failed', 'No response from server')
+        xbmcgui.Dialog().ok('CartoonsGR', dest + '[CR]' + 'Download failed' + '[CR]' + 'No response from server')
         return
     try:    content = int(resp.headers['Content-Length'])
     except: content = 0
@@ -89,10 +96,10 @@ def doDownload(url, dest, title, image, headers):
     except: resumable = False
 
     if resumable:
-        print "Download is resumable"
+        print("Download is resumable")
 
     if content < 1:
-        xbmcgui.Dialog().ok('CartoonsGR', file, 'Unknown filesize', 'Unable to download')
+        xbmcgui.Dialog().ok('CartoonsGR', file + '[CR]' + 'Unknown filesize' + '[CR]' + 'Unable to download')
         return
 
     size = 1024 * 1024
@@ -108,10 +115,10 @@ def doDownload(url, dest, title, image, headers):
     resume  = 0
     sleep   = 0
 
-    if xbmcgui.Dialog().yesno('CartoonsGR' + ' - Confirm Download', file, 'Complete file is %dMB' % mb, 'Continue with download?', 'Confirm',  'Cancel') == 1:
+    if xbmcgui.Dialog().yesno('CartoonsGR' + ' - Confirm Download', file + '[CR]' + 'Complete file is %dMB' % mb + '[CR]' + 'Continue with download?', 'Confirm',  'Cancel'):
         return
 
-    # print 'Download File Size : %dMB %s ' % (mb, dest)
+    # print('Download File Size : %dMB %s ' % (mb, dest))
 
     #f = open(dest, mode='wb')
     f = xbmcvfs.File(dest, 'w')
@@ -127,7 +134,7 @@ def doDownload(url, dest, title, image, headers):
         if percent >= notify:
             #xbmc.executebuiltin("XBMC.Notification(%s,%s,%i,%s)" % (title + ' - Download Progress - ' + str(percent)+'%', dest, 10000, image))
 
-            message = 'Download Progress - ' + str(percent)+'%'
+            message = 'Download Progress - ' + str(round(percent))+'%'
             from resources.lib.modules import control
             control.infoDialog(message, title, image, 5000)
             # print 'Download percent : %s %s %dMB downloaded : %sMB File Size : %sMB' % (str(percent)+'%', dest, mb, downloaded / 1000000, content / 1000000)
@@ -149,11 +156,11 @@ def doDownload(url, dest, title, image, headers):
                         del c
 
                     f.close()
-                    #print '%s download complete' % (dest)
+                    #print('%s download complete' % (dest))
                     return done(title, dest, True)
 
-        except Exception, e:
-            #print str(e)
+        except Exception as e:
+            #print(str(e))
             error = True
             sleep = 10
             errno = 0
@@ -184,13 +191,13 @@ def doDownload(url, dest, title, image, headers):
         if error:
             errors += 1
             count  += 1
-            #print '%d Error(s) whilst downloading %s' % (count, dest)
+            #print('%d Error(s) whilst downloading %s' % (count, dest))
             xbmc.sleep(sleep*1000)
 
         if (resumable and errors > 0) or errors >= 10:
             if (not resumable and resume >= 50) or resume >= 500:
                 #Give up!
-                #print '%s download canceled - too many error whilst downloading' % (dest)
+                #print('%s download canceled - too many error whilst downloading' % (dest))
                 return done(title, dest, False)
 
             resume += 1
@@ -198,7 +205,7 @@ def doDownload(url, dest, title, image, headers):
             if resumable:
                 chunks  = []
                 #create new response
-                #print 'Download resumed (%d) %s' % (resume, dest)
+                #print('Download resumed (%d) %s' % (resume, dest))
                 resp = getResponse(url, headers, total)
             else:
                 #use existing response

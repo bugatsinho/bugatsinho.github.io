@@ -125,7 +125,9 @@ def get_links(name, url, iconimage, description):
                 else:
                     info = '[N/A]'
 
-                title = '[COLOR lime]{0}[/COLOR] | [B]{1}[/B] | ({2})'.format(six.ensure_str(info, errors='ignore'), host.capitalize(), six.ensure_str(quality, errors='ignore'))
+                title = '{0} | [COLOR lime]{1}[/COLOR] | [B]{2}[/B] | ({3})'.format(
+                    name.split('(')[0].split('/')[0], six.ensure_str(info, errors='ignore'), host.capitalize(), six.ensure_str(quality, errors='ignore')
+                )
                 addDir(title, frame, 100, iconimage, FANART, str(description))
         else:
             data = client.parseDOM(data, 'table', attrs={'class': 'easySpoilerTable'})
