@@ -47,7 +47,7 @@ def metaglotismeno(url): #34
     if not data.ok:
         return control.infoDialog('Μη διαθέσιμο αυτή τη στιγμή', NAME, ICON)
     data.encoding = 'utf-8'
-    posts = client.parseDOM(data.text, 'div', attrs={'class': 'items'})[0]
+    posts = client.parseDOM(data.text, 'div', attrs={'class': 'items normal'})[0]
     posts = client.parseDOM(posts, 'article', attrs={'id': r'post-\d+'})
     for post in posts:
         post = six.ensure_str(post, errors='ignore')
@@ -78,7 +78,7 @@ def metaglotismeno(url): #34
     try:
         np = client.parseDOM(data.text, 'div', attrs={'class': 'resppages'})[0]
         np = dom.parse_dom(np, 'a', req='href')
-        np = [i.attrs['href'] for i in np if 'icon-chevron-right' in i.content][0]
+        np = [i.attrs['href'] for i in np if 'chevron-right' in i.content][0]
         page = re.findall(r'page/(\d+)/', np)[0]
         title = '[B][COLORgold]>>>' + Lang(32011) +\
                 ' [COLORwhite]([COLORlime]{}[/COLOR])[/COLOR][/B]'.format(page)
