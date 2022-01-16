@@ -450,29 +450,29 @@ def Del_search(url):
 
 
 def download(name, iconimage, url):
-    from resources.lib.modules import control
     control.busy()
-    import json
     if url is None:
         control.idle()
         return
 
     try:
-
-        url = evaluate(url)
-        # xbmc.log('URL-EVALUATE: %s' % url)
+        url = resolve(name, url, iconimage, '', return_url=True)
+        url = url.split('|')[0]
     except Exception:
         control.idle()
-        xbmcgui.Dialog().ok(NAME, 'Download failed', 'Your service can\'t resolve this hoster', 'or Link is down')
+        xbmcgui.Dialog().ok(NAME, 'Download failed' + '[CR]' + 'Your service can\'t resolve this hoster' + '[CR]' + 'or Link is down')
         return
+
     try:
         headers = dict(parse_qsl(url.rsplit('|', 1)[1]))
     except BaseException:
         headers = dict('')
     control.idle()
+    name = name.split('|')[0].strip()
     title = re.sub('\[.+?\]', '', name)
     content = re.compile('(.+?)\s+[\.|\(|\[]S(\d+)E\d+[\.|\)|\]]', re.I).findall(title)
-    transname = title.translate(None, '\/:*?"<>|').strip('.')
+    try: transname = title.translate(None, '\/:*?"<>|').strip('.')
+    except: transname = title.translate(str.maketrans('', '', '\/:*?"<>|')).strip('.')
     transname = re.sub('\[.+?\]', '', transname)
     levels = ['../../../..', '../../..', '../..', '..']
     if len(content) == 0:
@@ -496,7 +496,8 @@ def download(name, iconimage, url):
                 pass
         control.makeFile(dest)
         tvtitle = re.sub('\[.+?\]', '', content[0])
-        transtvshowtitle = tvtitle.translate(None, '\/:*?"<>|').strip('.')
+        try: transtvshowtitle = tvtitle.translate(None, '\/:*?"<>|').strip('.')
+        except: transtvshowtitle = tvtitle.translate(str.maketrans('', '', '\/:*?"<>|')).strip('.')
         dest = os.path.join(dest, transtvshowtitle)
         control.makeFile(dest)
         dest = os.path.join(dest, 'Season %01d' % int(content[0][1]))
@@ -879,7 +880,7 @@ def search_clear():
     control.idle()
 
 
-def resolve(name, url, iconimage, description):
+def resolve(name, url, iconimage, description, return_url=False):
     liz = xbmcgui.ListItem(name)
     host = url
     if '/links/' in host:
@@ -975,6 +976,10 @@ def resolve(name, url, iconimage, description):
 
     else:
         name = name.split(' [B]|')[0]
+
+    if return_url:
+        return stream_url
+
     try:
         liz.setArt({'icon': iconimage, 'fanart': FANART})
         liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
