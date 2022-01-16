@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.28.1" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.29" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.addon" version="17.0.000"/>
     <import addon="script.module.six" />
@@ -28,8 +28,8 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>[B]v1.0.27[/B] 18/11/2021
-  - επιστροφή του μενού tenies-online credits to HOST505</news>
+    <news>[B]v1.0.29[/B] 16/01/2022
+  - fix downloading feature credits to HOST505</news>
     <assets>
         <icon>icon.png</icon>
         <fanart>fanart.jpg</fanart>
