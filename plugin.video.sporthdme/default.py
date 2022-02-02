@@ -64,6 +64,8 @@ def convDateUtil(timestring, newfrmt='default', in_zone='UTC'):
 
 
 def Main_menu():
+    addDir('[B][COLOR gold]Website changed the view\n so click NEW VIEW[/COLOR][/B]', '', '', ICON, FANART, '')
+    addDir('[B][COLOR white]NEW VIEW[/COLOR][/B]', 'https://1.vecdn.pw/program.php', 15, ICON, FANART, '')
     addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 5, ICON, FANART, '')
     addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
     addDir('[B][COLOR white]BEST LEAGUES[/COLOR][/B]', '', 2, ICON, FANART, '')
@@ -200,6 +202,30 @@ def get_events(url):  # 5
 xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 
+def get_new_events(url):  # 5
+    data = six.ensure_text(client.request(url))
+    # xbmc.log('@#@EDATAAA: {}'.format(data))
+    days = list(zip(client.parseDOM(data, 'button', attrs={'class': 'accordion'}),
+                    client.parseDOM(str(data), 'div', attrs={'class': "panel"})))
+    # data = client.parseDOM(str(data), 'div', attrs={'class': "panel"})
+    # xbmc.log('@#@DAYSSS: {}'.format(str(days)))
+    for day, events in days:
+        dia = client.parseDOM(day, 'span')[0]
+        events = list(zip(client.parseDOM(str(events), 'div', attrs={'class': "left.*?"}),
+                          client.parseDOM(str(events), 'div', attrs={'class': "containe"})))
+        # xbmc.log('@#@EVENTS: {}'.format(str(events)))
+    # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
+        addDir(dia, '', '', ICON, FANART, name)
+        for event, streams in events:
+            # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
+            streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
+
+            event = event.encode('utf-8') if six.PY2 else event
+            event = '[COLOR gold][B]{}[/COLOR][/B]'.format(event)
+
+            addDir(event, streams, 4, ICON, FANART, name)
+xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+
 def get_stream(url):  # 4
     data = base64.b64decode(unquote(url))
     # xbmc.log('@#@DATAAAA:%s' % data, xbmc.LOGINFO)
@@ -212,9 +238,11 @@ def get_stream(url):  # 4
         # xbmc.log('@#@STREAMMMMMSSSSSS:%s' % links, xbmc.LOGINFO)
         titles = []
         streams = []
+
         for link, title in links:
-            streams.append(link)
-            titles.append(title)
+            if not 'https://bedsport' in link and not 'vecdn' in link:
+                streams.append(link)
+                titles.append(title)
 
         if len(streams) > 1:
             dialog = xbmcgui.Dialog()
@@ -337,6 +365,23 @@ def resolve(url, name):
             flink += '|Referer={}'.format(quote(stream)) #if not 'azcdn' in flink else ''
         # xbmc.log('@#@STREAMMMMM111: %s' % flink)
         stream_url = flink
+    elif 'bedsport' in url:
+        referer = 'https://em.bedsport.live/'
+        r = six.ensure_str(client.request(url, referer=referer))
+        vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0] #<script>fid='do4';
+        #ragnaru.net/embed.php?player='+embedded+'&live='+fid+'" '+PlaySize+' width='+v_width+' height='+v_height+'
+        host = 'https://ragnaru.net/embed.php?player=desktop&live={}'.format(str(vid))
+        data = six.ensure_str(client.request(host, referer=referer))
+        link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
+        # xbmc.log('@#@STREAMMMMM111: %s' % link)
+        stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
+        # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
+        stream_url += '|Referer=https://ragnaru.net/&User-Agent={}'.format(quote(client.agent()))
+    # elif 'vecdn.pw' in url:
+    #     r = six.ensure_str(client.request(url))
+    #     frame = client.parseDOM(r, 'iframe', ret='src')[0]
+    #     data = six.ensure_str(client.request(frame))
+    #     xbmc.log('@#@DATAAA: %s' % data)
 
     else:
         stream_url = url
@@ -455,6 +500,8 @@ elif mode == 4:
     get_stream(url)
 elif mode == 10:
     Open_settings()
+elif mode == 15:
+    get_new_events(url)
 
 elif mode == 100:
     resolve(url, name)
