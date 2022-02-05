@@ -203,16 +203,18 @@ xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 
 def get_new_events(url):  # 5
-    data = six.ensure_text(client.request(url))
+    data = client.request(url)
     # xbmc.log('@#@EDATAAA: {}'.format(data))
+    data = six.ensure_text(data, encoding='utf-8', errors='ignore')
     days = list(zip(client.parseDOM(data, 'button', attrs={'class': 'accordion'}),
-                    client.parseDOM(str(data), 'div', attrs={'class': "panel"})))
+                    client.parseDOM(data, 'div', attrs={'class': "panel"})))
     # data = client.parseDOM(str(data), 'div', attrs={'class': "panel"})
     # xbmc.log('@#@DAYSSS: {}'.format(str(days)))
     for day, events in days:
         dia = client.parseDOM(day, 'span')[0]
-        events = list(zip(client.parseDOM(str(events), 'div', attrs={'class': "left.*?"}),
-                          client.parseDOM(str(events), 'div', attrs={'class': "containe"})))
+        events = six.ensure_text(events, encoding='utf-8', errors='ignore')
+        events = list(zip(client.parseDOM(events, 'div', attrs={'class': "left.*?"}),
+                          client.parseDOM(events, 'div', attrs={'class': "containe"})))
         # xbmc.log('@#@EVENTS: {}'.format(str(events)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
         addDir(dia, '', '', ICON, FANART, name)
