@@ -218,7 +218,16 @@ def get_new_events(url):  # 5
         # xbmc.log('@#@EVENTS: {}'.format(str(events)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
         addDir(dia, '', '', ICON, FANART, name)
+        tevents = []
         for event, streams in events:
+            if '\n' in event:
+                ev = event.split('\n')
+                for i in ev:
+                    tevents.append((i, streams))
+            else:
+                tevents.append((event, streams))
+
+        for event, streams in sorted(tevents):
             # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
             streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
 
@@ -226,7 +235,9 @@ def get_new_events(url):  # 5
             event = '[COLOR gold][B]{}[/COLOR][/B]'.format(event)
 
             addDir(event, streams, 4, ICON, FANART, name)
-xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+
+
+xbmcplugin.setContent(int(sys.argv[1]), 'videos')
 
 def get_stream(url):  # 4
     data = base64.b64decode(unquote(url))
