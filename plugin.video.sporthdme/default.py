@@ -253,6 +253,7 @@ def get_stream(url):  # 4
         streams = []
 
         for link, title in links:
+            # if not 'vecdn' in link:
             if not 'https://bedsport' in link and not 'vecdn' in link:
                 streams.append(link)
                 titles.append(title)
@@ -378,7 +379,8 @@ def resolve(url, name):
             flink += '|Referer={}'.format(quote(stream)) #if not 'azcdn' in flink else ''
         # xbmc.log('@#@STREAMMMMM111: %s' % flink)
         stream_url = flink
-    elif 'bedsport' in url:
+    elif '//em.bedsport' in url or 'cdnz.one/ch' in url:
+        xbmc.log('@#@STREAMMMMM111: %s' % url)
         referer = 'https://em.bedsport.live/'
         r = six.ensure_str(client.request(url, referer=referer))
         vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0] #<script>fid='do4';
@@ -386,15 +388,22 @@ def resolve(url, name):
         host = 'https://ragnaru.net/embed.php?player=desktop&live={}'.format(str(vid))
         data = six.ensure_str(client.request(host, referer=referer))
         link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
-        # xbmc.log('@#@STREAMMMMM111: %s' % link)
+        xbmc.log('@#@STREAMMMMM111: %s' % link)
         stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
-        # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
-        stream_url += '|Referer=https://ragnaru.net/&User-Agent={}'.format(quote(client.agent()))
-    # elif 'vecdn.pw' in url:
-    #     r = six.ensure_str(client.request(url))
-    #     frame = client.parseDOM(r, 'iframe', ret='src')[0]
-    #     data = six.ensure_str(client.request(frame))
-    #     xbmc.log('@#@DATAAA: %s' % data)
+        xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
+        stream_url += '|Referer=https://ragnaru.net/&User-Agent={}'.format(quote(ua))
+    elif '//bedsport' in url:
+        r = six.ensure_str(client.request(url))
+        frame = client.parseDOM(r, 'iframe', ret='src')[0]
+        data = six.ensure_str(client.request(frame))
+        xbmc.log('@#@DATAAA: %s' % data)
+        unpack = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[0]
+        # unpack = client.parseDOM(rr, 'script')
+        # xbmc.log('UNPACK: %s' % str(unpack))
+        # unpack = [i.rstrip() for i in unpack if 'eval' in i][0]
+        from resources.modules import jsunpack
+        data = six.ensure_text(jsunpack.unpack(str(unpack) + ')'), encoding='utf-8')
+        xbmc.log('@#@DATAAA: %s' % data)
 
     else:
         stream_url = url
