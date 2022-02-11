@@ -231,12 +231,22 @@ class s4f:
 
             if f.lower().endswith('.rar'):
                     import xbmcvfs
-                # if control.condVisibility('system.platform.osx'):
-                #     uri = "rar://{}/".format(conversion(f))
-                    uri = 'rar://%(archive_file)s' % {'archive_file': conversion(control.transPath(f))}
-                    dirs, files = control.listDir(uri)
-                # else:
-                #     return
+                    if control.kodi_version() >= 18:
+                        src = 'archive' + '://' + quote_plus(f) + '/'
+                        (dirs, files) = xbmcvfs.listdir(src)
+                        for file in files:
+                            fsrc = '{}{}'.format(src, file)
+                            xbmcvfs.copy(fsrc, path + file)
+                    else:
+                        xbmc.executebuiltin("XBMC.Extract(%s, %s)" % (
+                            f.encode("utf-8"),
+                            path.encode("utf-8")), True)
+                # # if control.condVisibility('system.platform.osx'):
+                # #     uri = "rar://{}/".format(conversion(f))
+                #     uri = 'rar://%(archive_file)s' % {'archive_file': conversion(control.transPath(f))}
+                #     dirs, files = control.listDir(uri)
+                # # else:
+                # #     return
 
             else:
 
