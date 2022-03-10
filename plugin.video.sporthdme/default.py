@@ -210,8 +210,9 @@ def get_new_events(url):  # 5
                     client.parseDOM(data, 'div', attrs={'class': "panel"})))
     # data = client.parseDOM(str(data), 'div', attrs={'class': "panel"})
     # xbmc.log('@#@DAYSSS: {}'.format(str(days)))
-    for day, events in days:
-        dia = client.parseDOM(day, 'span')[0]
+    for day, events in days[1:]:
+        dia = client.parseDOM(day, 'span')[-1]
+        dia = '[COLOR lime][B]{}[/B][/COLOR]'.format(dia)
         events = six.ensure_text(events, encoding='utf-8', errors='ignore')
         events = list(zip(client.parseDOM(events, 'div', attrs={'class': "left.*?"}),
                           client.parseDOM(events, 'div', attrs={'class': "containe"})))
