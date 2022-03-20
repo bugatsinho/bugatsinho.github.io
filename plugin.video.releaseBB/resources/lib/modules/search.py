@@ -40,8 +40,9 @@ NAME = ADDON.getAddonInfo('name')
 version = ADDON.getAddonInfo('version')
 IconPath = control.addonPath + "/resources/icons/"
 base = control.setting('domain')
-BASE_URL = 'http://%s' % base.lower()
+BASE_URL = 'http://{}'.format(base.lower())
 OLD_URL = 'http://old3.proxybb.com/'
+search_url = 'http://search.{}/'.format(base.lower())
 
 try:
     from sqlite3 import dbapi2 as database
@@ -59,9 +60,9 @@ def Search_bb(url):
             query = _query.encode('utf-8')
             try:
                 query = quote_plus(query)
-                referer_link = 'http://search.proxybb.com?s={0}'.format(query)
+                referer_link = 'http://search.bbrls.in?s={0}'.format(query)
 
-                url = 'http://search.proxybb.com/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
+                url = search_url + 'Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
                 url = url.format(query, random.randint(33333333333333333, 99999999999999999))
                 #########save in Database#########
                 if six.PY2:
@@ -197,12 +198,12 @@ def Search_bb(url):
     else:
         try:
             url = quote_plus(url)
-            referer_link = 'http://search.proxybb.com?s={0}'.format(url)
+            referer_link = 'http://search.bbrls.in?s={0}'.format(url)
             headers = {'Referer': referer_link,
                        'X-Requested-With': 'XMLHttpRequest'}
             # first = scraper.get('http://rlsbb.ru', headers=headers).text
             xbmc.sleep(10)
-            s_url = 'http://search.proxybb.com/Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
+            s_url = search_url + 'Home/GetPost?phrase={0}&pindex=1&content=true&type=Simple&rad=0.{1}'
             s_url = s_url.format(url, random.randint(33333333333333333, 99999999999999999))
             html = client.request(s_url, headers=headers)
             posts = json.loads(html)['results']
