@@ -19,6 +19,9 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 
 **ADD-ONS:**
 
+![](images/sporthd.png)       
+[**SportHD source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.sporthdme) 
+
 ![](images/rlsBB.png)       
 [**ReleaseBB source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.releaseBB) 
 
@@ -26,7 +29,10 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 [**Release Hub source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.rlshub) 
 
 ![](images/cgr.png)       
-[**CartoonsGR source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.cartoonsgr) 
+[**CartoonsGR source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.cartoonsgr)
+
+![](images/sub.png)     
+[**GreekSubs source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/service.subtitles.greeksubs) 
 
 ![](images/nov.png)     
 [**iNovelas source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.iNovelas)
@@ -34,14 +40,10 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 ![](images/pel.png)  
 [**Pelisplus TV source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.pelisplus)
 
-![](images/sub.png)     
-[**GreekSubs source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/service.subtitles.greeksubs)
 
 ![](images/sky.png)     
 [**SkylineCCTV source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.skylinecctv)
 
-![](images/sporthd.png)       
-[**SportHD source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.sporthdme) 
 
 ![](images/fvl.png)       
 [**Free Video Lectures source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.freevl)
