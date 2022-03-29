@@ -12,7 +12,7 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 
 [Join us in Telegram](http://bit.ly/bug_telegram)
 
-[Repository v2.5](https://github.com/bugatsinho/bugatsinho.github.io/raw/master/repo/repository.bugatsinho-2.5.zip)
+[Repository v2.5](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.5.zip?raw=true)
 
 [Register to Real Debrid](http://real-debrid.com/?id=1168800)
 
@@ -21,6 +21,9 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 
 ![](images/rlsBB.png)       
 [**ReleaseBB source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.releaseBB) 
+
+![](images/hub.png)       
+[**Release Hub source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.rlshub) 
 
 ![](images/cgr.png)       
 [**CartoonsGR source code**](https://github.com/bugatsinho/bugatsinho.github.io/tree/master/plugin.video.cartoonsgr) 
