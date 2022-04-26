@@ -215,12 +215,14 @@ def get_new_events(url):  # 5
         dia = '[COLOR lime][B]{}[/B][/COLOR]'.format(dia)
         events = six.ensure_text(events, encoding='utf-8', errors='ignore')
         events = list(zip(client.parseDOM(events, 'div', attrs={'class': "left.*?"}),
-                          client.parseDOM(events, 'div', attrs={'class': "d4"})))
+                          client.parseDOM(events, 'div', attrs={'class': r"d\d"})))
         # xbmc.log('@#@EVENTS: {}'.format(str(events)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
         addDir(dia, '', '', ICON, FANART, name)
         tevents = []
         for event, streams in events:
+            if '<span' in event:
+                event = event.split('<span')[0]
             if '\n' in event:
                 ev = event.split('\n')
                 for i in ev:
