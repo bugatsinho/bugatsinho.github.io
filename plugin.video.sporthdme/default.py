@@ -65,7 +65,8 @@ def convDateUtil(timestring, newfrmt='default', in_zone='UTC'):
 
 def Main_menu():
     # addDir('[B][COLOR gold]Website changed the view\n so click NEW VIEW[/COLOR][/B]', '', '', ICON, FANART, '')
-    addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', 'https://1.vecdn.pw/program.php', 15, ICON, FANART, '')
+    addDir('[B][COLOR gold]LIVE EVENTS[/COLOR][/B]', 'https://1.vecdn.pw/program.php', 15, ICON, FANART, '')
+    # addDir('[B][COLOR gold]Channels 24/7[/COLOR][/B]', 'https://1.vecdn.pw/program.php', 14, ICON, FANART, '')
     # addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 5, ICON, FANART, '')
     # addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
     # addDir('[B][COLOR white]BEST LEAGUES[/COLOR][/B]', '', 2, ICON, FANART, '')
@@ -202,7 +203,26 @@ def get_events(url):  # 5
 xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 
-def get_new_events(url):  # 5
+def get_livetv(url):
+    data = client.request(url)
+    # xbmc.log('@#@EDATAAA: {}'.format(data))
+    data = six.ensure_text(data, encoding='utf-8', errors='ignore')
+    data = client.parseDOM(data, 'table', attrs={'class': 'styled-table'})[0]
+    chans = list(zip(client.parseDOM(data, 'button', attrs={'class': 'tvch'}),
+                    client.parseDOM(data, 'a', ret='href')))
+    for chan, stream in chans:
+        # stream = str(quote(base64.b64encode(six.ensure_binary(stream))))
+
+        chan = chan.encode('utf-8') if six.PY2 else chan
+        chan = '[COLOR gold][B]{}[/COLOR][/B]'.format(chan)
+
+        addDir(chan, stream, 100, ICON, FANART, name)
+
+
+xbmcplugin.setContent(int(sys.argv[1]), 'videos')
+
+
+def get_new_events(url):  # 15
     data = client.request(url)
     # xbmc.log('@#@EDATAAA: {}'.format(data))
     data = six.ensure_text(data, encoding='utf-8', errors='ignore')
@@ -215,7 +235,7 @@ def get_new_events(url):  # 5
         dia = '[COLOR lime][B]{}[/B][/COLOR]'.format(dia)
         events = six.ensure_text(events, encoding='utf-8', errors='ignore')
         events = list(zip(client.parseDOM(events, 'div', attrs={'class': "left.*?"}),
-                          client.parseDOM(events, 'div', attrs={'class': "d4"})))
+                          client.parseDOM(events, 'div', attrs={'class': "d\d+"})))
         # xbmc.log('@#@EVENTS: {}'.format(str(events)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
         addDir(dia, '', '', ICON, FANART, name)
@@ -233,6 +253,7 @@ def get_new_events(url):  # 5
             streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
 
             event = event.encode('utf-8') if six.PY2 else event
+            event = re.sub('<.+?>', '', event)
             event = '[COLOR gold][B]{}[/COLOR][/B]'.format(event)
 
             addDir(event, streams, 4, ICON, FANART, name)
@@ -290,7 +311,7 @@ def busy():
 
 
 def resolve(url, name):
-    # xbmc.log('RESOLVE-URL: %s' % url, xbmc.LOGNOTICE)
+    # xbmc.log('RESOLVE-URL: %s' % url)
     ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
     # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
     if 'acestream' in url:
@@ -382,13 +403,19 @@ def resolve(url, name):
         stream_url = flink
     elif '//em.bedsport' in url or 'cdnz.one/ch' in url or 'cdn1.link/ch' in url or 'cdn2.link/ch' in url:
         # xbmc.log('@#@STREAMMMMM111: %s' % url)
-        referer = 'https://em.bedsport.live/'
+        referer = 'https://1.vecdn.pw/'
         r = six.ensure_str(client.request(url, referer=referer))
+        # xbmc.log('@#@RRRDATA: %s' % r)
         vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0] #<script>fid='do4';
         #ragnaru.net/embed.php?player='+embedded+'&live='+fid+'" '+PlaySize+' width='+v_width+' height='+v_height+'
-        host = 'https://ragnaru.net/embed.php?player=desktop&live={}'.format(str(vid))
+        host = 'https://ragnaru.net/jwembed.php?player=desktop&live={}'.format(str(vid))
         data = six.ensure_str(client.request(host, referer=referer))
-        link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
+        # xbmc.log('@#@SDATA: %s' % data)
+        try:
+            link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
+        except IndexError:
+            link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
+
         # xbmc.log('@#@STREAMMMMM111: %s' % link)
         stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
         # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
@@ -523,6 +550,8 @@ elif mode == 4:
     get_stream(url)
 elif mode == 10:
     Open_settings()
+elif mode == 14:
+    get_livetv(url)
 elif mode == 15:
     get_new_events(url)
 
