@@ -64,11 +64,11 @@ def convDateUtil(timestring, newfrmt='default', in_zone='UTC'):
 
 
 def Main_menu():
-    addDir('[B][COLOR gold]Website changed the view\n so click NEW VIEW[/COLOR][/B]', '', '', ICON, FANART, '')
-    addDir('[B][COLOR white]NEW VIEW[/COLOR][/B]', 'https://1.vecdn.pw/program.php', 15, ICON, FANART, '')
-    addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 5, ICON, FANART, '')
-    addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
-    addDir('[B][COLOR white]BEST LEAGUES[/COLOR][/B]', '', 2, ICON, FANART, '')
+    # addDir('[B][COLOR gold]Website changed the view\n so click NEW VIEW[/COLOR][/B]', '', '', ICON, FANART, '')
+    addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', 'https://1.vecdn.pw/program.php', 15, ICON, FANART, '')
+    # addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 5, ICON, FANART, '')
+    # addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
+    # addDir('[B][COLOR white]BEST LEAGUES[/COLOR][/B]', '', 2, ICON, FANART, '')
     addDir('[B][COLOR gold]Settings[/COLOR][/B]', '', 10, ICON, FANART, '')
     addDir('[B][COLOR gold]Version: [COLOR lime]%s[/COLOR][/B]' % vers, '', 'BUG', ICON, FANART, '')
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
@@ -215,7 +215,7 @@ def get_new_events(url):  # 5
         dia = '[COLOR lime][B]{}[/B][/COLOR]'.format(dia)
         events = six.ensure_text(events, encoding='utf-8', errors='ignore')
         events = list(zip(client.parseDOM(events, 'div', attrs={'class': "left.*?"}),
-                          client.parseDOM(events, 'div', attrs={'class': "containe"})))
+                          client.parseDOM(events, 'div', attrs={'class': "d4"})))
         # xbmc.log('@#@EVENTS: {}'.format(str(events)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
         addDir(dia, '', '', ICON, FANART, name)
