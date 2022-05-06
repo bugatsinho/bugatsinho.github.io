@@ -238,7 +238,7 @@ def get_new_events(url):  # 15
                           client.parseDOM(events, 'div', attrs={'class': "d\d+"})))
         # xbmc.log('@#@EVENTS: {}'.format(str(events)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
-        addDir(dia, '', '', ICON, FANART, name)
+        addDir(dia, '', 'BUG', ICON, FANART, name)
         tevents = []
         for event, streams in events:
             if '\n' in event:
@@ -290,7 +290,7 @@ def get_stream(url):  # 4
                 # xbmc.log('@#@STREAMMMMM:%s' % host, xbmc.LOGNOTICE)
                 return resolve(host, name)
             else:
-                return
+                return False
         else:
             link = links[0][0]
             return resolve(link, name)
@@ -470,7 +470,7 @@ def addDir(name, url, mode, iconimage, fanart, description):
         liz.setProperty("IsPlayable", "true")
         liz.addContextMenuItems([('GRecoTM Pair Tool', 'RunAddon(script.grecotm.pair)',)])
         ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
-    elif mode == 10 or mode == 'BUG':
+    elif mode == 10 or mode == 'BUG' or mode == 4:
         ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
     else:
         ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=True)
