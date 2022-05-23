@@ -81,7 +81,7 @@ def series_menu():
 
 def genre(section):
     sec = 0 if 'mov' in section else 1
-    html = client.request(Baseurl, headers=headers)
+    html = six.ensure_text(client.request(Baseurl, headers=headers, timeout=30))
     items = client.parseDOM(html, 'li', attrs={'class': 'category-list-item'})[sec]
     items = dom.parse_dom(items, 'a', req='href')
     for i in items:
@@ -99,7 +99,7 @@ def genre(section):
 
 
 def to_items(url): #34
-    data = client.request(url, headers=headers)
+    data = six.ensure_text(client.request(url, headers=headers, timeout=30))
     posts = zip(client.parseDOM(data, 'div', attrs={'class': 'content item-content'}),
                 client.parseDOM(data, 'h2'))
 
@@ -157,7 +157,7 @@ def to_items(url): #34
 
 def to_links(url, img, plot):  # Get Links
     try:
-        html = client.request(url, headers=headers)
+        html = six.ensure_text(client.request(url, headers=headers, timeout=30))
         try:
             # <h1 class="postTitle" rel="bookmark">American Dresser 2018 BRRip XviD AC3-RBG</h1>
             match = client.parseDOM(html, 'h2')[0]

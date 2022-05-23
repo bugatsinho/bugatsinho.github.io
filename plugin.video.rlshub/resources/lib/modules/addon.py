@@ -18,10 +18,11 @@
 
 import re
 import os
+
 try:
-   import cPickle as pickle
+    import cPickle as pickle
 except:
-   import pickle
+    import pickle
 import unicodedata
 import xbmc
 import xbmcaddon
@@ -29,6 +30,7 @@ import xbmcgui
 import xbmcplugin
 import six
 from six.moves.urllib_parse import parse_qs, urlencode
+
 
 class Addon:
     '''
@@ -48,8 +50,7 @@ class Addon:
         from t0mm0.common.addon import Addon
         addon = Addon('my.plugin.id', argv=sys.argv)
     '''
-    
-        
+
     def __init__(self, addon_id, argv=None):
         '''        
         Args:
@@ -64,54 +65,44 @@ class Addon:
             self.url = argv[0]
             self.handle = int(argv[1])
             self.queries = self.parse_query(argv[2][1:])
-        
 
     def get_author(self):
         '''Returns the addon author as defined in ``addon.xml``.'''
         return self.addon.getAddonInfo('author')
-            
 
-    def get_changelog(self):    
+    def get_changelog(self):
         '''Returns the addon changelog.'''
         return self.addon.getAddonInfo('changelog')
-            
 
     def get_description(self):
         '''Returns the addon description as defined in ``addon.xml``.'''
         return self.addon.getAddonInfo('description')
-            
 
-    def get_disclaimer(self):    
+    def get_disclaimer(self):
         '''Returns the addon disclaimer as defined in ``addon.xml``.'''
         return self.addon.getAddonInfo('disclaimer')
-            
 
     def get_fanart(self):
         '''Returns the full path to the addon fanart.'''
         return self.addon.getAddonInfo('fanart')
-            
 
     def get_icon(self):
         '''Returns the full path to the addon icon.'''
         return self.addon.getAddonInfo('icon')
-            
 
     def get_id(self):
         '''Returns the addon id as defined in ``addon.xml``.'''
         return self.addon.getAddonInfo('id')
-            
 
-    def get_name(self):    
+    def get_name(self):
         '''Returns the addon name as defined in ``addon.xml``.'''
         return self.addon.getAddonInfo('name')
-            
 
     def get_path(self):
         '''Returns the full path to the addon directory.'''
         return self.addon.getAddonInfo('path')
-            
 
-    def get_profile(self):    
+    def get_profile(self):
         '''
         Returns the full path to the addon profile directory 
         (useful for storing files needed by the addon such as cookies).
@@ -123,30 +114,25 @@ class Addon:
             translatePath = xbmcvfs.translatePath
 
         return translatePath(self.addon.getAddonInfo('profile'))
-            
 
-    def get_stars(self):    
+    def get_stars(self):
         '''Returns the number of stars for this addon.'''
         return self.addon.getAddonInfo('stars')
-            
 
-    def get_summary(self):    
+    def get_summary(self):
         '''Returns the addon summary as defined in ``addon.xml``.'''
         return self.addon.getAddonInfo('summary')
-            
 
-    def get_type(self): 
+    def get_type(self):
         '''
         Returns the addon summary as defined in ``addon.xml`` 
         (eg. xbmc.python.pluginsource).
-        '''   
+        '''
         return self.addon.getAddonInfo('type')
-            
 
-    def get_version(self):    
+    def get_version(self):
         '''Returns the addon version as defined in ``addon.xml``.'''
         return self.addon.getAddonInfo('version')
-            
 
     def get_setting(self, setting):
         '''
@@ -160,7 +146,6 @@ class Addon:
             str containing the requested setting.
         '''
         return self.addon.getSetting(setting)
-        
 
     def get_string(self, string_id):
         '''
@@ -173,8 +158,7 @@ class Addon:
         Returns:
             str containing the localized requested string.
         '''
-        return self.addon.getLocalizedString(string_id)   
-
+        return self.addon.getLocalizedString(string_id)
 
     def parse_query(self, query, defaults={'mode': 'main'}):
         '''
@@ -201,7 +185,6 @@ class Addon:
             else:
                 q[key] = value
         return q
-
 
     def build_plugin_url(self, queries):
         '''
@@ -235,7 +218,6 @@ class Addon:
             out_dict[k] = v
         return self.url + '?' + urlencode(out_dict)
 
-
     def log(self, msg, level=xbmc.LOGINFO):
         '''
         Writes a string to the XBMC log file. The addon name is inserted into 
@@ -259,13 +241,12 @@ class Addon:
         Kwargs:
             level (int): The XBMC log level to write at.
         '''
-        #msg = unicodedata.normalize('NFKD', unicode(msg)).encode('ascii',
+        # msg = unicodedata.normalize('NFKD', unicode(msg)).encode('ascii',
         #                                                         'ignore')
-        #backwards compatibility - LOGNOTICE has been removed
+        # backwards compatibility - LOGNOTICE has been removed
         if level == 2:
             level = 1
         xbmc.log('%s: %s' % (self.get_name(), msg), level)
-        
 
     def log_error(self, msg):
         '''
@@ -274,8 +255,7 @@ class Addon:
         your addon code. This will show up in the log prefixed with 'ERROR:'
         whether you have debugging switched on or not.
         '''
-        self.log(msg, xbmc.LOGERROR)    
-        
+        self.log(msg, xbmc.LOGERROR)
 
     def log_debug(self, msg):
         '''
@@ -285,8 +265,7 @@ class Addon:
         show up in the log only when debugging is enabled in the XBMC settings,
         and will be prefixed with 'DEBUG:'.
         '''
-        self.log(msg, xbmc.LOGDEBUG)    
-
+        self.log(msg, xbmc.LOGDEBUG)
 
     def log_notice(self, msg):
         '''
@@ -295,8 +274,7 @@ class Addon:
         show up in the log prefixed with 'NOTICE:' whether you have debugging 
         switched on or not.
         '''
-        self.log(msg, xbmc.LOGINFO)    
-
+        self.log(msg, xbmc.LOGINFO)
 
     def show_ok_dialog(self, msg, title=None, is_error=False):
         '''
@@ -327,17 +305,16 @@ class Addon:
         if not title:
             title = self.get_name()
         log_msg = ' '.join(msg)
-        
+
         while len(msg) < 3:
             msg.append('')
-        
+
         if is_error:
             self.log_error(log_msg)
         else:
             self.log_notice(log_msg)
-        
-        xbmcgui.Dialog().ok(title, msg[0], msg[1], msg[2])
 
+        xbmcgui.Dialog().ok(title, msg[0], msg[1], msg[2])
 
     def show_error_dialog(self, msg):
         '''
@@ -357,7 +334,6 @@ class Addon:
             Only the first 3 list items will be displayed.
         '''
         self.show_ok_dialog(msg, 'Error: %s' % self.get_name(), True)
-
 
     def show_small_popup(self, title='', msg='', delay=5000, image=''):
         '''
@@ -384,7 +360,6 @@ class Addon:
         xbmc.executebuiltin('XBMC.Notification("%s","%s",%d,"%s")' %
                             (title, msg, delay, image))
 
-
     def show_countdown(self, time_to_wait, title='', text=''):
         '''
         Show a countdown dialog with a progress bar for XBMC while delaying 
@@ -406,12 +381,12 @@ class Addon:
             ``True`` if countdown is allowed to complete, ``False`` if the 
             user cancelled the countdown.
         '''
-        
+
         dialog = xbmcgui.DialogProgress()
         ret = dialog.create(title)
 
         self.log_notice('waiting %d secs' % time_to_wait)
-        
+
         secs = 0
         increment = 100 / time_to_wait
 
@@ -422,33 +397,31 @@ class Addon:
                 cancelled = True
                 break
 
-            if secs != 0: 
+            if secs != 0:
                 xbmc.sleep(1000)
 
             secs_left = time_to_wait - secs
-            if secs_left == 0: 
+            if secs_left == 0:
                 percent = 100
-            else: 
+            else:
                 percent = increment * secs
-            
+
             remaining_display = ('Wait %d seconds for the ' +
-                    'video stream to activate...') % secs_left
+                                 'video stream to activate...') % secs_left
             dialog.update(percent, text, remaining_display)
 
             secs += 1
 
-        if cancelled == True:     
+        if cancelled == True:
             self.log_notice('countdown cancelled')
             return False
         else:
             self.log_debug('countdown finished waiting')
-            return True        
-
+            return True
 
     def show_settings(self):
         '''Shows the settings dialog for this addon.'''
         self.addon.openSettings()
-
 
     def resolve_url(self, stream_url):
         '''
@@ -470,13 +443,12 @@ class Addon:
         '''
         if stream_url:
             self.log_debug('resolved to: %s' % stream_url)
-            xbmcplugin.setResolvedUrl(self.handle, True, 
+            xbmcplugin.setResolvedUrl(self.handle, True,
                                       xbmcgui.ListItem(path=stream_url))
         else:
             self.show_error_dialog(['sorry, failed to resolve URL :('])
             xbmcplugin.setResolvedUrl(self.handle, False, xbmcgui.ListItem())
 
-    
     def get_playlist(self, pl_type, new=False):
         '''
         Return a :class:`xbmc.Playlist` object of the specified type.
@@ -505,8 +477,7 @@ class Addon:
         if new:
             pl.clear()
         return pl
-    
-    
+
     def get_music_playlist(self, new=False):
         '''
         Convenience method to return a music :class:`xbmc.Playlist` object.
@@ -523,7 +494,6 @@ class Addon:
             A :class:`xbmc.Playlist` object.
        '''
         self.get_playlist(xbmc.PLAYLIST_MUSIC, new)
-    
 
     def get_video_playlist(self, new=False):
         '''
@@ -543,9 +513,8 @@ class Addon:
         '''
         self.get_playlist(xbmc.PLAYLIST_VIDEO, new)
 
-
     def add_item(self, queries, infolabels, contextmenu_items='', context_replace=False, img='',
-                 fanart='', resolved=False, total_items=0, playlist=False, item_type='video', 
+                 fanart='', resolved=False, total_items=0, playlist=False, item_type='video',
                  is_folder=False):
         '''
         Adds an item to the list of entries to be displayed in XBMC or to a 
@@ -606,29 +575,28 @@ class Addon:
             if not is_folder:
                 queries['play'] = 'True'
             play = self.build_plugin_url(queries)
-        else: 
+        else:
             play = resolved
         listitem = xbmcgui.ListItem(infolabels['title'])
         listitem.setArt({
-            "icon":img,
-            "poster":img,
-            "thumbnail":img,
-            "fanart":fanart,
+            "icon": img,
+            "poster": img,
+            "thumbnail": img,
+            "fanart": fanart,
         });
         listitem.setInfo(item_type, infolabels)
         listitem.setProperty('IsPlayable', 'true')
         if contextmenu_items:
-            listitem.addContextMenuItems(contextmenu_items, replaceItems=context_replace)        
+            listitem.addContextMenuItems(contextmenu_items, replaceItems=context_replace)
         if playlist is not False:
             self.log_debug('adding item: %s - %s to playlist' % \
-                                                    (infolabels['title'], play))
+                           (infolabels['title'], play))
             playlist.add(play, listitem)
         else:
             self.log_debug('adding item: %s - %s' % (infolabels['title'], play))
-            xbmcplugin.addDirectoryItem(self.handle, play, listitem, 
-                                        isFolder=is_folder, 
+            xbmcplugin.addDirectoryItem(self.handle, play, listitem,
+                                        isFolder=is_folder,
                                         totalItems=total_items)
-
 
     def add_video_item(self, queries, infolabels, contextmenu_items='', context_replace=False,
                        img='', fanart='', resolved=False, total_items=0, playlist=False):
@@ -641,9 +609,8 @@ class Addon:
         self.add_item(queries, infolabels, contextmenu_items, context_replace, img, fanart,
                       resolved, total_items, playlist, item_type='video')
 
-
     def add_music_item(self, queries, infolabels, contextmenu_items='', context_replace=False,
-                        img='', fanart='', resolved=False, total_items=0, playlist=False):
+                       img='', fanart='', resolved=False, total_items=0, playlist=False):
         '''
         Convenience method to add a music item to the directory list or a 
         playlist.
@@ -653,9 +620,8 @@ class Addon:
         self.add_item(queries, infolabels, contextmenu_items, img, context_replace, fanart,
                       resolved, total_items, playlist, item_type='music')
 
-
     def add_directory(self, queries, infolabels, contextmenu_items='', context_replace=False,
-                       img='', fanart='', total_items=0, is_folder=True):
+                      img='', fanart='', total_items=0, is_folder=True):
         '''
         Convenience method to add a directory to the display list or a 
         playlist.
@@ -663,13 +629,12 @@ class Addon:
         See :meth:`add_item` for full infomation
         '''
         self.add_item(queries, infolabels, contextmenu_items, context_replace, img, fanart,
-                      total_items=total_items, resolved=self.build_plugin_url(queries), 
+                      total_items=total_items, resolved=self.build_plugin_url(queries),
                       is_folder=is_folder)
 
     def end_of_directory(self):
         '''Tell XBMC that we have finished adding items to this directory.'''
         xbmcplugin.endOfDirectory(self.handle)
-        
 
     def _decode_callback(self, matches):
         '''Callback method used by :meth:`decode`.'''
@@ -678,7 +643,6 @@ class Addon:
             return unichr(int(id))
         except:
             return id
-
 
     def decode(self, data):
         '''
@@ -695,7 +659,6 @@ class Addon:
             Cleaned string.
         '''
         return re.sub("&#(\d+)(;|(?=\s))", self._decode_callback, data).strip()
-
 
     def unescape(self, text):
         '''
@@ -721,13 +684,12 @@ class Addon:
                 text = text.replace(s, r)
             # this has to be last:
             text = text.replace("&amp;", "&")
-        
-        #we don't want to fiddle with non-string types
+
+        # we don't want to fiddle with non-string types
         except TypeError:
             pass
 
         return text
-        
 
     def unescape_dict(self, d):
         '''
@@ -743,7 +705,7 @@ class Addon:
         for key, value in d.items():
             out[key] = self.unescape(value)
         return out
-    
+
     def save_data(self, filename, data):
         '''
         Saves the data structure using pickle. If the addon data path does 
@@ -771,8 +733,8 @@ class Addon:
             return True
         except pickle.PickleError:
             return False
-        
-    def load_data(self,filename):
+
+    def load_data(self, filename):
         '''
         Load the data that was saved with save_data() and returns the
         data structure.
@@ -796,6 +758,3 @@ class Addon:
         except:
             return False
         return data
-            
-        
-

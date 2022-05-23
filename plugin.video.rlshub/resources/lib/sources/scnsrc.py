@@ -80,7 +80,7 @@ def series_menu():
 
 def genre(section):
     sec = 'category/films' if 'mov' in section else 'category/tv'
-    html = client.request(Baseurl, headers=headers)
+    html = six.ensure_text(client.request(Baseurl, headers=headers))
     items = client.parseDOM(html, 'ul', attrs={'class': 'categories'})[0]
     # xbmc.log('SCNSRC-GENRE2: {}'.format(str(items)))
     pattern = r'''<a href=(.+?)>(.+?)</a> <a.+?</.+?\((.+?)\)'''
@@ -103,7 +103,7 @@ def genre(section):
 
 
 def to_items(url): #34
-    data = client.request(url, headers=headers)
+    data = six.ensure_text(client.request(url, headers=headers))
     posts = client.parseDOM(data, 'div', attrs={'id': r'post-\d+'})
     # xbmc.log('SCNSRC-ITEMS: {}'.format(str(posts)))
     for post in posts:
@@ -142,8 +142,8 @@ def to_items(url): #34
         #     addon.add_directory({'mode': 'to_seasons', 'url': link}, {'title': title, 'plot': str(desc)},
         #                         allfun, img=poster, fanart=FANART)
         # else:
-        addon.add_directory({'mode': 'scn_links', 'url': link}, {'title': title, 'plot': str(desc)},
-                            allfun, img=poster, fanart=FANART)
+        addon.add_directory({'mode': 'scn_links', 'url': link, 'title': title, 'plot': str(desc), 'img': poster},
+                            {'title': title, 'plot': str(desc)}, allfun, img=poster, fanart=FANART)
     try:
         np = client.parseDOM(data, 'a', ret='href', attrs={'rel': 'next'})[0]
         # np = dom_parser.parse_dom(np, 'a', req='href')
@@ -163,7 +163,7 @@ def to_items(url): #34
 
 def to_links(url, img, plot):  # Get Links
     try:
-        html = client.request(url, headers=headers)
+        html = six.ensure_text(client.request(url, headers=headers))
         try:
             # <h1 class="postTitle" rel="bookmark">American Dresser 2018 BRRip XviD AC3-RBG</h1>
             match = client.parseDOM(html, 'h2')[0]

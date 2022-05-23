@@ -96,7 +96,7 @@ def etos():
 
 def genre(section):
     sec = 'category/movies' if 'mov' in section else 'category/tv-shows'
-    html = client.request(Baseurl, headers=headers)
+    html = six.ensure_text(client.request(Baseurl, headers=headers))
     items = client.parseDOM(html, 'ul', attrs={'class': 'cat'})[0]
     # xbmc.log('DDLVALLEY-GENRE: {}'.format(str(items)))
     pattern = r'''<a href=(.+?)\s*data-wpel-link=internal>(.+?)</a> <a.+?</.+?\((.+?)\)'''
@@ -118,7 +118,7 @@ def genre(section):
 
 
 def to_items(url): #34
-    data = client.request(url, headers=headers)
+    data = six.ensure_text(client.request(url, headers=headers))
     posts = zip(client.parseDOM(data, 'div', attrs={'id': r'post-\d+'}),
                 client.parseDOM(data, 'h2'))
     for post, name in posts:
@@ -172,7 +172,7 @@ def to_links(url, img, plot):  # Get Links
         import resolveurl
         from resources.lib.modules import init
         # html = response_html(url, '3')
-        html = client.request(url, headers=headers)
+        html = six.ensure_text(client.request(url, headers=headers))
         try:
             # <h1 class="postTitle" rel="bookmark">American Dresser 2018 BRRip XviD AC3-RBG</h1>
             match = client.parseDOM(html, 'h1')[0]

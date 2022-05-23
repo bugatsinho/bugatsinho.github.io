@@ -67,11 +67,11 @@ def eztv_menu():
 
 
 def eztv_latest(url):
-    html = client.request(eztv_base)
+    html = six.ensure_text(client.request(eztv_base))
     posts = client.parseDOM(html, 'tr', attrs={'class': 'forum_header_border'})
     for post in posts:
         infos = dom.parse_dom(post, 'a')[1]
-        title = infos.attrs['title'].encode('utf-8')
+        title = infos.attrs['title']
         page_link = infos.attrs['href']
         page_link = urljoin(eztv_base, page_link) if page_link.startswith('/') else page_link
         magnet = re.findall(r'href="(magnet:.+?)"', post, re.DOTALL)[0]
@@ -94,7 +94,7 @@ def eztv_latest(url):
 
 
 def eztv_calendar(url):
-    html = client.request(url)
+    html = six.ensure_text(client.request(url))
     tables = client.parseDOM(html, 'table', attrs={'class': 'forum_header_border'})[1:]
     for table in tables:
         day = client.parseDOM(table, 'td', attrs={'class': 'forum_thread_header'})[0]
@@ -119,7 +119,7 @@ def eztv_calendar(url):
 
 def open_show(url):
     # xbmc.log('URLLLLL: {}'.format(url))
-    html = client.request(url)
+    html = six.ensure_text(client.request(url))
     try:
         alts = client.parseDOM(html, 'tr', attrs={'class': 'forum_header_border'})
         alts = [dom.parse_dom(str(i), 'a', req=['href', 'title'])[1] for i in alts if alts]
@@ -138,7 +138,7 @@ def open_show(url):
 
 
 def open_episode_page(url):
-    html = client.request(url)
+    html = six.ensure_text(client.request(url))
     try:
         poster = client.parseDOM(html, 'td', attrs={'align': 'center'})
         poster = [i for i in poster if 'img src=' in i][0]
@@ -196,7 +196,7 @@ def eztv_search():
         query = quote_plus(query).replace('+', '-')
         # get_link = client.request(url.format(query), output='location')
         search_url = search_url.format(query)
-        data = client.request(search_url, headers=headers)
+        data = six.ensure_text(client.request(search_url, headers=headers))
         try:
             alts = client.parseDOM(data, 'table', attrs={'class': 'forum_header_border'})[-1]
             alts = client.parseDOM(alts, 'tr', attrs={'name': 'hover'})

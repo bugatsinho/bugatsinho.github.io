@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.rlshub" version="1.0.5" name="Release[COLOR gold][B]HUB[/B][/COLOR]" provider-name="Bugatsinho">
+<addon id="plugin.video.rlshub" version="1.0.7" name="Release[COLOR gold][B]HUB[/B][/COLOR]" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.addon" version="18.0.000"/>
     <import addon="script.module.resolveurl" />
@@ -10,6 +10,7 @@
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
   </extension>
+  <extension point="xbmc.service" library="service.py" start="startup" />
   <extension point="xbmc.addon.metadata">
     <summary>Browse Release[COLOR orange][B]BB[/B][/COLOR]</summary>
     <description>Stream a wide selection of scene release movies and Tv shows from various websites....
