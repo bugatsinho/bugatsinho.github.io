@@ -25,7 +25,7 @@ if xbmcvfs.exists(_settingsFile):
             domains = [i.split('//')[1].encode('utf-8').upper() for i in domains if domains]
             fline = set_line.format(domains[0], domains[1], domains[2], domains[3], domains[0])
         except IndexError:
-            domains = ['eztv.re', 'eztv.ag', 'eztv.it', 'eztv.ch']
+            domains = ['eztv.re', 'eztv.wf', 'eztv.tf', 'eztv.yt', 'eztv1.xyz']
             domains = [i.upper() for i in domains if domains]
             fline = set_line.format(domains[0], domains[1], domains[2], domains[3], domains[0])
 

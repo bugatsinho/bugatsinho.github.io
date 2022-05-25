@@ -20,7 +20,7 @@
 
 
 import xbmc, xbmcaddon, xbmcplugin, xbmcgui, xbmcvfs
-import os, json
+import os, json, six
 
 integer = 1000
 lang = xbmcaddon.Addon().getLocalizedString
@@ -50,10 +50,15 @@ monitor = xbmc.Monitor()
 wait = monitor.waitForAbort
 aborted = monitor.abortRequested
 
-transPath = xbmc.translatePath
-skinPath = xbmc.translatePath('special://skin/')
-addonPath = xbmc.translatePath(addonInfo('path'))
-dataPath = xbmc.translatePath(addonInfo('profile'))
+if six.PY2:
+    translatePath = xbmc.translatePath
+else:
+    import xbmcvfs
+    translatePath = xbmcvfs.translatePath
+
+skinPath = translatePath('special://skin/')
+addonPath = translatePath(addonInfo('path'))
+dataPath = translatePath(addonInfo('profile'))
 
 
 window = xbmcgui.Window(10000)
