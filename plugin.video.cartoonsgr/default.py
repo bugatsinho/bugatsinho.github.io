@@ -26,7 +26,7 @@ from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
 
 BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
-GAMATO = control.setting('gamato.domain') or 'http://gamatotv.info/'  # 'https://gamatokid.com/'
+GAMATO = control.setting('gamato.domain') or 'https://gamatotv.info/'  # 'https://gamatokid.com/'
 Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 ADDON = xbmcaddon.Addon()
@@ -740,20 +740,28 @@ def get_links(name, url, iconimage, description):
             'User-Agent': client.agent()}
     data = requests.get(url, headers=hdrs).text
 
-    if 'Trailer' in data:
-        try:
-            flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
-        except IndexError:
-            try:
-                # http://gamatotv.info/wp-json/dooplayer/v1/post/45755?type=movie&source=trailer
-                ylink = ' http://gamatotv.info/wp-json/dooplayer/v1/post/{}?type=movie&source=trailer'
-                #li id='player-option-trailer'
-                yid = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-trailer'})[0]
-                flink = ylink.format(yid)
-                flink = client.request(flink)
-                flink = json.loads(flink)['embed_url']
-            except IndexError:
-                flink = ''
+    if 'player-option-trailer' in data:
+        # try:
+        #     flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
+        # except IndexError:
+        yid = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-trailer'})[0]
+        post_data = {'action': 'doo_player_ajax',
+                     'post': yid,
+                     'nume': 'trailer',
+                     'type': 'movie'}
+        post_data = urlencode(post_data).encode('utf-8')
+        post_link = GAMATO + 'wp-admin/admin-ajax.php'
+        ylink = client.request(post_link, post=post_data, headers=hdrs)
+        flink = json.loads(ylink)['embed_url']
+            # except:
+            #     # http://gamatotv.info/wp-json/dooplayer/v1/post/45755?type=movie&source=trailer
+            #     # action=doo_player_ajax&post=69063&nume=trailer&type=movie
+            #     ylink = ' http://gamatotv.info/wp-json/dooplayer/v1/post/{}?type=movie&source=trailer'
+            #     # li id='player-option-trailer'
+            #     yid = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-trailer'})[0]
+            #     flink = ylink.format(yid)
+            #     flink = client.request(flink)
+            #     flink = json.loads(flink)['embed_url']
 
         if 'youtu' in flink:
             addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
@@ -765,62 +773,63 @@ def get_links(name, url, iconimage, description):
 
     try:
         if 'tvshows' not in url:
-            try:
-                try:
-                    frame = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'metaframe rptss'})[0]
-                except IndexError:
-                    get_vid = 'http://gamatotv.info/wp-json/dooplayer/v1/post/{}?type=movie&source=1'
-                    id = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-1'})[0]
-                    frame = client.request(get_vid.format(id))
-                    frame = json.loads(frame)['embed_url']
-                if 'coverapi' in frame:
-                    html = requests.get(frame).text
-                    post_url = 'https://coverapi.store/engine/ajax/controller.php'
-                    postdata = re.findall(r'''data: \{mod: 'players', news_id: '(\d+)'\},''', html, re.DOTALL)[0]
-                    # xbmc.log('POSR-DATA: {}'.format(str(postdata)))
-                    postdata = {'mod': 'players',
-                                'news_id': postdata}
-                    hdrs = {'Origin': 'https://coverapi.store',
-                            'Referer': frame,
-                            'User-Agent': client.agent()}
-                    post_html = requests.post(post_url, data=postdata, headers=hdrs).text.replace('\\', '')
-                    # xbmc.log('POSR-HTML: {}'.format(str(post_html)))
-                    frame = re.findall(r'''file:\s*['"](http.+?)['"]''', post_html, re.DOTALL)[0]
-                    title = '{} | [B]{}[/B]'.format(name, 'Gamato')
-                    addDir(title, frame, 100, iconimage, FANART, str(description))
-                elif '/jwplayer/?source' in frame:
-                    frame = re.findall(r'''/jwplayer/\?source=(.+?)&id=''', frame, re.DOTALL)[0]
-                    # xbmc.log('FRAME-JWPLAYER: {}'.format(str(frame)))
-                    # frame = unquote_plus(frame)
-                    title = '{} | [B]{}[/B]'.format(name, 'Gamato')
-                    addDir(title, frame, 100, iconimage, FANART, str(description))
-                else:
-                    host = GetDomain(frame)
-                    title = '{} | [B]{}[/B]'.format(name, host.capitalize())
-                    addDir(title, frame, 100, iconimage, FANART, str(description))
-            except IndexError:
-                pass
-            try:
-                frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
-                frames = [(client.parseDOM(i, 'a', ret='href', attrs={'target': '_blank'})[0],
-                           client.parseDOM(i, 'img', ret='src')[0],
-                           client.parseDOM(i, 'strong', {'class': 'quality'})[0]) for i in frames if frames]
-                for frame, domain, quality in frames:
-                    host = domain.split('=')[-1]
-                    host = six.ensure_str(host, 'utf-8')
-                    # if 'Μεταγλωτισμένο' in info.encode('utf-8', 'ignore'):
-                    #     info = '[Μετ]'
-                    # elif 'Ελληνικοί' in info.encode('utf-8', 'ignore'):
-                    #     info = '[Υπο]'
-                    # elif 'Χωρίς' in info.encode('utf-8', 'ignore'):
-                    #     info = '[Χωρίς Υπ]'
-                    # else:
-                    #     info = '[N/A]'
-                    quality = 'SD'
-                    title = '{} | [B]{}[/B] | ({})'.format(name, host.capitalize(), quality)
-                    addDir(title, frame, 100, iconimage, FANART, str(description))
-            except BaseException:
-                pass
+
+            # try:
+            #     frame = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'metaframe rptss'})[0]
+            # except IndexError:
+            #     get_vid = 'http://gamatotv.info/wp-json/dooplayer/v1/post/{}?type=movie&source=1'
+            #     id = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-1'})[0]
+            #     frame = client.request(get_vid.format(id))
+            #     frame = json.loads(frame)['embed_url']
+            #     if 'coverapi' in frame:
+            #         html = requests.get(frame).text
+            #         post_url = 'https://coverapi.store/engine/ajax/controller.php'
+            #         postdata = re.findall(r'''data: \{mod: 'players', news_id: '(\d+)'\},''', html, re.DOTALL)[0]
+            #         # xbmc.log('POSR-DATA: {}'.format(str(postdata)))
+            #         postdata = {'mod': 'players',
+            #                     'news_id': postdata}
+            #         hdrs = {'Origin': 'https://coverapi.store',
+            #                 'Referer': frame,
+            #                 'User-Agent': client.agent()}
+            #         post_html = requests.post(post_url, data=postdata, headers=hdrs).text.replace('\\', '')
+            #         # xbmc.log('POSR-HTML: {}'.format(str(post_html)))
+            #         frame = re.findall(r'''file:\s*['"](http.+?)['"]''', post_html, re.DOTALL)[0]
+            #         title = '{} | [B]{}[/B]'.format(name, 'Gamato')
+            #         addDir(title, frame, 100, iconimage, FANART, str(description))
+            #     elif '/jwplayer/?source' in frame:
+            #         frame = re.findall(r'''/jwplayer/\?source=(.+?)&id=''', frame, re.DOTALL)[0]
+            #         # xbmc.log('FRAME-JWPLAYER: {}'.format(str(frame)))
+            #         # frame = unquote_plus(frame)
+            #         title = '{} | [B]{}[/B]'.format(name, 'Gamato')
+            #         addDir(title, frame, 100, iconimage, FANART, str(description))
+            #     else:
+            #         host = GetDomain(frame)
+            #         title = '{} | [B]{}[/B]'.format(name, host.capitalize())
+            #         addDir(title, frame, 100, iconimage, FANART, str(description))
+
+                    # try:
+            frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
+            frames = [(client.parseDOM(i, 'a', ret='href', attrs={'target': '_blank'})[0],
+                       client.parseDOM(i, 'img', ret='src')[0],
+                       client.parseDOM(i, 'strong', {'class': 'quality'})[0]) for i in frames if frames]
+            for frame, domain, quality in frames:
+                host = domain.split('=')[-1]
+                host = six.ensure_str(host, 'utf-8')
+                # if 'Μεταγλωτισμένο' in info.encode('utf-8', 'ignore'):
+                #     info = '[Μετ]'
+                # elif 'Ελληνικοί' in info.encode('utf-8', 'ignore'):
+                #     info = '[Υπο]'
+                # elif 'Χωρίς' in info.encode('utf-8', 'ignore'):
+                #     info = '[Χωρίς Υπ]'
+                # else:
+                #     info = '[N/A]'
+                quality = 'SD'
+                title = '{} | [B]{}[/B] | ({})'.format(name, host.capitalize(), quality)
+                addDir(title, frame, 100, iconimage, FANART, str(description))
+                    # except BaseException:
+                    #     pass
+
+
         else:
             data = client.parseDOM(data, 'table', attrs={'class': 'easySpoilerTable'})
             seasons = [dom.parse_dom(i, 'a', {'target': '_blank'}, req='href') for i in str(data)[:-1] if i]
