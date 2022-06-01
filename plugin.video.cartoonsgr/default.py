@@ -26,7 +26,7 @@ from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
 
 BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
-GAMATO = control.setting('gamato.domain') or 'https://gamatotv.info/'  # 'https://gamatokid.com/'
+GAMATO = control.setting('gamato.domain') or 'http://gamatomovies.org/'  # 'https://gamatokid.com/'
 Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 ADDON = xbmcaddon.Addon()
@@ -738,21 +738,23 @@ def gamato_links(url, name, poster):  # 12
 def get_links(name, url, iconimage, description):
     hdrs = {'Referer': GAMATO,
             'User-Agent': client.agent()}
-    data = requests.get(url, headers=hdrs).text
-
-    if 'player-option-trailer' in data:
-        # try:
-        #     flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
-        # except IndexError:
-        yid = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-trailer'})[0]
-        post_data = {'action': 'doo_player_ajax',
-                     'post': yid,
-                     'nume': 'trailer',
-                     'type': 'movie'}
-        post_data = urlencode(post_data).encode('utf-8')
-        post_link = GAMATO + 'wp-admin/admin-ajax.php'
-        ylink = client.request(post_link, post=post_data, headers=hdrs)
-        flink = json.loads(ylink)['embed_url']
+    data = six.ensure_str(requests.get(url).content)
+    if '''data-nume='trailer'>''' in data:
+        try:
+            flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
+        except IndexError:
+            yid = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-trailer'})[0]
+            post_data = {'action': 'doo_player_ajax',
+                         'post': yid,
+                         'nume': 'trailer',
+                         'type': 'movie'}
+            post_data = urlencode(post_data).encode('utf-8')
+            post_link = GAMATO + 'wp-admin/admin-ajax.php'
+            ylink = client.request(post_link, post=post_data, headers=hdrs)
+            if ylink:
+                flink = json.loads(ylink)['embed_url']
+            else:
+                addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
             # except:
             #     # http://gamatotv.info/wp-json/dooplayer/v1/post/45755?type=movie&source=trailer
             #     # action=doo_player_ajax&post=69063&nume=trailer&type=movie
