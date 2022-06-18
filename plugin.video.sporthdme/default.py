@@ -26,8 +26,8 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'http://www.sporthd.live/'
-Live_url = 'http://www.sporthd.live/index.php?'
+BASEURL = 'https://1.livesoccer.sx/'
+Live_url = 'https://1.livesoccer.sx/index.php?'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
@@ -64,12 +64,13 @@ def convDateUtil(timestring, newfrmt='default', in_zone='UTC'):
 
 
 def Main_menu():
-    # addDir('[B][COLOR gold]Website changed the view\n so click NEW VIEW[/COLOR][/B]', '', '', ICON, FANART, '')
-    addDir('[B][COLOR gold]LIVE EVENTS[/COLOR][/B]', 'https://1.vecdn.pw/program.php', 15, ICON, FANART, '')
-    # addDir('[B][COLOR gold]Channels 24/7[/COLOR][/B]', 'https://1.vecdn.pw/program.php', 14, ICON, FANART, '')
-    # addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 5, ICON, FANART, '')
-    # addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
-    # addDir('[B][COLOR white]BEST LEAGUES[/COLOR][/B]', '', 2, ICON, FANART, '')
+
+    # addDir('[B][COLOR gold]Channels 24/7[/COLOR][/B]', 'https://1.livesoccer.sx/program.php', 14, ICON, FANART, '')
+    addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 5, ICON, FANART, '')
+    # addDir('[B][COLOR gold]Alternative VIEW [/COLOR][/B]', '', '', ICON, FANART, '')
+    addDir('[B][COLOR gold]Alternative LIVE EVENTS[/COLOR][/B]', 'https://em.bedsport.live/program.php', 15, ICON, FANART, '')
+    addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
+    addDir('[B][COLOR white]BEST LEAGUES[/COLOR][/B]', '', 2, ICON, FANART, '')
     addDir('[B][COLOR gold]Settings[/COLOR][/B]', '', 10, ICON, FANART, '')
     addDir('[B][COLOR gold]Version: [COLOR lime]%s[/COLOR][/B]' % vers, '', 'BUG', ICON, FANART, '')
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
@@ -161,16 +162,18 @@ def sports_menu():
 
 def get_events(url):  # 5
     data = client.request(url)
-    # xbmc.log('@#@EDATAAA: {}'.format(data), xbmc.LOGNOTICE)
+    # xbmc.log('@#@EDATAAA: {}'.format(data))
     events = list(zip(client.parseDOM(str(data), 'li', attrs={'class': "item itemhov"}),
-                      re.findall(r'<i class="material-icons">(.+?)</a> </li>', str(data), re.DOTALL)))
+                      client.parseDOM(str(data), 'li', attrs={'class': "bahamas"})))
+                      # re.findall(r'class="bahamas">(.+?)</span> </div> </li>', str(data), re.DOTALL)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
     for event, streams in events:
-        # xbmc.log('@#@EVENTTTTT:%s' % event, xbmc.LOGNOTICE)
+        # xbmc.log('@#@EVENTTTTT:%s' % event)
+        # xbmc.log('@#@STREAMS:%s' % streams)
         watch = '[COLORlime]*[/COLOR]' if '>Live<' in event else '[COLORred]*[/COLOR]'
         try:
             teams = client.parseDOM(event, 'td')
-            # xbmc.log('@#@TEAMSSSS:%s' % str(teams), xbmc.LOGNOTICE)
+            # xbmc.log('@#@TEAMSSSS:%s' % str(teams))
             home, away = re.sub(r'\s*(<img.+?>)\s*', '', teams[0]), re.sub(r'\s*(<img.+?>)\s*', '', teams[2])
             if six.PY2:
                 home = home.strip().encode('utf-8')
@@ -181,13 +184,13 @@ def get_events(url):  # 5
             teams = re.sub(r'<.+?>|\s{2}', '', teams)
             teams = teams.encode('utf-8') if six.PY2 else teams
             teams = '[B]{}[/B]'.format(teams)
-        # xbmc.log('@#@TEAM-FINAL:%s' % str(teams), xbmc.LOGNOTICE)
+        # xbmc.log('@#@TEAM-FINAL:%s' % str(teams))
         lname = client.parseDOM(event, 'a')[1]
         lname = re.sub(r'<.+?>', '', lname)
         time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
         time = time.split('GMT')[0].strip()
         cov_time = convDateUtil(time, 'default', 'GMT{}'.format(str(control.setting('timezone'))))
-        # xbmc.log('@#@COVTIMEEE:%s' % str(cov_time), xbmc.LOGNOTICE)
+        # xbmc.log('@#@COVTIMEEE:%s' % str(cov_time))
         ftime = '[COLORgold][I]{}[/COLOR][/I]'.format(cov_time)
         name = '{0}{1} {2} - [I]{3}[/I]'.format(watch, ftime, teams, lname)
 
@@ -287,7 +290,7 @@ def get_stream(url):  # 4
                 return
             elif ret > -1:
                 host = streams[ret]
-                # xbmc.log('@#@STREAMMMMM:%s' % host, xbmc.LOGNOTICE)
+                # xbmc.log('@#@STREAMMMMM:%s' % host)
                 return resolve(host, name)
             else:
                 return False
@@ -330,7 +333,7 @@ def resolve(url, name):
         if 'script>eval' in r:
             unpack = re.findall(r'''<script>(eval.+?\{\}\)\))''', r, re.DOTALL)[0]
             r = jsunpack.unpack(unpack.strip())
-            # xbmc.log('RESOLVE-UNPACK: %s' % str(r), xbmc.LOGNOTICE)
+            # xbmc.log('RESOLVE-UNPACK: %s' % str(r))
         else:
             r = r
         # xbmc.log("[{}] - HTML: {}".format(ADDON.getAddonInfo('id'), str(r)))
@@ -366,10 +369,10 @@ def resolve(url, name):
                 fid = flink.split('/')[-1]
             except IndexError:
                 fid = re.findall(r'''/watch\?v=(.+?)['"]''', r, re.DOTALL)[0]
-            # xbmc.log('@#@STREAMMMMM111: %s' % fid, xbmc.LOGNOTICE)
+            # xbmc.log('@#@STREAMMMMM111: %s' % fid)
 
             flink = 'plugin://plugin.video.youtube/play/?video_id={}'.format(str(fid))
-            # xbmc.log('@#@STREAMMMMM111: %s' % flink, xbmc.LOGNOTICE)
+            # xbmc.log('@#@STREAMMMMM111: %s' % flink)
 
         else:
             if '<script>eval' in rr and not '.m3u8?':
@@ -381,7 +384,7 @@ def resolve(url, name):
             #     xbmc.log("[{}] - Error unpacking".format(ADDON.getAddonInfo('id')))
             if 'player.src({src:' in rr:
                 flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', rr, re.DOTALL)[0]
-                # xbmc.log('@#@STREAMMMMM: %s' % flink, xbmc.LOGNOTICE)
+                # xbmc.log('@#@STREAMMMMM: %s' % flink)
             elif 'hlsjsConfig' in rr:
                 flink = re.findall(r'''src=\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
             elif 'new Clappr' in rr:
