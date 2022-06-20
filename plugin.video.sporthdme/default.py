@@ -28,6 +28,7 @@ ART = ADDON_PATH + "/resources/icons/"
 
 BASEURL = 'https://1.livesoccer.sx/'
 Live_url = 'https://1.livesoccer.sx/index.php?'
+Alt_url = 'https://l1l1.to/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
@@ -68,7 +69,7 @@ def Main_menu():
     # addDir('[B][COLOR gold]Channels 24/7[/COLOR][/B]', 'https://1.livesoccer.sx/program.php', 14, ICON, FANART, '')
     addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 5, ICON, FANART, '')
     # addDir('[B][COLOR gold]Alternative VIEW [/COLOR][/B]', '', '', ICON, FANART, '')
-    addDir('[B][COLOR gold]Alternative LIVE EVENTS[/COLOR][/B]', 'https://em.bedsport.live/program.php', 15, ICON, FANART, '')
+    addDir('[B][COLOR gold]Alternative LIVE EVENTS[/COLOR][/B]', Alt_url, 15, ICON, FANART, '')
     addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
     addDir('[B][COLOR white]BEST LEAGUES[/COLOR][/B]', '', 2, ICON, FANART, '')
     addDir('[B][COLOR gold]Settings[/COLOR][/B]', '', 10, ICON, FANART, '')
@@ -226,7 +227,7 @@ xbmcplugin.setContent(int(sys.argv[1]), 'videos')
 
 
 def get_new_events(url):  # 15
-    data = client.request(url)
+    data = six.ensure_text(client.request(url, headers=headers))
     # xbmc.log('@#@EDATAAA: {}'.format(data))
     data = six.ensure_text(data, encoding='utf-8', errors='ignore')
     days = list(zip(client.parseDOM(data, 'button', attrs={'class': 'accordion'}),
