@@ -315,6 +315,7 @@ def busy():
 
 
 def resolve(url, name):
+    ragnaru = ['liveon.sx/embed', '//em.bedsport', 'cdnz.one/ch', 'cdn1.link/ch', 'cdn2.link/ch']
     xbmc.log('RESOLVE-URL: %s' % url)
     ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
     # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
@@ -430,7 +431,7 @@ def resolve(url, name):
                     rr = rr
                 if 'player.src({src:' in rr:
                     flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', rr, re.DOTALL)[0]
-                    xbmc.log('@#@STREAMMMMM: %s' % flink)
+                    # xbmc.log('@#@STREAMMMMM: %s' % flink)
                 elif 'hlsjsConfig' in rr:
                     flink = re.findall(r'''src=\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
                 elif 'new Clappr' in rr:
@@ -465,7 +466,7 @@ def resolve(url, name):
             # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
             stream_url += '|Referer=https://vikistream.com/&User-Agent={}'.format(quote(ua))
 
-    elif '//em.bedsport' in url or 'cdnz.one/ch' in url or 'cdn1.link/ch' in url or 'cdn2.link/ch' in url:
+    elif any(i in url for i in ragnaru):
         # xbmc.log('@#@STREAMMMMM111: %s' % url)
         referer = 'https://1.vecdn.pw/'
         r = six.ensure_str(client.request(url, referer=referer))
