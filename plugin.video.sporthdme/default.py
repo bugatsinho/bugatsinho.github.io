@@ -407,7 +407,7 @@ def resolve(url, name):
         # xbmc.log('@#@STREAMMMMM111: %s' % flink)
         stream_url = flink
 
-    elif '1l1l.to/ch' in url or 'l1l1.to/ch' in url:#https://l1l1.to/ch18
+    elif '1l1l.to/' in url or 'l1l1.to/' in url:#https://l1l1.to/ch18
         '//cdn122.com/embed/2k2kr220ol6yr6i&scrolling=no&frameborder=0&allowfullscreen=true'
         if 'l1l1.' in url:
             referer = 'https://l1l1.to/'
