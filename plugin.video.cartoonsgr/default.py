@@ -26,7 +26,7 @@ from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
 
 BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
-GAMATO = control.setting('gamato.domain') or 'http://gamatomovies.org/'  # 'https://gamatokid.com/'
+GAMATO = control.setting('gamato.domain') or 'https://gamatotv.site/'  # 'https://gamatokid.com/'
 Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 ADDON = xbmcaddon.Addon()
@@ -742,6 +742,10 @@ def get_links(name, url, iconimage, description):
     if '''data-nume='trailer'>''' in data:
         try:
             flink = client.parseDOM(data, 'iframe', ret='src', attrs={'class': 'rptss'})[0]
+            if 'youtu' in flink:
+                addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
+            else:
+                addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
         except IndexError:
             yid = client.parseDOM(data, 'li', ret='data-post', attrs={'id': 'player-option-trailer'})[0]
             post_data = {'action': 'doo_player_ajax',
@@ -753,6 +757,7 @@ def get_links(name, url, iconimage, description):
             ylink = client.request(post_link, post=post_data, headers=hdrs)
             if ylink:
                 flink = json.loads(ylink)['embed_url']
+                addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
             else:
                 addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
             # except:
@@ -764,11 +769,6 @@ def get_links(name, url, iconimage, description):
             #     flink = ylink.format(yid)
             #     flink = client.request(flink)
             #     flink = json.loads(flink)['embed_url']
-
-        if 'youtu' in flink:
-            addDir('[B][COLOR lime]Trailer[/COLOR][/B]', flink, 100, iconimage, FANART, '')
-        else:
-            addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
 
     else:
         addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
@@ -812,7 +812,7 @@ def get_links(name, url, iconimage, description):
                     # try:
             frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
             frames = [(client.parseDOM(i, 'a', ret='href', attrs={'target': '_blank'})[0],
-                       client.parseDOM(i, 'img', ret='src')[0],
+                       client.parseDOM(i, 'img', ret='data-lazy-src')[0],
                        client.parseDOM(i, 'strong', {'class': 'quality'})[0]) for i in frames if frames]
             for frame, domain, quality in frames:
                 host = domain.split('=')[-1]
@@ -903,11 +903,17 @@ def resolve(name, url, iconimage, description, return_url=False):
             host = requests.get(host, allow_redirects=False).headers['Location']
     else:
         host = host
+    xbmc.log("HOST-URL: {}".format(host))
 
-    # try resolveurl first:
+    # try resolveurl first:  #https://gamatotv.site/embed/ooops/
     stream_url = evaluate(host)
     if not stream_url:
-        if host.split('|')[0].endswith('.mp4') and 'clou' in host:
+        if 'gamato' in host:
+            html = requests.get(host).text
+            host = client.parseDOM(html, 'source', ret='src')[0]
+        else:
+            pass
+        if host.split('|')[0].endswith('.mp4?id=0') and 'clou' in host:
             stream_url = host + '|User-Agent=%s&Referer=%s' % (quote_plus(client.agent(), ':/'), GAMATO)
             name = name
         elif host.endswith('.mp4') and 'vidce.net' in host:
