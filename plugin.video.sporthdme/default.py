@@ -230,6 +230,7 @@ def get_new_events(url):  # 15
     data = six.ensure_text(client.request(url, headers=headers))
     # xbmc.log('@#@EDATAAA: {}'.format(data))
     data = six.ensure_text(data, encoding='utf-8', errors='ignore')
+    data = re.sub('\t', '', data)
     days = list(zip(client.parseDOM(data, 'button', attrs={'class': 'accordion'}),
                     client.parseDOM(data, 'div', attrs={'class': "panel"})))
     # data = client.parseDOM(str(data), 'div', attrs={'class': "panel"})
