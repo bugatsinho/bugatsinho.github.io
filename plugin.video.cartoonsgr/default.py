@@ -812,7 +812,7 @@ def get_links(name, url, iconimage, description):
                     # try:
             frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
             frames = [(client.parseDOM(i, 'a', ret='href', attrs={'target': '_blank'})[0],
-                       client.parseDOM(i, 'img', ret='data-lazy-src')[0],
+                       client.parseDOM(i, 'img', ret='src')[0],
                        client.parseDOM(i, 'strong', {'class': 'quality'})[0]) for i in frames if frames]
             for frame, domain, quality in frames:
                 host = domain.split('=')[-1]
