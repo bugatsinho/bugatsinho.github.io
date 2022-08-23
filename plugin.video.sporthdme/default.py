@@ -163,6 +163,8 @@ def sports_menu():
 
 def get_events(url):  # 5
     data = client.request(url)
+    data = six.ensure_text(data, encoding='utf-8', errors='ignore')
+    data = re.sub('\t', '', data)
     # xbmc.log('@#@EDATAAA: {}'.format(data))
     events = list(zip(client.parseDOM(str(data), 'li', attrs={'class': "item itemhov"}),
                       client.parseDOM(str(data), 'li', attrs={'class': "bahamas"})))
@@ -180,13 +182,15 @@ def get_events(url):  # 5
                 home = home.strip().encode('utf-8')
                 away = away.strip().encode('utf-8')
             teams = '[B]{0} vs {1}[/B]'.format(home, away)
+            teams = teams.replace('\t', '')
         except IndexError:
             teams = client.parseDOM(event, 'center')[0]
             teams = re.sub(r'<.+?>|\s{2}', '', teams)
             teams = teams.encode('utf-8') if six.PY2 else teams
-            teams = '[B]{}[/B]'.format(teams)
+            teams = '[B]{}[/B]'.format(teams.replace('-->', ''))
         # xbmc.log('@#@TEAM-FINAL:%s' % str(teams))
         lname = client.parseDOM(event, 'a')[1]
+        lname = client.parseDOM(lname, 'span')[0]
         lname = re.sub(r'<.+?>', '', lname)
         time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
         time = time.split('GMT')[0].strip()
@@ -259,7 +263,7 @@ def get_new_events(url):  # 15
 
             event = event.encode('utf-8') if six.PY2 else event
             event = re.sub('<.+?>', '', event)
-            event = '[COLOR gold][B]{}[/COLOR][/B]'.format(event)
+            event = '[COLOR gold][B]{}[/COLOR][/B]'.format(event.replace('\t', ''))
 
             addDir(event, streams, 4, ICON, FANART, name)
 
