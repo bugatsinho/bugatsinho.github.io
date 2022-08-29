@@ -291,7 +291,7 @@ def get_stream(url):  # 4
 
         if len(streams) > 1:
             dialog = xbmcgui.Dialog()
-            ret = dialog.select('[COLORgold][B]Choose Stream[/B][/COLOR]', titles)
+            ret = dialog.select('[COLORgold][B]Choose Stream[/B][/COLOR]', streams)
             if ret == -1:
                 return
             elif ret > -1:
@@ -322,7 +322,8 @@ def busy():
 def resolve(url, name):
     ragnaru = ['liveon.sx/embed', '//em.bedsport', 'cdnz.one/ch', 'cdn1.link/ch', 'cdn2.link/ch']
     xbmc.log('RESOLVE-URL: %s' % url)
-    ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
+    # ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
+    ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
     # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
     if 'acestream' in url:
         url1 = "plugin://program.plexus/?url=" + url + "&mode=1&name=acestream+"
@@ -413,7 +414,7 @@ def resolve(url, name):
         stream_url = flink
 
     elif '1l1l.to/' in url or 'l1l1.to/' in url:#https://l1l1.to/ch18
-        '//cdn122.com/embed/2k2kr220ol6yr6i&scrolling=no&frameborder=0&allowfullscreen=true'
+        #'//cdn122.com/embed/2k2kr220ol6yr6i&scrolling=no&frameborder=0&allowfullscreen=true'
         if 'l1l1.' in url:
             referer = 'https://l1l1.to/'
             r = six.ensure_str(client.request(url, referer=referer))
@@ -456,40 +457,97 @@ def resolve(url, name):
         else:
             referer = 'https://l1l1.to/'
             r = six.ensure_str(client.request(url))
-            vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0]
-            host = 'https://vikistream.com/embed2.php?player=desktop&live={}'.format(str(vid))
-            # xbmc.log('@#@l1l1HOST: %s' % host)
-            data = six.ensure_str(client.request(host, referer=referer))
-            # xbmc.log('@#@SDATA: %s' % data)
-            try:
-                link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
-            except IndexError:
-                link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
+            xbmc.log('@#@ΡDATA: %s' % r)
+            if 'video.netwrk.ru' in r:
+                frame = client.parseDOM(r, 'div', attrs={'class': 'player'})[0]
+                frame = client.parseDOM(frame, 'iframe', ret='src')[0]
+                data = six.ensure_str(client.request(frame, referer=referer))
+                xbmc.log('@#@SDATA: %s' % data)
+                #hls:  "https://ad2017.vhls.ru.com/lb/nuevo40/index.m3u8",
+                link = re.findall(r'''hls:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
+                # ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
+                stream_url = link + '|Referer=https://video.netwrk.ru.com/&User-Agent=iPad'.format(referer, ua)
+            else:
+                vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0]
+                host = 'https://vikistream.com/embed2.php?player=desktop&live={}'.format(str(vid))
+                # xbmc.log('@#@l1l1HOST: %s' % host)
+                data = six.ensure_str(client.request(host, referer=referer))
+                xbmc.log('@#@SDATA: %s' % data)
+                try:
+                    link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
+                except IndexError:
+                    link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
 
-            # xbmc.log('@#@STREAMMMMM111: %s' % link)
-            stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
-            # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
-            stream_url += '|Referer=https://vikistream.com/&User-Agent={}'.format(quote(ua))
+                # xbmc.log('@#@STREAMMMMM111: %s' % link)
+                stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
+                # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
+                stream_url += '|Referer=https://vikistream.com/&User-Agent={}'.format(quote(ua))
 
     elif any(i in url for i in ragnaru):
+        headers = {'User-Agent': 'iPad'}
         # xbmc.log('@#@STREAMMMMM111: %s' % url)
-        referer = 'https://1.vecdn.pw/'
-        r = six.ensure_str(client.request(url, referer=referer))
-        # xbmc.log('@#@RRRDATA: %s' % r)
-        vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0] #<script>fid='do4';
-        #ragnaru.net/embed.php?player='+embedded+'&live='+fid+'" '+PlaySize+' width='+v_width+' height='+v_height+'
-        host = 'https://ragnaru.net/jwembed.php?player=desktop&live={}'.format(str(vid))
-        data = six.ensure_str(client.request(host, referer=referer))
-        # xbmc.log('@#@SDATA: %s' % data)
-        try:
-            link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
-        except IndexError:
-            link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
+        referer = 'https://liveon.sx/' if 'liveon' in url else url
+        r = six.ensure_str(client.request(url, headers=headers, referer=referer))
+        stream = client.parseDOM(r, 'iframe', ret='src')[-1]
+        stream = 'https:' + stream if stream.startswith('//') else stream
+        # xbmc.log('@#@STREAMMMMM111111: %s' % stream)
+        rr = six.ensure_str(client.request(stream, headers=headers, referer=referer))
+        # xbmc.log('@#@RRRDATA: %s' % rr)
+        from resources.modules import jsunpack
+        if '<script>eval' in rr:
+            rr = six.ensure_text(rr, encoding='utf-8').replace('\t', '')
+            # unpack = re.findall(r'''<script>(eval.+?\{\}\))\)''', rr, re.DOTALL)[0].strip()
+            unpack = client.parseDOM(rr, 'script')
+            unpack = [i for i in unpack if 'eval' in i][0]
+            # xbmc.log("[{}] - STREAM-UNPACK: {}".format(ADDON.getAddonInfo('id'), str(unpack)))
+            rr = jsunpack.unpack(str(unpack))
+            # xbmc.log("STREAM-UNPACK: {}".format(str(rr)))
+            if jsunpack.detect(rr) and not '.m3u8?':
+                unpack = re.findall(r'''<script>(eval.+?\{\}\))\)''', rr, re.DOTALL)[0].strip()
+                rr = jsunpack.unpack(str(unpack) + ')')
+                # xbmc.log("STREAM-UNPACK22: {}".format(str(rr)))
+            # elif 'eval(function' in rr:
+            #     xbmc.log("MALAKASSSS")
+            #     rr = jsunpack.unpack(str(rr))
+            #     xbmc.log("STREAM-UNPACK222: {}".format(str(unpack)))
+            else:
+                rr = rr
+            if 'player.src({src:' in rr:
+                flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', rr, re.DOTALL)[0]
+                # xbmc.log('@#@STREAMMMMM: %s' % flink)
+            elif 'hlsjsConfig' in rr:
+                flink = re.findall(r'''src=\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
+            elif 'new Clappr' in rr:
+                flink = re.findall(r'''source\s*:\s*["'](.+?)['"]\,''', str(rr), re.DOTALL)[0]
+            elif 'player.setSrc' in rr:
+                flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', rr, re.DOTALL)[0]
+            else:
+                try:
+                    flink = re.findall(r'''source:\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
+                except IndexError:
+                    ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', rr, re.DOTALL)[0]
+                    ea = six.ensure_text(client.request(ea)).split('=')[1]
+                    flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
+                    flink = flink.replace('" + ea + "', ea)
+            flink += '|Referer={}'.format(quote(stream))
+            stream_url = flink
 
-        # xbmc.log('@#@STREAMMMMM111: %s' % link)
-        stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
-        # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
-        stream_url += '|Referer=https://ragnaru.net/&User-Agent={}'.format(quote(ua))
+        # r = six.ensure_str(client.request(url, referer=referer))
+        # xbmc.log('@#@RRRDATA: %s' % r)
+        # vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0] #<script>fid='do4';
+        # #ragnaru.net/embed.php?player='+embedded+'&live='+fid+'" '+PlaySize+' width='+v_width+' height='+v_height+'
+        # host = 'https://ragnaru.net/jwembed.php?player=desktop&live={}'.format(str(vid))
+        # data = six.ensure_str(client.request(host, referer=referer))
+        # # xbmc.log('@#@SDATA: %s' % data)
+        # try:
+        #     link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
+        # except IndexError:
+        #     link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
+        #
+        # # xbmc.log('@#@STREAMMMMM111: %s' % link)
+        # stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
+        # # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
+        # stream_url += '|Referer=https://ragnaru.net/&User-Agent={}'.format(quote(ua))
     elif '//bedsport' in url:
         r = six.ensure_str(client.request(url))
         frame = client.parseDOM(r, 'iframe', ret='src')[0]

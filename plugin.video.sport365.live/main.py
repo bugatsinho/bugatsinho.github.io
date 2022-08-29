@@ -413,7 +413,7 @@ if mode is None:
 
     addDir('News - Updates', ex_link='', mode='open_news', iconImage=ICON, fanart=FANART)
     addDir('Sport365 LIVE', ex_link='',
-           params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'http://www.sport365.live/'}, mode='site2',
+           params={'_service': 'sport365', '_act': 'ListChannels', '_url': 'https://sport365.world/'}, mode='site2',
            iconImage=ICON, fanart=FANART)
 
     addDir('[COLORcyan]Alternative Domains[/COLOR]', ex_link='', mode='showalts',
