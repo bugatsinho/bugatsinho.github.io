@@ -286,12 +286,13 @@ def get_stream(url):  # 4
         for link, title in links:
             # if not 'vecdn' in link:
             if not 'https://bedsport' in link and not 'vecdn' in link:
+                title += ' | {}'.format(link)
                 streams.append(link)
                 titles.append(title)
 
         if len(streams) > 1:
             dialog = xbmcgui.Dialog()
-            ret = dialog.select('[COLORgold][B]Choose Stream[/B][/COLOR]', streams)
+            ret = dialog.select('[COLORgold][B]Choose Stream[/B][/COLOR]', titles)
             if ret == -1:
                 return
             elif ret > -1:
