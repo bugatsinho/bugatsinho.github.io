@@ -271,9 +271,9 @@ def get_new_events(url):  # 15
 xbmcplugin.setContent(int(sys.argv[1]), 'videos')
 
 def get_stream(url):  # 4
-    data = base64.b64decode(unquote(url))
-    # xbmc.log('@#@DATAAAA:%s' % data, xbmc.LOGINFO)
-    if b'info_outline' in data:
+    data = six.ensure_str(base64.b64decode(unquote(url))).strip('\n')
+    # xbmc.log('@#@DATAAAA: {}'.format(data))
+    if 'info_outline' in data:
         control.infoDialog("[COLOR gold]No Links available ATM.\n [COLOR lime]Try Again Later![/COLOR]", NAME,
                            iconimage, 5000)
         return
@@ -287,7 +287,7 @@ def get_stream(url):  # 4
             # if not 'vecdn' in link:
             if not 'https://bedsport' in link and not 'vecdn' in link:
                 title += ' | {}'.format(link)
-                streams.append(link)
+                streams.append(link.rstrip())
                 titles.append(title)
 
         if len(streams) > 1:
