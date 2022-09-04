@@ -166,8 +166,8 @@ def get_events(url):  # 5
     data = six.ensure_text(data, encoding='utf-8', errors='ignore')
     data = re.sub('\t', '', data)
     # xbmc.log('@#@EDATAAA: {}'.format(data))
-    events = list(zip(client.parseDOM(str(data), 'li', attrs={'class': "item itemhov"}),
-                      client.parseDOM(str(data), 'li', attrs={'class': "bahamas"})))
+    events = list(zip(client.parseDOM(data, 'li', attrs={'class': "item itemhov"}),
+                      client.parseDOM(data, 'li', attrs={'class': "bahamas"})))
                       # re.findall(r'class="bahamas">(.+?)</span> </div> </li>', str(data), re.DOTALL)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
     for event, streams in events:
@@ -196,8 +196,8 @@ def get_events(url):  # 5
         time = time.split('GMT')[0].strip()
         cov_time = convDateUtil(time, 'default', 'GMT{}'.format(str(control.setting('timezone'))))
         # xbmc.log('@#@COVTIMEEE:%s' % str(cov_time))
-        ftime = '[COLORgold][I]{}[/COLOR][/I]'.format(cov_time)
-        name = '{0}{1} {2} - [I]{3}[/I]'.format(watch, ftime, teams, lname)
+        ftime = '[COLORcyan]{}[/COLOR]'.format(cov_time)
+        name = '{0}{1} [COLORgold]{2}[/COLOR] - [I]{3}[/I]'.format(watch, ftime, teams, lname)
 
         # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
         streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
