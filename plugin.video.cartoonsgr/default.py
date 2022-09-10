@@ -232,6 +232,8 @@ def Get_content(url):  # 5
         try:
             url = client.parseDOM(post, 'a', ret='href')[0]
             icon = client.parseDOM(post, 'img', ret='src')[0]
+            if icon.startswith('data:'):
+                icon = client.parseDOM(post, 'img', ret='data-lazy-src')[0]
             name = client.parseDOM(post, 'span', attrs={'class': 'tt'})[0]
             name = re.sub(r'\d{4}', '', name)
             desc = client.parseDOM(post, 'span', attrs={'class': 'ttx'})[0]
@@ -626,6 +628,8 @@ def gamato_kids(url):  # 4
         link = client.parseDOM(post, 'a', ret='href')[0]
         link = clear_Title(link)
         poster = client.parseDOM(post, 'img', ret='src')[0]
+        if poster.startswith('data:'):
+            poster = client.parseDOM(post, 'img', ret='data-lazy-src')[0]
         poster = clear_Title(poster)
 
         addDir('[B][COLOR white]{0} [{1}][/COLOR][/B]'.format(title, year), link, 12, poster, FANART, desc)
@@ -812,11 +816,11 @@ def get_links(name, url, iconimage, description):
                     # try:
             frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
             frames = [(client.parseDOM(i, 'a', ret='href', attrs={'target': '_blank'})[0],
-                       client.parseDOM(i, 'img', ret='src')[0],
+                       re.findall(r'''favicons\?domain=(.+?)['"]>''', i, re.DOTALL)[0],
                        client.parseDOM(i, 'strong', {'class': 'quality'})[0]) for i in frames if frames]
             for frame, domain, quality in frames:
-                host = domain.split('=')[-1]
-                host = six.ensure_str(host, 'utf-8')
+                # host = domain.split('=')[-1]
+                host = six.ensure_str(domain, 'utf-8')
                 # if 'Μεταγλωτισμένο' in info.encode('utf-8', 'ignore'):
                 #     info = '[Μετ]'
                 # elif 'Ελληνικοί' in info.encode('utf-8', 'ignore'):
