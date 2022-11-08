@@ -39,7 +39,7 @@
 		</extension>
 	</addon>
 
-	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.34" provider-name="Bugatsinho">
+	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.35" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.addon" version="16.1.000"/>
 		<import addon="script.module.six" />

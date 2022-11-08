@@ -26,7 +26,7 @@ from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
 
 BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
-GAMATO = control.setting('gamato.domain') or 'https://gamatotv.site/'  # 'https://gamatokid.com/'
+GAMATO = control.setting('gamato.domain') or 'http://gamatomovies.co/'  # 'https://gamatokid.com/'
 Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 ADDON = xbmcaddon.Addon()
@@ -56,7 +56,7 @@ def Main_addDir():
     # addDir('[B][COLOR yellow]' + Lang(32003) + '[/COLOR][/B]', BASEURL+'quality/ellinikoi-ypotitloi/',
     #        5, ART + 'sub.jpg', FANART, '')
 
-    addDir('[B][COLOR yellow]Tenies-Online[/COLOR][/B]', '', 30, ART + 'dub.jpg', FANART, '')
+    # addDir('[B][COLOR yellow]Tenies-Online[/COLOR][/B]', '', 30, ART + 'dub.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32000) + '[/COLOR][/B]', '', 13, ART + 'movies.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32001) + '[/COLOR][/B]', '', 14, ART + 'tvshows.jpg', FANART, '')
     downloads = True if control.setting('downloads') == 'true' and (
@@ -816,9 +816,8 @@ def get_links(name, url, iconimage, description):
                     # try:
             frames = client.parseDOM(data, 'tr', {'id': r'link-\d+'})
             frames = [(client.parseDOM(i, 'a', ret='href', attrs={'target': '_blank'})[0],
-                       re.findall(r'''favicons\?domain=(.+?)['"]>''', i, re.DOTALL)[0],
-                       client.parseDOM(i, 'strong', {'class': 'quality'})[0]) for i in frames if frames]
-            for frame, domain, quality in frames:
+                       re.findall(r'''favicons\?domain=(.+?)['"]>''', i, re.DOTALL)[0]) for i in frames if frames]
+            for frame, domain in frames:
                 # host = domain.split('=')[-1]
                 host = six.ensure_str(domain, 'utf-8')
                 # if 'Μεταγλωτισμένο' in info.encode('utf-8', 'ignore'):
@@ -907,18 +906,17 @@ def resolve(name, url, iconimage, description, return_url=False):
             host = requests.get(host, allow_redirects=False).headers['Location']
     else:
         host = host
-    xbmc.log("HOST-URL: {}".format(host))
 
-    # try resolveurl first:  #https://gamatotv.site/embed/ooops/
+    # try resolveurl first:  #https://gamatotv.site/embed/ooops/ http://gmtv1.com/embed/pinocchio2022/
     stream_url = evaluate(host)
     if not stream_url:
-        if 'gamato' in host:
+        if 'gamato' in host or 'gmtv1' in host:
             html = requests.get(host).text
             host = client.parseDOM(html, 'source', ret='src')[0]
         else:
             pass
-        if host.split('|')[0].endswith('.mp4?id=0') and 'clou' in host:
-            stream_url = host + '|User-Agent=%s&Referer=%s' % (quote_plus(client.agent(), ':/'), GAMATO)
+        if host.split('|')[0].endswith('.mp4?id=0') and 'clou' in host or 'gmtdb1' in host:
+            stream_url = host + '||User-Agent=iPad&Referer={}'.format(GAMATO)
             name = name
         elif host.endswith('.mp4') and 'vidce.net' in host:
             stream_url = host + '|User-Agent={}'.format(quote_plus(client.agent()))
