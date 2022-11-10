@@ -12,7 +12,7 @@ from resources.lib.modules import control
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-BASEURL = 'https://ww2.pelisplushd.nu'
+BASEURL = 'https://pelisplushd.nz/'
 
 ADDON       = xbmcaddon.Addon()
 ADDON_DATA  = ADDON.getAddonInfo('profile')
