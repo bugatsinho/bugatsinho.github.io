@@ -1,3 +1,8 @@
+[B]v1.0.36[/B] 30/11/2022
+  - fix gamato domain
+  - Add Christmas movies from gamato website
+
+
 [B]v1.0.26[/B] 17/11/2021
   - Kodi 19.x compatibility
   - fix gamato link regex

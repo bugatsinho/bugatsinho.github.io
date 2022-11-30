@@ -162,3 +162,7 @@ msgstr ""
 msgctxt "#32043"
 msgid "Set up your download folders in order to enable them"
 msgstr "Σετάρετε φάκελο λήψεων για ταινίες ΚΑΙ σειρές για να λειτουργήσει!!"
+
+msgctxt "#32044"
+msgid "Christmas"
+msgstr "Χριστουγεννιάτικες"
