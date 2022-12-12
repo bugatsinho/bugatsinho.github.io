@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import json
-
 import requests
 import os
 import re
@@ -10,6 +9,8 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 import six
+import xbmcvfs
+import time
 from six.moves.urllib_parse import urlparse, urlencode, urljoin, unquote, unquote_plus, quote, quote_plus, parse_qsl
 
 try:
@@ -25,9 +26,6 @@ from resources.lib.modules import views
 from resources.lib.modules import domparser as dom
 from resources.lib.modules.control import addDir
 
-BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
-GAMATO = control.setting('gamato.domain') or 'https://gmtv.co/'  # 'https://gamatokid.com/'
-Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 ADDON = xbmcaddon.Addon()
 ADDON_DATA = ADDON.getAddonInfo('profile')
@@ -42,6 +40,31 @@ Lang = control.lang#ADDON.getLocalizedString
 Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
+gmtfile = ADDON_DATA + 'gamato_url.txt'
+
+
+def get_gamdomain():
+    if xbmcvfs.exists(gmtfile):
+        creation_time = xbmcvfs.Stat(gmtfile).st_mtime()
+        if not (creation_time + 18000) < time.time():  # 5 hour gmtfile life
+            with xbmcvfs.File(gmtfile, 'r') as f:
+                a = f.read()
+            return a
+
+    mainurl = 'http://gamatotv.info/'
+    resp = client.request(mainurl, redirect='True', output='geturl')
+    if 'genre' in resp:
+        resp = resp.split('genre')[0]
+    else:
+        resp = resp
+    with xbmcvfs.File(gmtfile, 'w') as f:
+        f.write(resp)
+    return resp
+
+
+BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
+GAMATO = get_gamdomain() #control.setting('gamato.domain') or 'https://gmtv.co/'  # 'https://gamatokid.com/'
+Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 
 def Main_addDir():
@@ -1084,6 +1107,7 @@ xbmc.log('{}: {}'.format('ICON', str(iconimage)))
 
 if mode is None:
     Main_addDir()
+
 
 ###############GAMATOKIDS#################
 elif mode == 3:
