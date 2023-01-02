@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.releaseBB" version="2.1.2.4" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
+<addon id="plugin.video.releaseBB" version="2.1.2.5" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.addon" version="18.0.000"/>
 	<import addon="script.module.six" />

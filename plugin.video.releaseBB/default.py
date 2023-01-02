@@ -24,7 +24,7 @@ from six.moves.urllib_parse import urlparse, parse_qsl, quote_plus, unquote_plus
 
 addon_id = 'plugin.video.releaseBB'
 plugin = xbmcaddon.Addon(id=addon_id)
-DB = os.path.join(control.translatePath("special://database"), 'cache.db')
+DB = os.path.join(control.DatabasePath, 'cache.db')
 net = Net()
 addon = Addon('plugin.video.releaseBB', sys.argv)
 

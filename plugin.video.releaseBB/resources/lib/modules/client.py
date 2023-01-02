@@ -413,13 +413,16 @@ def parseDOM(html, name='', attrs=None, ret=False):
 
 
 def replaceHTMLCodes(txt):
-    # txt = re.sub("(&#[0-9]+)([^;^0-9]+)", "\\1;\\2", txt)
-    txt = HTMLParser.HTMLParser().unescape(txt)
+    from resources.lib.modules.compat import unescape
+    txt = re.sub("(&#[0-9]+)([^;^0-9]+)", "\\1;\\2", txt)
+    txt = unescape(txt)
     txt = txt.replace("&quot;", "\"")
     txt = txt.replace("&amp;", "&")
-    txt = txt.replace("&lt;", "<")
-    txt = txt.replace("&gt;", ">")
-    txt = txt.strip()
+    txt = txt.replace("&#38;", "&")
+    txt = txt.replace("&nbsp;", " ")
+    txt = txt.replace('&#8230;', '...')
+    txt = txt.replace('&#8217;', '\'')
+    txt = txt.replace('&#8211;', '-')
     return txt
 
 

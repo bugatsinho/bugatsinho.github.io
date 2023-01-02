@@ -2,7 +2,7 @@
 <settings>
     <category label="GENERAL">
         <setting type="lsep" label="Select Domain" />
-        <setting id="domain" label="DOMAIN" type="select" values="RLSBB.CC|BBRLS.IN|PROXYBB.COM|RLSBB.TO|RLSBB.RU|RELEASEBB.NET|RLSBB.UNBLOCKIT.HOW" default="PROXYBB.COM"/>
+        <setting id="domain" label="DOMAIN" type="select" values="RLSBB.CC|BBRLS.IN|PROXYBB.COM|RLSBB.TO|RLSBB.RU|RELEASEBB.NET|RLSBB.UNBLOCKIT.NZ" default="RLSBB.CC"/>
         <setting type="lsep" label="LINKS/SIZE" />
         <setting id="test.links" label="Remove 'DEAD' Links|Show File Size" type="bool" default="false"/>
         <setting type="lsep" label="EZTV" />

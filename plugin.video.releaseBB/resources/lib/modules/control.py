@@ -82,7 +82,7 @@ exists = xbmcvfs.exists
 copy = xbmcvfs.copy
 
 join = os.path.join
-DatabasePath = xbmc.translatePath("special://userdata/Database")
+DatabasePath = translatePath("special://userdata/Database")
 settingsFile = join(dataPath, 'settings.xml')
 bookmarksFile = join(dataPath, 'bookmarks.db')
 viewsFile = join(dataPath, 'views.db')

@@ -160,7 +160,7 @@
 		</news>
 	  </extension>
 	</addon>
-	<addon id="plugin.video.releaseBB" version="2.1.2.4" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
+	<addon id="plugin.video.releaseBB" version="2.1.2.5" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
 	  <requires>
 	    <import addon="xbmc.addon" version="16.1.000"/>
 		<import addon="script.module.six" />
