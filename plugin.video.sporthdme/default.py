@@ -177,7 +177,8 @@ def get_events(url):  # 5
         try:
             teams = client.parseDOM(event, 'td')
             # xbmc.log('@#@TEAMSSSS:%s' % str(teams))
-            home, away = re.sub(r'\s*(<img.+?>)\s*', '', teams[0]), re.sub(r'\s*(<img.+?>)\s*', '', teams[2])
+            home, away = re.sub(r'\s*(<img.+?>)\s*', '', client.replaceHTMLCodes(teams[0])),\
+                re.sub(r'\s*(<img.+?>)\s*', '', client.replaceHTMLCodes(teams[2]))
             if six.PY2:
                 home = home.strip().encode('utf-8')
                 away = away.strip().encode('utf-8')
@@ -186,12 +187,14 @@ def get_events(url):  # 5
         except IndexError:
             teams = client.parseDOM(event, 'center')[0]
             teams = re.sub(r'<.+?>|\s{2}', '', teams)
+            teams = client.replaceHTMLCodes(teams)
             teams = teams.encode('utf-8') if six.PY2 else teams
             teams = '[B]{}[/B]'.format(teams.replace('-->', ''))
         # xbmc.log('@#@TEAM-FINAL:%s' % str(teams))
         lname = client.parseDOM(event, 'a')[1]
         lname = client.parseDOM(lname, 'span')[0]
         lname = re.sub(r'<.+?>', '', lname)
+        lname = client.replaceHTMLCodes(lname)
         time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
         time = time.split('GMT')[0].strip()
         cov_time = convDateUtil(time, 'default', 'GMT{}'.format(str(control.setting('timezone'))))
@@ -266,6 +269,7 @@ def get_new_events(url):  # 15
             ftime = '[COLORcyan]{}[/COLOR]'.format(cov_time)
 
             event = event.encode('utf-8') if six.PY2 else event
+            event = client.replaceHTMLCodes(event)
             event = re.sub('<.+?>', '', event)
             event = re.sub(r'(\d{2}:\d{2})', '', event)
             event = ftime + ' [COLOR gold][B]{}[/COLOR][/B]'.format(event.replace('\t', ''))
@@ -464,24 +468,38 @@ def resolve(url, name):
                 flink += '|Referer={}'.format(quote(stream))
                 stream_url = flink
         else:
-            referer = 'https://l1l1.to/'
+            referer = 'https://1l1l.to/'
             r = six.ensure_str(client.request(url))
-            xbmc.log('@#@ΡDATA: %s' % r)
+            # xbmc.log('@#@ΡDATA: %s' % r)
             if 'video.netwrk.ru' in r:
+                ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0'
                 frame = client.parseDOM(r, 'div', attrs={'class': 'player'})[0]
                 frame = client.parseDOM(frame, 'iframe', ret='src')[0]
                 data = six.ensure_str(client.request(frame, referer=referer))
-                xbmc.log('@#@SDATA: %s' % data)
+                # xbmc.log('@#@SDATA: %s' % data)
                 #hls:  "https://ad2017.vhls.ru.com/lb/nuevo40/index.m3u8",
                 link = re.findall(r'''hls:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
                 # ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
                 stream_url = link + '|Referer=https://video.netwrk.ru.com/&User-Agent=iPad'.format(referer, ua)
+            elif 'stream2watch' in r:
+                frame = client.parseDOM(r, 'div', attrs={'class': 'player'})[0]
+                frame = client.parseDOM(frame, 'iframe', ret='src')[0]
+                data = six.ensure_str(client.request(frame, referer=referer))
+                # xbmc.log('@#@STREAM2DATA: %s' % data)
+                hlsurl, pk, ea = re.findall('.*hlsUrl\s*=\s*"(.*?&\w+=)".*?var\s+\w+\s*=\s*"([^"]+).*?>\s*ea\s*=\s*"([^"]+)', data, re.DOTALL)[0]
+                link = hlsurl.replace('" + ea + "', ea) + pk
+                xbmc.log('@#@STREAM2HLSURL: %s' % link)
+                data_link = six.ensure_str(client.request(link, referer='https://stream2watch.freeucp.com'))
+                xbmc.log('@#@STREAM2data: %s' % data_link)
+                link2 = re.findall('.*(http.+?$)', data_link)[0]
+                stream_url = link2 + '|Referer=https://stream2watch.freeucp.com/&Origin=https://stream2watch.freeucp.com/&User-Agent=iPad'
+
             else:
                 vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0]
                 host = 'https://vikistream.com/embed2.php?player=desktop&live={}'.format(str(vid))
                 # xbmc.log('@#@l1l1HOST: %s' % host)
                 data = six.ensure_str(client.request(host, referer=referer))
-                xbmc.log('@#@SDATA: %s' % data)
+                # xbmc.log('@#@SDATA: %s' % data)
                 try:
                     link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
                 except IndexError:
@@ -578,13 +596,13 @@ def resolve(url, name):
     liz.setInfo(type="Video", infoLabels={"Title": name})
     liz.setProperty("IsPlayable", "true")
     liz.setPath(str(stream_url))
-    # if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 17.5:
-    #     liz.setMimeType('application/vnd.apple.mpegurl')
-    #     liz.setProperty('inputstream.adaptive.manifest_type', 'hls')
-    #     liz.setProperty('inputstream.adaptive.stream_headers', str(headers))
-    # else:
-    #     liz.setProperty('inputstreamaddon', None)
-    #     liz.setContentLookup(True)
+    if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 17.5:
+        liz.setMimeType('application/vnd.apple.mpegurl')
+        liz.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        # liz.setProperty('inputstream.adaptive.stream_headers', str(headers))
+    else:
+        liz.setProperty('inputstreamaddon', None)
+        liz.setContentLookup(True)
     xbmc.Player().play(stream_url, liz, False)
     quit()
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
