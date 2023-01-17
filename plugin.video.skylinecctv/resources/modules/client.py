@@ -360,9 +360,13 @@ def _getDOMElements(item, name, attrs):
 
 
 def replaceHTMLCodes(txt):
-
+    if six.PY3:
+        from html import unescape
+    else:
+        from HTMLParser import HTMLParser
+        unescape = HTMLParser().unescape
     txt = re.sub("(&#[0-9]+)([^;^0-9]+)", "\\1;\\2", txt)
-    txt = HTMLParser().unescape(txt)
+    txt = unescape(txt)
     txt = txt.replace("&quot;", "\"")
     txt = txt.replace("&amp;", "&")
     txt = txt.replace("&#38;", "&")

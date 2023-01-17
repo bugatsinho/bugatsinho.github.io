@@ -18,7 +18,7 @@ if xbmcvfs.exists(_settingsFile):
         set_line = '<setting id="eztv.domain" label="EZTV DOMAIN" type="select" values="{}|{}|{}|{}" default="{}"/>'
 
         try:
-            eztv_status = six.ensure_text(client.request('https://eztvstatus.com'))
+            eztv_status = six.ensure_text(client.request('https://eztvstatus.net'))
             domains = client.parseDOM(eztv_status, 'a', ret='href', attrs={'class': 'domainLink'})
             domains = [i.split('//')[1].upper() for i in domains if domains]
             fline = set_line.format(domains[0], domains[1], domains[2], domains[3], domains[0])
