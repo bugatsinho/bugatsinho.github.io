@@ -420,6 +420,7 @@ def parseDOM(html, name='', attrs=None, ret=False):
 def replaceHTMLCodes(txt):
     # txt = re.sub("(&#[0-9]+)([^;^0-9]+)", "\\1;\\2", txt)
     txt = unescape(txt)
+    txt = re.sub('<.+?>', '', txt)
     txt = txt.replace("&quot;", "\"")
     txt = txt.replace("&amp;", "&")
     txt = txt.replace("&lt;", "<")

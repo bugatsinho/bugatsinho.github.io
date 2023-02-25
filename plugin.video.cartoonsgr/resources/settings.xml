@@ -17,7 +17,7 @@
     </category>
 	<category label="DOMAINS">
         <setting type="lsep" label="32037" />
-        <setting id="gamato.domain" type="text" label="GAMATO URL" default="https://gmtv.co/" />
+        <setting id="gamato.domain" type="text" label="GAMATO URL" default="https://gamatotv.best/" />
         <setting id="tenies.domain" type="text" label="TENIES ONLINE URL" default="https://tenies-online1.gr/" />
 	</category>
 </settings>

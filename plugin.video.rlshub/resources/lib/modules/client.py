@@ -414,7 +414,12 @@ def parseDOM(html, name='', attrs=None, ret=False):
 
 def replaceHTMLCodes(txt):
     # txt = re.sub("(&#[0-9]+)([^;^0-9]+)", "\\1;\\2", txt)
-    txt = HTMLParser.HTMLParser().unescape(txt)
+    if six.PY3:
+        from html import unescape
+    else:
+        from HTMLParser import HTMLParser
+        unescape = HTMLParser().unescape
+    txt = unescape(txt)
     txt = txt.replace("&quot;", "\"")
     txt = txt.replace("&amp;", "&")
     txt = txt.replace("&lt;", "<")

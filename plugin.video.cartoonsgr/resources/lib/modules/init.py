@@ -19,9 +19,8 @@
 '''
 
 from sys import argv
-from six.moves.urllib_parse import parse_qsl
+from six.moves.urllib.parse import parse_qsl
 
 syshandle = int(argv[1])
 sysaddon = argv[0]
-params_tuple = parse_qsl(argv[2].replace('?', ''))
-params = dict(params_tuple)
+params = dict(parse_qsl(argv[2].replace('?', '')))
