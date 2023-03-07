@@ -16,7 +16,7 @@
 '''
 from __future__ import print_function
 
-import xbmc, six
+import xbmc, six, xbmcvfs
 import re, os, requests
 from resources.modules import client
 from resources.modules import control
@@ -159,7 +159,8 @@ class s4f:
                     'Origin': 'https://www.subs4series.com/'}
                 cj = {'PHPSESSID': php}
 
-                r = requests.get(url, headers=headers, cookies=cj).content
+                r = six.ensure_text(requests.get(url, headers=headers, cookies=cj).text)
+                # xbmc.sleep(5000)
                 # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 if six.PY2:
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
@@ -186,7 +187,8 @@ class s4f:
                 cj = {'PHPSESSID': php}
                 post_url = 'https://www.sf4-industry.com/getSub.php'
 
-                r = requests.get(url, headers=headers, cookies=cj).text
+                r = six.ensure_text(requests.get(url, headers=headers, cookies=cj).text)
+                # xbmc.sleep(5000)
                 if six.PY2:
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 # try:
@@ -213,7 +215,7 @@ class s4f:
             #     return control.okDialog('GreekSubs', 'Το αρχείο υποτίτλου είναι σε μορφή rar\n και δεν μπορεί να ληφθεί.\n'
             #                             'Δοκιμάστε άλλον υπότιτλο!')
 
-            with open(f, 'wb') as subFile:
+            with xbmcvfs.File(f, 'w') as subFile:
                 subFile.write(result)
 
             dirs, files = control.listDir(path)
@@ -230,7 +232,6 @@ class s4f:
                 conversion = quote_plus
 
             if f.lower().endswith('.rar'):
-                    import xbmcvfs
                     if control.kodi_version() >= 18:
                         src = 'archive' + '://' + quote_plus(f) + '/'
                         (dirs, files) = xbmcvfs.listdir(src)
@@ -280,7 +281,7 @@ class s4f:
 
                 content = control.openFile(path + filename).read()
 
-                with open(subtitle, 'w') as subFile:
+                with xbmcvfs.File(subtitle, 'w') as subFile:
                     subFile.write(content)
 
                 control.deleteFile(f)

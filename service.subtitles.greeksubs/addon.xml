@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="service.subtitles.greeksubs" name="Greek Subs" version="2.0.8" provider-name="Bugatsinho">
+<addon id="service.subtitles.greeksubs" name="Greek Subs" version="2.0.9" provider-name="Bugatsinho">
 	<requires>
 		<import addon="xbmc.addon" version="16.1.000"/>
 		<import addon="script.module.requests" version="2.8.1" />
@@ -21,8 +21,8 @@
 		<website>https://subztv.club/</website>
 		<platform>all</platform>
 		<language>el</language>
-		<news>[B]2.0.7[/B] 20/09/2021
--fix downloading issue - credits to HOST505</news>
+		<news>[B]2.0.9[/B] 07/03/2023
+-fix downloading issue for S4F subtitles</news>
 		<assets>
 	      <icon>icon.png</icon>
 	      <fanart>fanart.jpg</fanart>
