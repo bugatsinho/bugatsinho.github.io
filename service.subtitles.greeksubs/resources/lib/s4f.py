@@ -160,7 +160,7 @@ class s4f:
                 cj = {'PHPSESSID': php}
 
                 r = six.ensure_text(requests.get(url, headers=headers, cookies=cj).text)
-                # xbmc.sleep(5000)
+                xbmc.sleep(3000)
                 # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 if six.PY2:
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
@@ -188,7 +188,7 @@ class s4f:
                 post_url = 'https://www.sf4-industry.com/getSub.php'
 
                 r = six.ensure_text(requests.get(url, headers=headers, cookies=cj).text)
-                # xbmc.sleep(5000)
+                xbmc.sleep(3000)
                 if six.PY2:
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 # try:
