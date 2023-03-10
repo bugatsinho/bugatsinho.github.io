@@ -338,6 +338,10 @@ def resolve(url, name):
     # ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
     ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
     # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
+    if 'webplay' in url:
+        html = six.ensure_text(client.request(url))
+        url = client.parseDOM(html,'div', attrs={'class': 'container'})[0]
+        url = client.parseDOM(url, 'iframe', ret='src')[0]
     if 'acestream' in url:
         url1 = "plugin://program.plexus/?url=" + url + "&mode=1&name=acestream+"
         liz = xbmcgui.ListItem(name)
