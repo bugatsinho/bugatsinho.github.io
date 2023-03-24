@@ -11,6 +11,7 @@ import xbmcplugin
 import six
 import xbmcvfs
 import time
+
 from six.moves.urllib_parse import urlparse, urlencode, urljoin, unquote, unquote_plus, quote, quote_plus, parse_qsl
 
 try:
@@ -53,8 +54,11 @@ def get_gamdomain():
     mainurl = 'https://gamatostatus.com/'
     resp = six.ensure_str(requests.get(mainurl).text)
     resp = client.parseDOM(resp, 'a', ret='href')[-1]
+    # xbmc.log("GAMATOLINK: {}".format(resp))
     if 'genre' in resp:
         resp = resp.split('genre')[0]
+    elif '?' in resp:
+        resp = resp.replace('?', '')
     else:
         resp = resp
     with xbmcvfs.File(gmtfile, 'w') as f:
@@ -445,7 +449,7 @@ def Search(url):  # 26
                 dbcur.execute("INSERT INTO Search VALUES (?,?)", (url, term))
                 dbcon.commit()
                 dbcur.close()
-                Search_gamato(url)
+                gamato_kids(url)
             else:
                 return
         else:
@@ -454,7 +458,7 @@ def Search(url):  # 26
 
     else:
         if 'gamato' in url:
-            Search_gamato(url)
+            gamato_kids(url)
         else:
             from resources.lib.indexers import teniesonline
             teniesonline.search(url)
@@ -698,17 +702,13 @@ def gamato_links(url, name, poster, description):  # 12
         except IndexError:
             desc = description
 
-        # poster = client.parseDOM(html, 'img', ret='src')[0]
-        dlink = client.parseDOM(html, 'div', attrs={'class': 'entry-content'})[0]
-        link = client.parseDOM(dlink, 'a', ret='href')[-1]
-
-        link = unquote_plus(link)
-        # xbmc.log('Finally LINK: {}'.format(link))
         try:
             fanart = client.parseDOM(data, 'div', attrs={'class': 'g-item'})[0]
             fanart = client.parseDOM(fanart, 'a', ret='href')[0]
         except IndexError:
             fanart = FANART
+
+        dlink = client.parseDOM(html, 'div', attrs={'class': 'entry-content'})[0]
         try:
             trailer = client.parseDOM(dlink, 'a', ret='href')
             # xbmc.log('Trailer LINK: {}'.format(str(trailer)))
@@ -716,8 +716,15 @@ def gamato_links(url, name, poster, description):  # 12
             addDir('[B][COLOR lime]Trailer[/COLOR][/B]', trailer, 100, iconimage, fanart, str(desc))
         except IndexError:
             pass
+        # poster = client.parseDOM(html, 'img', ret='src')[0]
 
-        addDir(name, link, 100, poster, fanart, str(desc))
+        links = zip(client.parseDOM(dlink, 'a'), client.parseDOM(dlink, 'a', ret='href'))
+        links = [i[1] for i in links if 'L' in i[0]]
+
+        for link in links:
+            link = unquote_plus(link)
+            addDir(name, link, 100, poster, fanart, str(desc))
+        # xbmc.log('Finally LINK: {}'.format(link))
     except BaseException:
         return
     views.selectView('movies', 'movie-view')
@@ -893,6 +900,13 @@ def resolve(name, url, iconimage, description, return_url=False):
         html = requests.get(host).text
         host = client.parseDOM(html, 'iframe', ret='src')[0]
 
+    elif 'gmtdb' in host:
+        html = requests.get(host).text
+        try:
+            host = client.parseDOM(html, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
+        except IndexError:
+            host = client.parseDOM(html, 'iframe', ret='src')[0]
+
     else:
         host = host
 
@@ -904,7 +918,7 @@ def resolve(name, url, iconimage, description, return_url=False):
             host = client.parseDOM(html, 'source', ret='src')[0]
         else:
             pass
-        if host.split('|')[0].endswith('.mp4?id=0') and 'clou' in host or 'gmtdb1' in host:
+        if host.split('|')[0].endswith('.mp4?id=0') and 'clou' in host or 'gmtdb' in host:
             stream_url = host + '||User-Agent=iPad&Referer={}'.format(GAMATO)
             name = name
         elif host.endswith('.mp4') and 'vidce.net' in host:
@@ -1089,7 +1103,7 @@ elif mode == 18:
     if keyb.isConfirmed():
         search = quote_plus(keyb.getText())
         url = GAMATO + "?s={}".format(search)
-        Search_gamato(url)
+        gamato_kids(url)
     else:
         pass
 elif mode == 20:
