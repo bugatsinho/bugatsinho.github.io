@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import requests
+
 import xbmc
 import xbmcgui
 import xbmcaddon
@@ -638,6 +640,7 @@ def open_show(url):
         for alt in alts:
             link, title = alt.attrs['href'], alt.attrs['title']
             link = urljoin(eztv_base, link) if link.startswith('/') else link
+            title = '[COLORgold]' + title + '[/COLOR]'
             addon.add_directory({'mode': 'open_page', 'url': link, 'img': img, 'plot': 'N/A'},
                                 {'title': title}, allfun, img=img, fanart=FANART)
     except IndexError:
@@ -682,6 +685,7 @@ def open_episode_page(url):
         for alt in alts:
             link, title = alt.attrs['href'], alt.attrs['title']
             link = urljoin(eztv_base, link) if link.startswith('/') else link
+            title = '[COLORgold]' + title + '[/COLOR]'
             addon.add_directory({'mode': 'open_page', 'url': link, 'img': img, 'plot': 'N/A'},
                                 {'title': title}, allfun, img=img, fanart=FANART)
     except IndexError:
@@ -693,26 +697,29 @@ def open_episode_page(url):
 
 
 def eztv_search():
-    url = 'https://eztv.io/search/?q1={}&q2=&search=Search'
-    search_url = 'https://eztv.io/search/{}'
+    url = '{}/search/?q1={}&q2=&search=Search'
+    search_url = '{}/search/{}'
     keyboard = xbmc.Keyboard()
     keyboard.setHeading(control.lang(32002).encode('utf-8'))
     keyboard.doModal()
     if keyboard.isConfirmed():
         _query = keyboard.getText()
-        query = _query.encode('utf-8')
-        query = quote_plus(query).replace('+', '-')
+        query = six.ensure_text(_query)
+        # xbmc.log('QUERY-URL: {}'.format(query))
+        query = query.replace(' ', '-')
         # get_link = client.request(url.format(query), output='location')
-        search_url = search_url.format(query)
+        search_url = search_url.format(eztv_base, query)
         # xbmc.log('SEARCH-URL: {}'.format(search_url))
-        data = client.request(query)
+        data = six.ensure_text(client.request(search_url))
         try:
+
             alts = client.parseDOM(data, 'tr', attrs={'class': 'forum_header_border'})
-            alts = [dom.parse_dom(str(i), 'a', req=['href', 'title'])[0] for i in alts if alts]
+            alts = [dom.parse_dom(str(i), 'a', req=['href', 'title'])[1] for i in alts if alts]
             # xbmc.log('SEARCH-ALTSL: {}'.format(alts))
             for alt in alts:
                 link, title = alt.attrs['href'], alt.attrs['title']
                 link = urljoin(eztv_base, link) if link.startswith('/') else link
+                title = '[COLORgold]' + title + '[/COLOR]'
                 addon.add_directory({'mode': 'open_page', 'url': link, 'img': img, 'plot': 'N/A'},
                                     {'title': title}, allfun, img=img, fanart=FANART)
         except IndexError:

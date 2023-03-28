@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.releaseBB" version="2.1.2.5" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
+<addon id="plugin.video.releaseBB" version="2.1.3" name="Release[COLOR orange][B]BB[/B][/COLOR]" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.addon" version="18.0.000"/>
 	<import addon="script.module.six" />
@@ -26,11 +26,10 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>+ [B][COLOR lime]2.1.2[/B][/COLOR] [COLOR gold](31-03-2021)[/COLOR]
-- Kodi 19 compatibility (credits to u/lolage331 on reddit for the help)
-- fix search functio
-- fix encoding issues
-- fix infos missing</news>
+    <news>+ [B][COLOR lime]2.1.3[/B][/COLOR] [COLOR gold](28-03-2023)[/COLOR]
+- Links's page is under Cloudflare(no access)
+- fix search function for EZTV
+- fix encoding issues</news>
     <assets>
         <icon>icon.png</icon>
         <fanart>fanart.jpg</fanart>

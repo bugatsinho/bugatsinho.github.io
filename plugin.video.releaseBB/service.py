@@ -15,15 +15,17 @@ if xbmcvfs.exists(_settingsFile):
         data = file.read()
         line = re.findall(r'(<setting id="domain".+?/>)', data)[0]
         line2 = re.findall(r'(<setting id="eztv\.domain".+?/>)', data)[0]
-        set_line = '<setting id="eztv.domain" label="EZTV DOMAIN" type="select" values="{}|{}|{}|{}" default="{}"/>'
+        set_line = '<setting id="eztv.domain" label="EZTV DOMAIN" type="select" values="{}" default="{}"/>'
 
         try:
-            eztv_status = client.request('https://eztvstatus.com')
-            if six.PY3:
-                eztv_status.encode('utf-8')
+            eztv_status = six.ensure_text(client.request('https://eztvstatus.com'))
             domains = client.parseDOM(eztv_status, 'a', ret='href', attrs={'class': 'domainLink'})
-            domains = [i.split('//')[1].encode('utf-8').upper() for i in domains if domains]
-            fline = set_line.format(domains[0], domains[1], domains[2], domains[3], domains[0])
+            domains = [i.split('//')[1].upper() for i in domains if domains]
+            # xbmc.log('DOMAINS: {}'.format(str(domains)))
+            doms = ''
+            for dom in domains:
+                doms += dom + '|'
+            fline = set_line.format(doms, domains[0])
         except IndexError:
             domains = ['eztv.re', 'eztv.wf', 'eztv.tf', 'eztv.yt', 'eztv1.xyz']
             domains = [i.upper() for i in domains if domains]

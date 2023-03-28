@@ -7,7 +7,7 @@
         <setting id="test.links" label="Remove 'DEAD' Links|Show File Size" type="bool" default="false"/>
         <setting type="lsep" label="EZTV" />
         <setting id="eztv_menu" type="bool" label="Enable EZTV" default="false" />
-        <setting id="eztv.domain" label="EZTV DOMAIN" type="select" values="b'EZTV.RE'|b'EZTV1.XYZ'|b'EZTV.WF'|b'EZTV.TF'" default="b'EZTV.RE'"/>
+        <setting id="eztv.domain" label="EZTV DOMAIN" type="select" values="EZTV.RE|EZTV1.XYZ|EZTV.WF|EZTV.TF|EZTV.YT|" default="EZTV.RE"/>
     </category>
     <category label="RESOLVER">
         <setting type="lsep" label="ResolveUrl-Settings" />
