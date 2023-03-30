@@ -60,7 +60,7 @@ def get_gamdomain():
     elif '?' in resp:
         resp = resp.replace('?', '')
     else:
-        resp = resp
+        resp = re.findall(r'''^(http.+?\..+?/)''', resp)[0]
     with xbmcvfs.File(gmtfile, 'w') as f:
         f.write(resp)
     return resp
