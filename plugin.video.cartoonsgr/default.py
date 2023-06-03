@@ -900,12 +900,14 @@ def resolve(name, url, iconimage, description, return_url=False):
         html = requests.get(host).text
         host = client.parseDOM(html, 'iframe', ret='src')[0]
 
-    elif 'gmtdb' in host:
+    elif 'gmtdb' in host or 'gmtbase' in host:
         html = requests.get(host).text
         try:
             host = client.parseDOM(html, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
+        # xbmc.log('HOSTTTT: {}'.format(host))
         except IndexError:
             host = client.parseDOM(html, 'iframe', ret='src')[0]
+
 
     else:
         host = host
@@ -913,12 +915,12 @@ def resolve(name, url, iconimage, description, return_url=False):
     # try resolveurl first:  #https://gamatotv.site/embed/ooops/ http://gmtv1.com/embed/pinocchio2022/
     stream_url = evaluate(host)
     if not stream_url:
-        if 'gamato' in host or 'gmtv1' in host:
+        if 'gamato' in host: #or 'gmtv1' in host
             html = requests.get(host).text
             host = client.parseDOM(html, 'source', ret='src')[0]
         else:
             pass
-        if host.split('|')[0].endswith('.mp4?id=0') and 'clou' in host or 'gmtdb' in host:
+        if host.split('|')[0].endswith('.mp4?id=0') and 'clou' in host or 'gmtdb' in host or "gmtv1" in host:
             stream_url = host + '||User-Agent=iPad&Referer={}'.format(GAMATO)
             name = name
         elif host.endswith('.mp4') and 'vidce.net' in host:
@@ -1013,22 +1015,22 @@ def resolve(name, url, iconimage, description, return_url=False):
 
 
 def evaluate(host):
-    import resolveurl
-    try:
-        url = None
-        if 'openload' in host:
-            try:
-                from resources.lib.resolvers import openload
-                oplink = openload.get_video_openload(host)
-                url = resolveurl.resolve(oplink) if oplink == '' else oplink
-            except BaseException:
-                url = resolveurl.resolve(host)
-
-        elif resolveurl.HostedMediaFile(host):
-            url = resolveurl.resolve(host)
-
-        return url
-    except BaseException:
+    # import resolveurl
+    # try:
+    #     url = None
+    #     if 'openload' in host:
+    #         try:
+    #             from resources.lib.resolvers import openload
+    #             oplink = openload.get_video_openload(host)
+    #             url = resolveurl.resolve(oplink) if oplink == '' else oplink
+    #         except BaseException:
+    #             url = resolveurl.resolve(host)
+    #
+    #     elif resolveurl.HostedMediaFile(host):
+    #         url = resolveurl.resolve(host)
+    #
+    #     return url
+    # except BaseException:
         return
 
 
