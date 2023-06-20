@@ -26,8 +26,8 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'https://1.livesoccer.sx/'
-Live_url = 'https://1.livesoccer.sx/'
+BASEURL = 'https://my.livesoccer.sx/'
+Live_url = 'https://my.livesoccer.sx/'
 Alt_url = 'https://liveon.sx/program'#'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
@@ -197,8 +197,7 @@ def get_events(url):  # 5
         lname = client.replaceHTMLCodes(lname)
         time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
         time = time.split('GMT')[0].strip()
-        cov_time = convDateUtil(time, 'default', 'GMT{}'.format(str(control.setting('timezone'))))
-        # xbmc.log('@#@COVTIMEEE:%s' % str(cov_time))
+        cov_time = convDateUtil(time, 'default', 'GMT+2')#.format(str(control.setting('timezone'))))
         ftime = '[COLORcyan]{}[/COLOR]'.format(cov_time)
         name = '{0}{1} [COLORgold]{2}[/COLOR] - [I]{3}[/I]'.format(watch, ftime, teams, lname)
 
@@ -233,7 +232,8 @@ def get_livetv(url):
 xbmcplugin.setContent(int(sys.argv[1]), 'videos')
 
 
-def get_new_events(url):  # 15
+def get_new_events(url):# 15
+    #import requests
     data = six.ensure_text(client.request(url, headers=headers))
     # xbmc.log('@#@EDATAAA: {}'.format(data))
     data = six.ensure_text(data, encoding='utf-8', errors='ignore')
@@ -247,8 +247,8 @@ def get_new_events(url):  # 15
         dia = '[COLOR lime][B]{}[/B][/COLOR]'.format(dia)
         events = six.ensure_text(events, encoding='utf-8', errors='ignore')
         events = list(zip(client.parseDOM(events, 'div', attrs={'class': "left.*?"}),
-                          client.parseDOM(events, 'div', attrs={'class': "d\d+"})))
-        # xbmc.log('@#@EVENTS: {}'.format(str(events)))
+                          client.parseDOM(events, 'div', attrs={'class': r"d\d+"})))
+        #xbmc.log('@#@EVENTS: {}'.format(str(events)))
     # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
         addDir(dia, '', 'BUG', ICON, FANART, name)
         tevents = []
@@ -256,12 +256,18 @@ def get_new_events(url):  # 15
             if '\n' in event:
                 ev = event.split('\n')
                 for i in ev:
-                    time = re.findall(r'(\d{2}:\d{2})', i, re.DOTALL)[0]
+                    try:
+                        time = re.findall(r'(\d{2}:\d{2})', i, re.DOTALL)[0]
+                    except IndexError:
+                        time = 'N/A'
                     tevents.append((i, streams, time))
             else:
-                time = re.findall(r'(\d{2}:\d{2})', event, re.DOTALL)[0]
+                try:
+                    time = re.findall(r'(\d{2}:\d{2})', event, re.DOTALL)[0]
+                except IndexError:
+                    time = 'N/A'
                 tevents.append((event, streams, time))
-        # xbmc.log('EVENTSSS: {}'.format(tevents))
+        #xbmc.log('EVENTSSS: {}'.format(tevents))
         for event, streams, time in sorted(tevents, key=lambda x: x[2]):
             # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
             streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
@@ -338,8 +344,9 @@ def resolve(url, name):
     # ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
     ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
     # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
-    if 'webplay' in url:
-        html = six.ensure_text(client.request(url))
+    if 'webplay' in url or 'livestreames' in url:
+        html = six.ensure_text(client.request(url, referer=BASEURL))
+        xbmc.log('HTMLLLLL: {}'.format(html))
         url = client.parseDOM(html,'div', attrs={'class': 'container'})[0]
         url = client.parseDOM(url, 'iframe', ret='src')[0]
     if 'acestream' in url:
