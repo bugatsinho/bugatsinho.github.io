@@ -499,27 +499,33 @@ def resolve(url, name):
                 # xbmc.log('@#@STREAM2DATA: %s' % data)
                 hlsurl, pk, ea = re.findall('.*hlsUrl\s*=\s*"(.*?&\w+=)".*?var\s+\w+\s*=\s*"([^"]+).*?>\s*ea\s*=\s*"([^"]+)', data, re.DOTALL)[0]
                 link = hlsurl.replace('" + ea + "', ea) + pk
-                xbmc.log('@#@STREAM2HLSURL: %s' % link)
+                # xbmc.log('@#@STREAM2HLSURL: %s' % link)
                 data_link = six.ensure_str(client.request(link, referer='https://stream2watch.freeucp.com'))
-                xbmc.log('@#@STREAM2data: %s' % data_link)
+                # xbmc.log('@#@STREAM2data: %s' % data_link)
                 link2 = re.findall('.*(http.+?$)', data_link)[0]
                 stream_url = link2 + '|Referer=https://stream2watch.freeucp.com/&Origin=https://stream2watch.freeucp.com/&User-Agent=iPad'
 
             else:
-                vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0]
-                host = 'https://vikistream.com/embed2.php?player=desktop&live={}'.format(str(vid))
-                # xbmc.log('@#@l1l1HOST: %s' % host)
-                data = six.ensure_str(client.request(host, referer=referer))
-                # xbmc.log('@#@SDATA: %s' % data)
-                try:
-                    link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
-                except IndexError:
-                    link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
+                if 'fid=' in r:
+                    regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
+                    vid, getembed = re.findall(regex, r, re.DOTALL)[0]
+                    #vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0]
+                    getembed = 'https:' + getembed if getembed.startswith('//') else getembed
+                    embed = six.ensure_str(client.request(getembed))
+                    embed = re.findall(r'''document.write.+?src=['"](.+?player)=''', embed, re.DOTALL)[0]
+                    host = '{}=desktop&live={}'.format(embed, str(vid))
+                    # xbmc.log('@#@l1l1HOST: %s' % host)
+                    data = six.ensure_str(client.request(host, referer=referer))
+                    # xbmc.log('@#@SDATA: %s' % data)
+                    try:
+                        link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
+                    except IndexError:
+                        link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
 
-                # xbmc.log('@#@STREAMMMMM111: %s' % link)
-                stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
-                # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
-                stream_url += '|Referer=https://vikistream.com/&User-Agent={}'.format(quote(ua))
+                    # xbmc.log('@#@STREAMMMMM111: %s' % link)
+                    stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
+                    # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
+                    stream_url += '|Referer={}/&User-Agent={}'.format(host.split('embed')[0], quote(ua))
 
     elif any(i in url for i in ragnaru):
         headers = {'User-Agent': 'iPad'}
