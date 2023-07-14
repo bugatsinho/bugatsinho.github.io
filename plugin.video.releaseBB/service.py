@@ -31,7 +31,7 @@ if xbmcvfs.exists(_settingsFile):
             domains = [i.upper() for i in domains if domains]
             fline = set_line.format(domains[0], domains[1], domains[2], domains[3], domains[0])
 
-        paste = cache.get(client.request, 12, 'https://pastebin.com/raw/upztzeGt')
+        paste = cache.get(client.request, 12, 'https://pastebin.com/raw/j8xW2m8B')
         new_data = data.replace(line, paste)
         new_data2 = new_data.replace(line2, fline)
         file.seek(0)
