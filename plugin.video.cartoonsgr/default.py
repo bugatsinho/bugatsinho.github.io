@@ -61,8 +61,10 @@ def get_gamdomain():
         resp = resp.replace('?', '')
     else:
         resp = re.findall(r'''^(http.+?\..+?/)''', resp)[0]
-    with xbmcvfs.File(gmtfile, 'w') as f:
-        f.write(resp)
+    f = xbmcvfs.File(gmtfile, 'w')
+    f.write(six.ensure_str(resp))
+    f.close()
+
     return resp
 
 
@@ -103,7 +105,7 @@ def Main_addDir():
 def gamatokids():
     addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + 'category/gamatokids/', 4, ART + 'dub.jpg', FANART, '')
     addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + 'category/animation/', 4, ART + 'genre.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + 'category/οικογένεια/', 4, ART + 'top.png', FANART, '')
+    addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + 'category/%ce%bf%ce%b9%ce%ba%ce%bf%ce%b3%ce%ad%ce%bd%ce%b5%ce%b9%ce%b1/', 4, ART + 'top.png', FANART, '')
     addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
     views.selectView('menu', 'menu-view')
 
