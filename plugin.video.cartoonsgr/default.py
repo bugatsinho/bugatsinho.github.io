@@ -59,6 +59,8 @@ def get_gamdomain():
         resp = resp.split('genre')[0]
     elif '?' in resp:
         resp = resp.replace('?', '')
+    elif 'status' in resp:
+        resp = resp.split('status')[0]
     else:
         resp = re.findall(r'''^(http.+?\..+?/)''', resp)[0]
     f = xbmcvfs.File(gmtfile, 'w')

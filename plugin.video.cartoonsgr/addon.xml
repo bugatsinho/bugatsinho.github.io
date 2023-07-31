@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.42" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.43" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.addon" version="17.0.000"/>
     <import addon="script.module.six" />
@@ -27,8 +27,8 @@
     <twitter>https://twitter.com/bugatsinho</twitter>
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
-    <news>[B]v1.0.42[/B] 03/06/2023
-      - Add new resolver and regex changes
+    <news>[B]v1.0.43[/B] 31/07/2023
+      - Fix compatibility with Kodi18 credits to @Kolekan
     </news>
     <assets>
         <icon>icon.png</icon>
