@@ -346,7 +346,7 @@ def resolve(url, name):
     # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
     if 'webplay' in url or 'livestreames' in url:
         html = six.ensure_text(client.request(url, referer=BASEURL))
-        xbmc.log('HTMLLLLL: {}'.format(html))
+        # xbmc.log('HTMLLLLL: {}'.format(html))
         url = client.parseDOM(html,'div', attrs={'class': 'container'})[0]
         url = client.parseDOM(url, 'iframe', ret='src')[0]
     if 'acestream' in url:
@@ -575,7 +575,30 @@ def resolve(url, name):
                     flink = flink.replace('" + ea + "', ea)
             flink += '|Referer={}'.format(quote(stream))
             stream_url = flink
+        else:
 
+            if 'player.src({src:' in rr:
+                flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', rr, re.DOTALL)[0]
+                # xbmc.log('@#@STREAMMMMM: %s' % flink)
+            elif 'Clappr.Player' in rr:
+                flink = re.findall(r'''source\s*:\s*["'](.+?)['"]\,''', str(rr), re.DOTALL)[0]
+                # xbmc.log('@#@STREAMMMMM: %s' % flink)
+
+            elif 'hlsjsConfig' in rr:
+                flink = re.findall(r'''src=\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
+
+            elif 'player.setSrc' in rr:
+                flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', rr, re.DOTALL)[0]
+            else:
+                try:
+                    flink = re.findall(r'''source:\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
+                except IndexError:
+                    ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', rr, re.DOTALL)[0]
+                    ea = six.ensure_text(client.request(ea)).split('=')[1]
+                    flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
+                    flink = flink.replace('" + ea + "', ea)
+            flink += '|Referer={}'.format(quote(stream))
+            stream_url = flink
         # r = six.ensure_str(client.request(url, referer=referer))
         # xbmc.log('@#@RRRDATA: %s' % r)
         # vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0] #<script>fid='do4';
