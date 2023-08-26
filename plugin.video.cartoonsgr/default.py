@@ -1019,22 +1019,15 @@ def resolve(name, url, iconimage, description, return_url=False):
 
 
 def evaluate(host):
-    # import resolveurl
-    # try:
-    #     url = None
-    #     if 'openload' in host:
-    #         try:
-    #             from resources.lib.resolvers import openload
-    #             oplink = openload.get_video_openload(host)
-    #             url = resolveurl.resolve(oplink) if oplink == '' else oplink
-    #         except BaseException:
-    #             url = resolveurl.resolve(host)
-    #
-    #     elif resolveurl.HostedMediaFile(host):
-    #         url = resolveurl.resolve(host)
-    #
-    #     return url
-    # except BaseException:
+    import resolveurl
+    try:
+        url = None
+        
+        if resolveurl.HostedMediaFile(host):
+            url = resolveurl.resolve(host)
+    
+        return url
+    except BaseException:
         return
 
 
