@@ -53,7 +53,15 @@ def get_gamdomain():
 
     mainurl = 'https://gamatostatus.com/'
     resp = six.ensure_str(requests.get(mainurl).text)
-    resp = client.parseDOM(resp, 'a', ret='href')[-1]
+    resp = client.parseDOM(resp, 'a', ret='href')
+    for link in resp:
+        if "/page/" in link:
+            resp = link
+            break
+        else:
+            continue
+    else:
+        resp = resp[1]
     # xbmc.log("GAMATOLINK: {}".format(resp))
     if 'genre' in resp:
         resp = resp.split('genre')[0]
