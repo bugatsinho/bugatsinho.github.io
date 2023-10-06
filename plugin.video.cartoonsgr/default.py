@@ -912,7 +912,7 @@ def resolve(name, url, iconimage, description, return_url=False):
         html = requests.get(host).text
         host = client.parseDOM(html, 'iframe', ret='src')[0]
 
-    elif 'gmtdb' in host or 'gmtbase' in host:
+    elif 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host:
         html = requests.get(host).text
         try:
             host = client.parseDOM(html, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
