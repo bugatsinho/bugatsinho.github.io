@@ -339,9 +339,9 @@ def busy():
 
 
 def resolve(url, name):
-    ragnaru = ['liveon.sx/embed', '//em.bedsport', 'cdnz.one/ch', 'cdn1.link/ch', 'cdn2.link/ch']
+    ragnaru = ['liveon.sx/embed', '//em.bedsport', 'cdnz.one/ch', 'cdn1.link/ch', 'cdn2.link/ch', 'onlive.sx']
     xbmc.log('RESOLVE-URL: %s' % url)
-    # ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
+    ua_win = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
     ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
     # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
     if 'webplay' in url or 'livestreames' in url:
@@ -627,6 +627,30 @@ def resolve(url, name):
         from resources.modules import jsunpack
         data = six.ensure_text(jsunpack.unpack(str(unpack) + ')'), encoding='utf-8')
         # xbmc.log('@#@DATAAA: %s' % data)
+    elif '//istorm' in url:
+        referer = 'https://istorm.live/'
+        r = six.ensure_str(client.request(url))
+        if 'fid=' in r:
+            regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
+            vid, getembed = re.findall(regex, r, re.DOTALL)[0]
+            # vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0]
+            getembed = 'https:' + getembed if getembed.startswith('//') else getembed
+            embed = six.ensure_str(client.request(getembed))
+            embed = re.findall(r'''document.write.+?src=['"](.+?player)=''', embed, re.DOTALL)[0]
+            host = '{}=desktop&live={}'.format(embed, str(vid))
+            # xbmc.log('@#@l1l1HOST: %s' % host)
+            data = six.ensure_str(client.request(host, referer=referer))
+            # xbmc.log('@#@SDATA: %s' % data)
+            try:
+                link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
+            except IndexError:
+                link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
+
+            # xbmc.log('@#@STREAMMMMM111: %s' % link)
+            stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
+            # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
+            stream_url += '|Referer={}/&User-Agent={}'.format(host.split('embed')[0], quote(ua))
+
 
     else:
         stream_url = url
