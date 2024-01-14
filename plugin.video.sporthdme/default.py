@@ -26,8 +26,8 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'https://my.livesoccer.sx/'
-Live_url = 'https://my.livesoccer.sx/'
+BASEURL = 'https://1.ivesoccer.sx/'
+Live_url = 'https://1.ivesoccer.sx/'
 Alt_url = 'https://liveon.sx/program'#'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
