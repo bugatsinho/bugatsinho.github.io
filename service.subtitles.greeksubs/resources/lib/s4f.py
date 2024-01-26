@@ -17,15 +17,15 @@
 from __future__ import print_function
 
 import xbmc, six, xbmcvfs
-import re, os, requests
+import re, os
 from resources.modules import client
 from resources.modules import control
 from six.moves.urllib_parse import urljoin, quote_plus, quote
-
+from resources.modules.net import Net as net_client
 class s4f:
     def __init__(self):
         self.list = []
-        self.base_link = 'https://www.sf4-industry.com'
+        self.base_link = 'https://www.subs4free.club'
         self.base_TVlink = 'https://www.subs4series.com'
         self.search = 'search_report.php?search=%s&searchType=1'
 
@@ -46,9 +46,10 @@ class s4f:
 
                 url = urljoin(self.base_link, self.search % query)
 
-                req = requests.get(url, headers=hdr)
-                cj = req.cookies
-                r = req.text
+                req = net_client().http_GET(url, headers=hdr)
+
+                # cj = net_client().get_cookies(as_dict=True)
+                r = req.content
                 # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 if six.PY2:
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
@@ -61,7 +62,7 @@ class s4f:
                 urls = client.parseDOM(r, 'div', attrs={'class': 'movie-download'})
                 # urls += client.parseDOM(r, 'div', attrs={'class': ' seeMedium'})
                 # xbmc.log('$#$URLS-start: %s' % urls, xbmc.LOGNOTICE)
-                urls = [i for i in urls if '/greek-sub' in i]
+                urls = [i for i in urls if '/subtitles-in-greek' in i]
                 # urls = [(client.parseDOM(i, 'tr')[0], re.findall(r'<b>(\d+)</b>DLs', i, re.I)[0]) for i in urls if i]
                 urls = [(client.parseDOM(i, 'a', ret='href')[0],
                          client.parseDOM(i, 'a', ret='title')[0],
@@ -85,11 +86,10 @@ class s4f:
                 query = quote('{} {}'.format(title, hdlr))
 
                 url = urljoin(self.base_TVlink, self.search % query)
+                req = net_client().http_GET(url, headers=hdr)
 
-                req = requests.get(url, headers=hdr)
-
-                cj = req.cookies
-                r = req.text
+                # cj = net_client().get_cookies(as_dict=True)
+                r = req.content
                 if six.PY2:
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 # try:
@@ -121,7 +121,8 @@ class s4f:
                 url = client.replaceHTMLCodes(url)
                 url = six.ensure_str(url, 'utf-8')
 
-                self.list.append({'name': name, 'url': '{}|{}'.format(url, cj['PHPSESSID']),
+                # self.list.append({'name': name, 'url': '{}|{}'.format(url, cj['PHPSESSID']),
+                self.list.append({'name': name, 'url': url,
                                   'source': 's4f', 'rating': rating})
             except BaseException:
                 pass
@@ -149,17 +150,16 @@ class s4f:
         return rating
 
     def download(self, path, url):
-
         try:
-            url, php= url.split('|')
+            # url, php= url.split('|')
             if 'subs4series' in url:
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
                     'Referer': url,
                     'Origin': 'https://www.subs4series.com/'}
-                cj = {'PHPSESSID': php}
+                # cj = {'PHPSESSID': php}
 
-                r = six.ensure_text(requests.get(url, headers=headers, cookies=cj).text)
+                r = net_client().http_GET(url, headers=headers).content
                 xbmc.sleep(3000)
                 # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 if six.PY2:
@@ -174,20 +174,20 @@ class s4f:
                 # xbmc.log('@@POSSSSS:%s' % pos)
                 post_url = urljoin(self.base_TVlink, pos)
                 # xbmc.log('@@POStttt:%s' % post_url)
-                r = requests.get(post_url, headers=headers, cookies=cj)
-                surl = r.url
-                result = client.request(surl)
+                r = net_client().http_GET(post_url, headers=headers)
+                surl = r.get_url()
+                result = net_client().http_GET(surl).nodecode(True).content
 
 
             else:
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
                     'Referer': url,
-                    'Origin': 'https://www.sf4-industry.com'}
-                cj = {'PHPSESSID': php}
-                post_url = 'https://www.sf4-industry.com/getSub.php'
+                    'Origin': self.base_link}
+                # cj = {'PHPSESSID': php}
+                post_url = self.base_link + '/getSub.php'
 
-                r = six.ensure_text(requests.get(url, headers=headers, cookies=cj).text)
+                r = net_client().http_GET(url, headers=headers).content
                 xbmc.sleep(3000)
                 if six.PY2:
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
@@ -203,10 +203,10 @@ class s4f:
                         'x': '107',
                         'y': '35'}
 
-                r = requests.post(post_url, headers=headers, data=post, cookies=cj)
+                r = net_client().http_POST(post_url, form_data=post, headers=headers)
                 # surl = r.headers['Location']
-                surl = r.url
-                result = client.request(surl)
+                surl = r.get_url()
+                result = net_client().http_GET(surl).nodecode(True).content
                 # surl = self.base_link + surl if surl.startswith('/') else surl
 
             # path = 'special://userdata/addon_data/service.subtitles.greeksubs/temp/'
