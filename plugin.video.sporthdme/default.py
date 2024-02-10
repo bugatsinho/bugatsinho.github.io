@@ -196,6 +196,7 @@ def get_events(url):  # 5
         lname = re.sub(r'<.+?>', '', lname)
         lname = client.replaceHTMLCodes(lname)
         time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
+        xbmc.log('@#@TIMES: {}'.format(str(teams)))
         time = time.split('GMT')[0].strip()
         cov_time = convDateUtil(time, 'default', 'GMT+2')#.format(str(control.setting('timezone'))))
         ftime = '[COLORcyan]{}[/COLOR]'.format(cov_time)
@@ -339,7 +340,8 @@ def busy():
 
 
 def resolve(url, name):
-    ragnaru = ['liveon.sx/embed', '//em.bedsport', 'cdnz.one/ch', 'cdn1.link/ch', 'cdn2.link/ch', 'onlive.sx', 'reditsport', 's2watch']
+    ragnaru = ['liveon.sx/embed', '//em.bedsport', 'cdnz.one/ch', 'cdn1.link/ch', 'cdn2.link/ch', 'onlive.sx',
+               'reditsport', 's2watch']
     xbmc.log('RESOLVE-URL: %s' % url)
     ua_win = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
     ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
@@ -358,6 +360,7 @@ def resolve(url, name):
         liz.setPath(url)
         xbmc.Player().play(url1, liz, False)
         quit()
+
     if '/live.cdnz' in url:
         r = six.ensure_str(client.request(url, referer=BASEURL)).replace('\t', '')
         # xbmc.log("[{}] - HTML: {}".format(ADDON.getAddonInfo('id'), str(r)))
@@ -526,6 +529,37 @@ def resolve(url, name):
                     stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
                     # xbmc.log('@#@STREAMMMMM222: %s' % stream_url)
                     stream_url += '|Referer={}/&User-Agent={}'.format(host.split('embed')[0], quote(ua))
+
+    elif 'fastreams' in url:
+        ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
+        hdr = {'User-Agent': ua}
+        first = six.ensure_text(client.request(url, headers=hdr))
+        link = client.parseDOM(first, 'iframe', ret='src')[0]
+        xbmc.sleep(5)
+        hdr.update({'Referer': link})
+        html = six.ensure_text(client.request(link))
+        frame = client.parseDOM(html, 'iframe', ret='src')[0]
+        rr = six.ensure_text(client.request(frame, headers=hdr))
+        if 'Clappr.Player' in rr:
+            flink = six.ensure_text(re.findall(r'''source\s*:\s*window.atob\(["'](.+?)['"]\)''', str(rr), re.DOTALL)[0])
+            xbmc.log('FLINK: {}'.format(flink))
+            if 'aHR' in flink:
+                flink = six.ensure_text(base64.b64decode(flink))
+                xbmc.log('FLINK2: {}'.format(flink))
+            else:
+                flink = flink
+            flink += '|User-Agent={}&Referer={}&Origin={}'.format(quote(ua), quote('https://ftmstreams.click/'), quote('https://ftmstreams.click'))
+        stream_url = flink
+
+    elif 'smycdn' in url:
+        xbmc.log('URL: {}'.format(url))
+        html = six.ensure_text(client.request(url))
+        stream = client.parseDOM(html, 'iframe', ret='src')[0]
+        html = six.ensure_text(client.request(stream))
+        tok, srv = re.findall(r'''"player","(.+?)",\{"(.+?)"''', html, re.DOTALL)[0]
+        flink = 'https://' + srv + '/hls/' + tok + '/live.m3u8'
+        flink += '|Origin=https://nobodywalked.com&Referer=https://nobodywalked.com/'
+        stream_url = flink
 
     elif any(i in url for i in ragnaru):
         headers = {'User-Agent': 'iPad'}
