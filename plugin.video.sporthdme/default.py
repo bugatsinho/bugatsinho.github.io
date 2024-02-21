@@ -529,16 +529,31 @@ def resolve(url, name):
     elif 'smycdn' in url:
         xbmc.log('URL: {}'.format(url))
         html = six.ensure_text(client.request(url))
-        stream = client.parseDOM(html, 'iframe', ret='src')[0]
-        html = six.ensure_text(client.request(stream))
-        tok, srv = re.findall(r'''"player","(.+?)",\{"(.+?)"''', html, re.DOTALL)[0]
-        flink = 'https://' + srv + '/hls/' + tok + '/live.m3u8'
-        flink += '|Origin=https://nobodywalked.com&Referer=https://nobodywalked.com/'
-        stream_url = flink
+        #https://godzcast.com/embed2.php?player='+ embedded +'&live='+ fid +'" '
+        if 'fid=' in html:
+            regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
+            vid, getembed = re.findall(regex, html, re.DOTALL)[0]
+            getembed = 'https:' + getembed if getembed.startswith('//') else getembed
+            embed = six.ensure_str(client.request(getembed))
+            embed = re.findall(r'''document.write.+?src=['"](.+?player)=''', embed, re.DOTALL)[0]
+            host = '{}=desktop&live={}'.format(embed, str(vid))
+            data = six.ensure_str(client.request(host, referer='https://smycdn.ru/'))
+            try:
+                link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
+            except IndexError:
+                link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
+            stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
+            stream_url += '|Referer={}/&User-Agent={}'.format(host.split('embed')[0], quote(ua))
+        else:
+            stream = client.parseDOM(html, 'iframe', ret='src')[0]
+            html = six.ensure_text(client.request(stream))
+            tok, srv = re.findall(r'''"player","(.+?)",\{"(.+?)"''', html, re.DOTALL)[0]
+            flink = 'https://' + srv + '/hls/' + tok + '/live.m3u8'
+            flink += '|Origin=https://nobodywalked.com&Referer=https://nobodywalked.com/'
+            stream_url = flink
 
     elif any(i in url for i in ragnaru):
         headers = {'User-Agent': 'iPad'}
-
         referer = 'https://liveon.sx/' if 'liveon' in url else url
         r = six.ensure_text(client.request(url, headers=headers, referer=referer))
         stream = client.parseDOM(r, 'iframe', ret='src')[-1]
@@ -632,8 +647,9 @@ def resolve(url, name):
             stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
             stream_url += '|Referer={}/&User-Agent={}'.format(host.split('embed')[0], quote(ua))
         else:
-            r = six.ensure_str(client.request(url, output=url))
+            # r = six.ensure_str(client.request(url))
             frame = client.parseDOM(r,'iframe', ret='src')[-1]
+            # xbmc.log('FRAME: {}'.format(frame))
             data = six.ensure_str(client.request(frame, referer=url, output=url))
             unpack = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[0]
 
@@ -655,7 +671,7 @@ def resolve(url, name):
                     ea = six.ensure_text(client.request(ea)).split('=')[1]
                     flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
-            flink += '|Referer={}|User-Agent=iPad'.format(quote(referer))
+            flink += '|Referer={}&User-Agent=iPad'.format(quote('https://candlenorth.net/'))
             stream_url = flink
 
 
