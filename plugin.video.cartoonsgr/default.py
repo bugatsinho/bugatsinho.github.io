@@ -44,38 +44,42 @@ ART = ADDON_PATH + "/resources/icons/"
 gmtfile = ADDON_DATA + 'gamato_url.txt'
 
 def get_gamdomain():
-    if xbmcvfs.exists(gmtfile):
-        creation_time = xbmcvfs.Stat(gmtfile).st_mtime()
-        if not (creation_time + 18000) < time.time():  # 5 hour gmtfile life
-            with xbmcvfs.File(gmtfile, 'r') as f:
-                a = f.read()
-            return a
+    try:
+        if xbmcvfs.exists(gmtfile):
+            creation_time = xbmcvfs.Stat(gmtfile).st_mtime()
+            if not (creation_time + 18000) < time.time():  # 5 hour gmtfile life
+                with xbmcvfs.File(gmtfile, 'r') as f:
+                    a = f.read()
+                return a
 
-    mainurl = 'https://gamatostatus.com/'
-    resp = six.ensure_str(requests.get(mainurl).text)
-    resp = client.parseDOM(resp, 'a', ret='href')
-    for link in resp:
-        if "/page/" in link:
-            resp = link
-            break
+        mainurl = 'https://gamatotv.info/'
+        resp = six.ensure_str(requests.get(mainurl).text)
+        resp = client.parseDOM(resp, 'a', ret='href')
+        for link in resp:
+            if "/page/" in link:
+                resp = link
+                break
+            else:
+                continue
         else:
-            continue
-    else:
-        resp = resp[1]
-    # xbmc.log("GAMATOLINK: {}".format(resp))
-    if 'genre' in resp:
-        resp = resp.split('genre')[0]
-    elif '?' in resp:
-        resp = resp.replace('?', '')
-    elif 'status' in resp:
-        resp = resp.split('status')[0]
-    else:
-        resp = re.findall(r'''^(http.+?\..+?/)''', resp)[0]
-    f = xbmcvfs.File(gmtfile, 'w')
-    f.write(six.ensure_str(resp))
-    f.close()
+            resp = resp[1]
+        # xbmc.log("GAMATOLINK: {}".format(resp))
+        if 'genre' in resp:
+            resp = resp.split('genre')[0]
+        elif '?' in resp:
+            resp = resp.replace('?', '')
+        elif 'status' in resp:
+            resp = resp.split('status')[0]
+        else:
+            resp = re.findall(r'''^(http.+?\..+?/)''', resp)[0]
+        f = xbmcvfs.File(gmtfile, 'w')
+        f.write(six.ensure_str(resp))
+        f.close()
+    except IndexError:
+        resp = 'https://gamatotv.info/'
 
     return resp
+
 
 
 BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
@@ -912,7 +916,7 @@ def resolve(name, url, iconimage, description, return_url=False):
         html = requests.get(host).text
         host = client.parseDOM(html, 'iframe', ret='src')[0]
 
-    elif 'gmtv1' in host or 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host:
+    elif 'gmtv1' in host or 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host or 'gmtv' in host:
         html = requests.get(host).text
         try:
             host = client.parseDOM(html, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
