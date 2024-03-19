@@ -5,6 +5,7 @@ import sys
 import six
 from six.moves.urllib.parse import urljoin, unquote_plus, quote_plus, quote, unquote
 from six.moves import zip
+from datetime import datetime
 import json
 import xbmc
 import xbmcaddon
@@ -62,6 +63,13 @@ def convDateUtil(timestring, newfrmt='default', in_zone='UTC'):
         return local_time.strftime(newfrmt)
     except:
         return timestring
+
+
+def time_convert(timestamp):
+    timestamp = int(str(timestamp)[:10])
+    dt_object = datetime.fromtimestamp(timestamp)
+    time_ = dt_object.strftime("%d-%b, %H:%M")
+    return time_
 
 
 def Main_menu():
@@ -164,7 +172,7 @@ def sports_menu():
 def get_events(url):  # 5
     data = client.request(url)
     data = six.ensure_text(data, encoding='utf-8', errors='ignore')
-    data = re.sub('\t', '', data)
+    data = re.sub('\t', '', data).replace('&nbsp', '')
     # xbmc.log('@#@EDATAAA: {}'.format(data))
     events = list(zip(client.parseDOM(data, 'li', attrs={'class': "item itemhov"}),
                       client.parseDOM(data, 'li', attrs={'class': "bahamas"})))
@@ -191,9 +199,13 @@ def get_events(url):  # 5
         lname = client.parseDOM(lname, 'span')[0]
         lname = re.sub(r'<.+?>', '', lname)
         lname = client.replaceHTMLCodes(lname)
-        time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
-        time = time.split('GMT')[0].strip()
-        cov_time = convDateUtil(time, 'default', 'GMT+2')#.format(str(control.setting('timezone'))))
+        # time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
+        # time = time.split('GMT')[0].strip()
+        # cov_time = convDateUtil(time, 'default', 'GMT+2')#.format(str(control.setting('timezone'))))
+        time = client.parseDOM(event, 'span', ret='mtime', attrs={'class': 'gmt_m_time'})[0]
+        # xbmc.log('@#@TIMESTAMP: {}'.format(time))
+        cov_time = time_convert(time)
+        # xbmc.log('@#@COVTIME: {}'.format(cov_time))
         ftime = '[COLORcyan]{}[/COLOR]'.format(cov_time)
         name = '{0}{1} [COLORgold]{2}[/COLOR] - [I]{3}[/I]'.format(watch, ftime, teams, lname)
 
