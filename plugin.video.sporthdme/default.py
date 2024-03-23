@@ -629,7 +629,10 @@ def resolve(url, name):
                     ea = six.ensure_text(client.request(ea)).split('=')[1]
                     flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
-            flink +=  '|Referer={}'.format(quote(stream)) if not'reddit' in stream else '|Referer={}'.format(quote('https://redittsports.com/'))
+            flink += '|Referer={}'.format(
+                quote(stream.split('mono.')[0])) if not 'reddit' in stream else '|Referer={}'.format(
+                quote('https://redittsports.com/'))
+            flink += '&User-Agent={}'.format(quote(ua))
             stream_url = flink
 
     elif '//bedsport' in url:
