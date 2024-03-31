@@ -183,17 +183,23 @@ def get_events(url):  # 5
     events = events[:-1].replace('self.__next_f.push(', '').replace('\\', '')
     matches = re.findall('''null\,(\{"matches.+?)\]\}\]n''', events, re.DOTALL)[0]
     matches = json.loads(matches)
+    event_list = []
     for match in matches['matches']:
+        xbmc.log("MATCH: {}".format(match))
         icon = BASEURL + 'sport/' + match['sportSlug'] + '.png'
         lname = match['league']
         country = match['country']
         event = match['fullName']
-        links = match['additionalLinks']
-        ftime = time_convert(match['timestampInMs'])
+        try:
+            ftime = time_convert(match['timestampInMs'])
+        except ValueError:
+            ftime = '-'
         ftime = '[COLORcyan]{}[/COLOR]'.format(ftime)
         name = '{0} [COLORgold]{1}[/COLOR] - [I]{2}-{3}[/I]'.format( ftime, event, lname, country)
+        event_list.append((name, ftime))
         # streams = str(quote(base64.b64encode(six.ensure_binary(str(streams)))))
         streams = []
+        links = match['additionalLinks']
         # {'name': 'TNT Sports 1', 'link': 'https://smycdn.ru/flash1', 'lang': 'EN'}
         for stream in links:
             link = stream['link']
@@ -201,6 +207,8 @@ def get_events(url):  # 5
             chan = stream['name']
             chan = '[COLORgold]{}[/COLOR] - {}'.format(chan, lang)
             streams.append((link, chan))
+
+
         streams = str(quote(base64.b64encode(six.ensure_binary(str(streams)))))
     # for event, streams in events:
     #
@@ -240,6 +248,7 @@ def get_events(url):  # 5
     #     icon = client.parseDOM(event, 'img', ret='src')[0]
     #     icon = urljoin(BASEURL, icon)
     #
+
         addDir(name, streams, 4, icon, FANART, name)
 
 
