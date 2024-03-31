@@ -27,8 +27,8 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'https://1.ivesoccer.sx/'
-Live_url = 'https://1.ivesoccer.sx/'
+BASEURL = 'https://sportl.ivesoccer.sx/'
+Live_url = 'https://sportl.ivesoccer.sx/'
 Alt_url = 'https://liveon.sx/program'#'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
@@ -133,88 +133,113 @@ def leagues_menu():
 
 
 def sports_menu():
-    addDir('[B][COLOR white]Football[/COLOR][/B]', BASEURL + '?type=football', 5,
+    addDir('[B][COLOR white]Football[/COLOR][/B]', BASEURL + 'sport/football', 5,
            BASEURL + 'images/football.png', FANART, 'Football')
-    addDir('[B][COLOR white]Basketball[/COLOR][/B]', BASEURL + '?type=basketball', 5,
+    addDir('[B][COLOR white]Basketball[/COLOR][/B]', BASEURL + 'sport/basketball', 5,
            BASEURL + 'images/basketball.png', FANART, 'Basketball')
-    addDir('[B][COLOR white]MotorSport[/COLOR][/B]', BASEURL + '?type=motorsport', 5,
+    addDir('[B][COLOR white]MotorSport[/COLOR][/B]', BASEURL + 'sport/motorsport', 5,
            BASEURL + 'images/motorsport.png', FANART, 'MotorSport')
-    addDir('[B][COLOR white]Handball[/COLOR][/B]', BASEURL + '?type=handball', 5,
-           BASEURL + 'images/handball.png', FANART, 'Handball')
-    addDir('[B][COLOR white]Rugby[/COLOR][/B]', BASEURL + '?type=rugby', 5,
+    addDir('[B][COLOR white]Rugby[/COLOR][/B]', BASEURL + 'sport/rugby', 5,
            BASEURL + 'images/rugby.png', FANART, 'Rugby')
-    addDir('[B][COLOR white]NFL[/COLOR][/B]', BASEURL + '?type=nfl', 5,
+    addDir('[B][COLOR white]NFL[/COLOR][/B]', BASEURL + 'sport/american-football', 5,
            BASEURL + 'images/nfl.png', FANART, 'NFL')
-    addDir('[B][COLOR white]UFC[/COLOR][/B]', BASEURL + '?type=ufc', 5,
+    addDir('[B][COLOR white]UFC[/COLOR][/B]', BASEURL + 'sport/ufc', 5,
            BASEURL + 'images/ufc.png', FANART, 'UFC')
-    addDir('[B][COLOR white]Wrestling[/COLOR][/B]', BASEURL + '?type=wresling', 5,
-           BASEURL + 'images/wresling.png', FANART, 'Wresling')
-    addDir('[B][COLOR white]Hockey[/COLOR][/B]', BASEURL + '?type=hokey', 5,
-           BASEURL + 'images/hockey.png', FANART, 'Hokey')
-    addDir('[B][COLOR white]Volleyball[/COLOR][/B]', BASEURL + '?type=volleyball', 5,
+    addDir('[B][COLOR white]Hockey[/COLOR][/B]', BASEURL + 'sport/hockey', 5,
+           'https://s2watch.ru/images/hockey-puck-solid.svg', FANART, 'Hokey')
+    addDir('[B][COLOR white]Volleyball[/COLOR][/B]', BASEURL + 'sport/volleyball', 5,
            BASEURL + 'images/volleyball.png', FANART, 'Volleyball')
-    addDir('[B][COLOR white]Darts[/COLOR][/B]', BASEURL + '?type=darts', 5,
-           BASEURL + 'images/darts.png', FANART, 'Darts')
-    addDir('[B][COLOR white]Tennis[/COLOR][/B]', BASEURL + '?type=tennis', 5,
-           BASEURL + 'images/tennis.png', FANART, 'Tennis')
-    addDir('[B][COLOR white]Boxing[/COLOR][/B]', BASEURL + '?type=boxing', 5,
-           BASEURL + 'images/boxing.png', FANART, 'Boxing')
-    addDir('[B][COLOR white]Cricket[/COLOR][/B]', BASEURL + '?type=cricket', 5,
-           BASEURL + 'images/cricket.png', FANART, 'Cricket')
-    addDir('[B][COLOR white]Baseball[/COLOR][/B]', BASEURL + '?type=baseball', 5,
-           BASEURL + 'images/baseball.png', FANART, 'Baseball')
-    addDir('[B][COLOR white]Snooker[/COLOR][/B]', BASEURL + '?type=snooker', 5,
-           BASEURL + 'images/snooker.png', FANART, 'Snooker')
-    addDir('[B][COLOR white]Chess[/COLOR][/B]', BASEURL + '?type=chess', 5,
-           BASEURL + 'images/chess.png', FANART, 'Chess')
+    # addDir('[B][COLOR white]Wrestling[/COLOR][/B]', BASEURL + '?type=wresling', 5,
+    #        BASEURL + 'images/wresling.png', FANART, 'Wresling')
+    # addDir('[B][COLOR white]Handball[/COLOR][/B]', BASEURL + '?type=handball', 5,
+    #        BASEURL + 'images/handball.png', FANART, 'Handball')
+    # addDir('[B][COLOR white]Darts[/COLOR][/B]', BASEURL + '?type=darts', 5,
+    #        BASEURL + 'images/darts.png', FANART, 'Darts')
+    # addDir('[B][COLOR white]Tennis[/COLOR][/B]', BASEURL + '?type=tennis', 5,
+    #        BASEURL + 'images/tennis.png', FANART, 'Tennis')
+    # addDir('[B][COLOR white]Boxing[/COLOR][/B]', BASEURL + '?type=boxing', 5,
+    #        BASEURL + 'images/boxing.png', FANART, 'Boxing')
+    # addDir('[B][COLOR white]Cricket[/COLOR][/B]', BASEURL + '?type=cricket', 5,
+    #        BASEURL + 'images/cricket.png', FANART, 'Cricket')
+    # addDir('[B][COLOR white]Baseball[/COLOR][/B]', BASEURL + '?type=baseball', 5,
+    #        BASEURL + 'images/baseball.png', FANART, 'Baseball')
+    # addDir('[B][COLOR white]Snooker[/COLOR][/B]', BASEURL + '?type=snooker', 5,
+    #        BASEURL + 'images/snooker.png', FANART, 'Snooker')
+    # addDir('[B][COLOR white]Chess[/COLOR][/B]', BASEURL + '?type=chess', 5,
+    #        BASEURL + 'images/chess.png', FANART, 'Chess')
 
 
 def get_events(url):  # 5
     data = client.request(url)
     data = six.ensure_text(data, encoding='utf-8', errors='ignore')
     data = re.sub('\t', '', data).replace('&nbsp', '')
-    # xbmc.log('@#@EDATAAA: {}'.format(data))
-    events = list(zip(client.parseDOM(data, 'li', attrs={'class': "item itemhov"}),
-                      client.parseDOM(data, 'li', attrs={'class': "bahamas"})))
 
-    for event, streams in events:
+    # events = list(zip(client.parseDOM(data, 'li', attrs={'class': "item itemhov"}),
+    #                   client.parseDOM(data, 'li', attrs={'class': "bahamas"})))
 
-        watch = '[COLORlime]*[/COLOR]' if '>Live<' in event else '[COLORred]*[/COLOR]'
-        try:
-            teams = client.parseDOM(event, 'td')
-            home, away = re.sub(r'\s*(<img.+?>)\s*', '', client.replaceHTMLCodes(teams[0])),\
-                re.sub(r'\s*(<img.+?>)\s*', '', client.replaceHTMLCodes(teams[2]))
-            if six.PY2:
-                home = home.strip().encode('utf-8')
-                away = away.strip().encode('utf-8')
-            teams = '[B]{0} vs {1}[/B]'.format(home, away)
-            teams = teams.replace('\t', '')
-        except IndexError:
-            teams = client.parseDOM(event, 'center')[0]
-            teams = re.sub(r'<.+?>|\s{2}', '', teams)
-            teams = client.replaceHTMLCodes(teams)
-            teams = teams.encode('utf-8') if six.PY2 else teams
-            teams = '[B]{}[/B]'.format(teams.replace('-->', ''))
-        lname = client.parseDOM(event, 'a')[1]
-        lname = client.parseDOM(lname, 'span')[0]
-        lname = re.sub(r'<.+?>', '', lname)
-        lname = client.replaceHTMLCodes(lname)
-        # time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
-        # time = time.split('GMT')[0].strip()
-        # cov_time = convDateUtil(time, 'default', 'GMT+2')#.format(str(control.setting('timezone'))))
-        time = client.parseDOM(event, 'span', ret='mtime', attrs={'class': 'gmt_m_time'})[0]
-        # xbmc.log('@#@TIMESTAMP: {}'.format(time))
-        cov_time = time_convert(time)
-        # xbmc.log('@#@COVTIME: {}'.format(cov_time))
-        ftime = '[COLORcyan]{}[/COLOR]'.format(cov_time)
-        name = '{0}{1} [COLORgold]{2}[/COLOR] - [I]{3}[/I]'.format(watch, ftime, teams, lname)
-
-        # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
-        streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
-
-        icon = client.parseDOM(event, 'img', ret='src')[0]
-        icon = urljoin(BASEURL, icon)
-
+    # events = re.findall('''next_f\.push\((\[1,"6.+?\n"\])\)</script>''', data, re.DOTALL)[0]
+    events = client.parseDOM(data, 'script')
+    events = [i for i in events if '''matchDate''' in i][0]
+    events = events[:-1].replace('self.__next_f.push(', '').replace('\\', '')
+    matches = re.findall('''null\,(\{"matches.+?)\]\}\]n''', events, re.DOTALL)[0]
+    matches = json.loads(matches)
+    for match in matches['matches']:
+        icon = BASEURL + 'sport/' + match['sportSlug'] + '.png'
+        lname = match['league']
+        country = match['country']
+        event = match['fullName']
+        links = match['additionalLinks']
+        ftime = time_convert(match['timestampInMs'])
+        ftime = '[COLORcyan]{}[/COLOR]'.format(ftime)
+        name = '{0} [COLORgold]{1}[/COLOR] - [I]{2}-{3}[/I]'.format( ftime, event, lname, country)
+        # streams = str(quote(base64.b64encode(six.ensure_binary(str(streams)))))
+        streams = []
+        # {'name': 'TNT Sports 1', 'link': 'https://smycdn.ru/flash1', 'lang': 'EN'}
+        for stream in links:
+            link = stream['link']
+            lang = stream['lang']
+            chan = stream['name']
+            chan = '[COLORgold]{}[/COLOR] - {}'.format(chan, lang)
+            streams.append((link, chan))
+        streams = str(quote(base64.b64encode(six.ensure_binary(str(streams)))))
+    # for event, streams in events:
+    #
+    #     watch = '[COLORlime]*[/COLOR]' if '>Live<' in event else '[COLORred]*[/COLOR]'
+    #     try:
+    #         teams = client.parseDOM(event, 'td')
+    #         home, away = re.sub(r'\s*(<img.+?>)\s*', '', client.replaceHTMLCodes(teams[0])),\
+    #             re.sub(r'\s*(<img.+?>)\s*', '', client.replaceHTMLCodes(teams[2]))
+    #         if six.PY2:
+    #             home = home.strip().encode('utf-8')
+    #             away = away.strip().encode('utf-8')
+    #         teams = '[B]{0} vs {1}[/B]'.format(home, away)
+    #         teams = teams.replace('\t', '')
+    #     except IndexError:
+    #         teams = client.parseDOM(event, 'center')[0]
+    #         teams = re.sub(r'<.+?>|\s{2}', '', teams)
+    #         teams = client.replaceHTMLCodes(teams)
+    #         teams = teams.encode('utf-8') if six.PY2 else teams
+    #         teams = '[B]{}[/B]'.format(teams.replace('-->', ''))
+    #     lname = client.parseDOM(event, 'a')[1]
+    #     lname = client.parseDOM(lname, 'span')[0]
+    #     lname = re.sub(r'<.+?>', '', lname)
+    #     lname = client.replaceHTMLCodes(lname)
+    #     # time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
+    #     # time = time.split('GMT')[0].strip()
+    #     # cov_time = convDateUtil(time, 'default', 'GMT+2')#.format(str(control.setting('timezone'))))
+    #     time = client.parseDOM(event, 'span', ret='mtime', attrs={'class': 'gmt_m_time'})[0]
+    #     # xbmc.log('@#@TIMESTAMP: {}'.format(time))
+    #     cov_time = time_convert(time)
+    #     # xbmc.log('@#@COVTIME: {}'.format(cov_time))
+    #     ftime = '[COLORcyan]{}[/COLOR]'.format(cov_time)
+    #     name = '{0}{1} [COLORgold]{2}[/COLOR] - [I]{3}[/I]'.format(watch, ftime, teams, lname)
+    #
+    #     # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
+    #     streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
+    #
+    #     icon = client.parseDOM(event, 'img', ret='src')[0]
+    #     icon = urljoin(BASEURL, icon)
+    #
         addDir(name, streams, 4, icon, FANART, name)
 
 
@@ -296,16 +321,16 @@ xbmcplugin.setContent(int(sys.argv[1]), 'videos')
 def get_stream(url):  # 4
     data = six.ensure_text(base64.b64decode(unquote(url))).strip('\n')
     # xbmc.log('@#@DATAAAA: {}'.format(data))
-    if 'info_outline' in data:
+    if len(url) < 1:
         control.infoDialog("[COLOR gold]No Links available ATM.\n [COLOR lime]Try Again Later![/COLOR]", NAME,
                            iconimage, 5000)
         return
     else:
-        links = list(zip(client.parseDOM(str(data), 'a', ret='href'), client.parseDOM(str(data), 'a')))
         titles = []
         streams = []
-
-        for link, title in links:
+        import ast
+        for i in ast.literal_eval(data):
+            title, link = i[1], i[0]
             # if not 'vecdn' in link:
             if not 'https://bedsport' in link and not 'vecdn' in link:
                 if str(link) == str(title):
