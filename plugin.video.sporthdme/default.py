@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import base64
 import re
 import sys
@@ -12,6 +13,8 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 from resources.modules import control, client
+import time
+
 
 ADDON = xbmcaddon.Addon()
 ADDON_DATA = ADDON.getAddonInfo('profile')
@@ -169,6 +172,109 @@ def sports_menu():
     #        BASEURL + 'images/chess.png', FANART, 'Chess')
 
 
+def matchdate_to_timestamp_ms(matchdate):
+    matchdate_format = "$D%Y-%m-%dT%H:%M:%S.%fZ"
+
+    try:
+        date_obj = datetime.strptime(matchdate, matchdate_format)
+        return int(date_obj.timestamp() * 1000)
+    except ValueError:
+        return None
+################################################################################
+#########################CHANNELS HELPERS#######################################
+################################################################################
+
+JSON_FILE_PATH = control.translatePath(ADDON_DATA + 'channels.json')
+LAST_UPDATE_FILE = control.translatePath(ADDON_DATA + 'last_update.txt')
+
+os.makedirs(os.path.dirname(JSON_FILE_PATH), exist_ok=True)
+os.makedirs(os.path.dirname(LAST_UPDATE_FILE), exist_ok=True)
+
+def is_time_to_update(hours=6):
+    try:
+        with open(LAST_UPDATE_FILE, 'r') as f:
+            last_update_timestamp = float(f.read().strip())
+    except (FileNotFoundError, ValueError):
+        return True
+
+    hours_in_seconds = hours * 60 * 60
+    current_time = time.time()
+
+    return (current_time - last_update_timestamp) >= hours_in_seconds
+
+def update_last_update_time():
+    with open(LAST_UPDATE_FILE, 'w') as f:
+        f.write(str(time.time()))
+
+
+def fetch_and_store_channel_data():
+    import requests
+    try:
+        response = requests.get('''https://sporthd.me/api/trpc/mutual.getTopTeams,saves.getAllUserSaves,mutual.getFooterData,mutual.getAllChannels,mutual.getWebsiteConfig?batch=1&input={"0":{"json":null,"meta":{"values":["undefined"]}},"1":{"json":null,"meta":{"values":["undefined"]}},"2":{"json":null,"meta":{"values":["undefined"]}},"3":{"json":null,"meta":{"values":["undefined"]}},"4":{"json":null,"meta":{"values":["undefined"]}}}''')
+        response.raise_for_status()
+        new_data = response.json()
+        for result in new_data:
+            if "result" in result and "data" in result["result"] and "json" in result["result"][
+                "data"] and "allChannels" in result["result"]["data"]["json"]:
+                new_channels_data = result["result"]["data"]["json"]["allChannels"]
+                break
+        else:
+            print("Channels not found")
+            return
+
+        try:
+            with open(JSON_FILE_PATH, 'r') as file:
+                existing_data = json.load(file)
+        except FileNotFoundError:
+            existing_data = []
+
+        changes_made = False
+
+        existing_data_map = {channel['_id']: channel for channel in existing_data}
+
+        for new_channel in new_channels_data:
+            channel_id = new_channel['_id']
+            if channel_id in existing_data_map:
+                if new_channel['links'] != existing_data_map[channel_id]['links']:
+                    existing_data_map[channel_id]['links'] = new_channel['links']
+                    changes_made = True
+            else:
+                existing_data_map[channel_id] = new_channel
+                changes_made = True
+
+        if changes_made:
+            with open(JSON_FILE_PATH, 'w') as file:
+                updated_data = list(existing_data_map.values())
+                json.dump(updated_data, file)
+            print("Channel links updated")
+        else:
+            print("No updates")
+
+    except requests.RequestException as e:
+        print("Error fetching data from API: {}".format(e))
+
+def load_data_from_json():
+    try:
+        with open(JSON_FILE_PATH, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []
+
+def get_links_for_channel(channel_name):
+    channels_data = load_data_from_json()
+    for channel in channels_data:
+        datos = []
+        if channel['channelName'] == channel_name:
+            for link in channel['links']:
+                chan = channel['channelName']
+                lang = channel['language']
+                datos.append((chan, link, lang))
+            return datos
+    return None
+##################################################################################
+##################################################################################
+
+
 def get_events(url):  # 5
     data = client.request(url)
     data = six.ensure_text(data, encoding='utf-8', errors='ignore')
@@ -185,31 +291,49 @@ def get_events(url):  # 5
     matches = json.loads(matches)
     event_list = []
     for match in matches['matches']:
-        xbmc.log("MATCH: {}".format(match))
+        links = match['additionalLinks']
+        if not len(links) > 1:
+            links = match['channels']
         icon = BASEURL + 'sport/' + match['sportSlug'] + '.png'
-        lname = match['league']
-        country = match['country']
-        event = match['fullName']
+        lname = six.ensure_text(match['league'], encoding='utf-8', errors='ignore')
+        country = six.ensure_text(match['country'], encoding='utf-8', errors='ignore')
+        event = six.ensure_text(match['fullName'], encoding='utf-8', errors='ignore')
+
         try:
             ftime = time_convert(match['timestampInMs'])
+            compare = match['timestampInMs']
         except ValueError:
-            ftime = '-'
+            matchdate = match['matchDate']
+            ftime = time_convert(matchdate_to_timestamp_ms(matchdate))
+            compare = ftime
+
         ftime = '[COLORcyan]{}[/COLOR]'.format(ftime)
-        name = '{0} [COLORgold]{1}[/COLOR] - [I]{2}-{3}[/I]'.format( ftime, event, lname, country)
-        event_list.append((name, ftime))
+        name = '{0} [COLOR gold]{1}[/COLOR] - [I]{2}-{3}[/I]'.format( ftime, event, lname, country)
+        event_list.append((name, compare, links))
+
         # streams = str(quote(base64.b64encode(six.ensure_binary(str(streams)))))
-        streams = []
-        links = match['additionalLinks']
-        # {'name': 'TNT Sports 1', 'link': 'https://smycdn.ru/flash1', 'lang': 'EN'}
-        for stream in links:
-            link = stream['link']
-            lang = stream['lang']
-            chan = stream['name']
-            chan = '[COLORgold]{}[/COLOR] - {}'.format(chan, lang)
-            streams.append((link, chan))
+    events = sorted(event_list, key=lambda x:x[1])
+    for event in events:
+        streams = str(quote(base64.b64encode(six.ensure_binary(str(event[2])))))
+        name = event[0]
+        addDir(name, streams, 4, icon, FANART, name)
+    # for event in sorted(event_list, key=lambda x:x[1]):
+    #     name, links = event[0], event[2]
+    #     xbmc.log("MATCH: {}".format(name))
+    #
+    #     streams = []
+    #
+    #     # {'name': 'TNT Sports 1', 'link': 'https://smycdn.ru/flash1', 'lang': 'EN'}
+    #     for stream in links:
+    #         xbmc.log("STREAM: {}".format(stream))
+    #         link = stream['link']
+    #         lang = stream['lang']
+    #         chan = stream['name']
+    #         chan = '[COLOR gold]{}[/COLOR] - {}'.format(chan, lang)
+    #         streams.append((link, chan))
 
 
-        streams = str(quote(base64.b64encode(six.ensure_binary(str(streams)))))
+
     # for event, streams in events:
     #
     #     watch = '[COLORlime]*[/COLOR]' if '>Live<' in event else '[COLORred]*[/COLOR]'
@@ -240,7 +364,7 @@ def get_events(url):  # 5
     #     cov_time = time_convert(time)
     #     # xbmc.log('@#@COVTIME: {}'.format(cov_time))
     #     ftime = '[COLORcyan]{}[/COLOR]'.format(cov_time)
-    #     name = '{0}{1} [COLORgold]{2}[/COLOR] - [I]{3}[/I]'.format(watch, ftime, teams, lname)
+    #     name = '{0}{1} [COLOR gold]{2}[/COLOR] - [I]{3}[/I]'.format(watch, ftime, teams, lname)
     #
     #     # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
     #     streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
@@ -248,10 +372,6 @@ def get_events(url):  # 5
     #     icon = client.parseDOM(event, 'img', ret='src')[0]
     #     icon = urljoin(BASEURL, icon)
     #
-
-        addDir(name, streams, 4, icon, FANART, name)
-
-
 xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 
@@ -314,7 +434,7 @@ def get_new_events(url):# 15
             # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
             streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
             cov_time = convDateUtil(time, 'default', 'GMT{}'.format(str(control.setting('timezone'))))
-            ftime = '[COLORcyan]{}[/COLOR]'.format(cov_time)
+            ftime = '[COLOR cyan]{}[/COLOR]'.format(cov_time)
 
             event = event.encode('utf-8') if six.PY2 else event
             event = client.replaceHTMLCodes(event)
@@ -329,16 +449,31 @@ xbmcplugin.setContent(int(sys.argv[1]), 'videos')
 
 def get_stream(url):  # 4
     data = six.ensure_text(base64.b64decode(unquote(url))).strip('\n')
-    # xbmc.log('@#@DATAAAA: {}'.format(data))
-    if len(url) < 1:
+    import ast
+    sstreams = []
+    for event in ast.literal_eval(data):
+        if not 'http' in str(event):  #TNT Sports 1
+            datos = get_links_for_channel(event)
+            for chan, link, lang in datos:
+                chan = '[COLOR gold]{}[/COLOR] - {}'.format(chan, lang)
+                sstreams.append((link, chan))
+
+        else:
+            link = event['link']
+            lang = event['lang']
+            chan = six.ensure_text(event['name'], encoding='utf-8', errors='ignore')
+            chan = '[COLOR gold]{}[/COLOR] - {}'.format(chan, lang)
+            sstreams.append((link, chan))
+
+    if len(sstreams) < 1:
         control.infoDialog("[COLOR gold]No Links available ATM.\n [COLOR lime]Try Again Later![/COLOR]", NAME,
                            iconimage, 5000)
         return
     else:
         titles = []
         streams = []
-        import ast
-        for i in ast.literal_eval(data):
+
+        for i in sstreams:
             title, link = i[1], i[0]
             # if not 'vecdn' in link:
             if not 'https://bedsport' in link and not 'vecdn' in link:
@@ -348,10 +483,9 @@ def get_stream(url):  # 4
                     title += ' | {}'.format(link)
                 streams.append(link.rstrip())
                 titles.append(title)
-
         if len(streams) > 1:
             dialog = xbmcgui.Dialog()
-            ret = dialog.select('[COLORgold][B]Choose Stream[/B][/COLOR]', titles)
+            ret = dialog.select('[COLOR gold][B]Choose Stream[/B][/COLOR]', titles)
             if ret == -1:
                 return
             elif ret > -1:
@@ -360,7 +494,7 @@ def get_stream(url):  # 4
             else:
                 return False
         else:
-            link = links[0][0]
+            link = streams[0][0]
             return resolve(link, name)
 
 
@@ -836,6 +970,11 @@ elif mode == 3:
 elif mode == 2:
     leagues_menu()
 elif mode == 5:
+    if is_time_to_update():
+        fetch_and_store_channel_data()
+        update_last_update_time()
+    else:
+        print("Not yet time to check for updates.")
     get_events(url)
 elif mode == 4:
     get_stream(url)
