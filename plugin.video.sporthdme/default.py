@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import os
 import base64
 import re
@@ -6,7 +7,7 @@ import sys
 import six
 from six.moves.urllib.parse import urljoin, unquote_plus, quote_plus, quote, unquote
 from six.moves import zip
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import xbmc
 import xbmcaddon
@@ -14,6 +15,10 @@ import xbmcgui
 import xbmcplugin
 from resources.modules import control, client
 import time
+from dateutil.parser import parse
+from dateutil.tz import gettz
+from dateutil.tz import tzlocal
+from dateutil import parser, tz
 
 
 ADDON = xbmcaddon.Addon()
@@ -36,9 +41,6 @@ Alt_url = 'https://liveon.sx/program'#'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
-from dateutil.parser import parse
-from dateutil.tz import gettz
-from dateutil.tz import tzlocal
 
 # reload(sys)
 # sys.setdefaultencoding("utf-8")
@@ -74,19 +76,38 @@ def time_convert(timestamp):
     time_ = dt_object.strftime("%d-%b, %H:%M")
     return time_
 
-def matchdate_to_timestamp_ms(matchdate):
-    matchdate = matchdate[2:-5]
-    matchdate_format = "%Y-%m-%dT%H:%M:%S"
 
-    try:
-        date_event = datetime.strptime(matchdate, matchdate_format)
-        return int(date_event.timestamp() * 1000)
-    except TypeError:
-        date_event = datetime(*(time.strptime(matchdate, matchdate_format)[0:6]))
-        return int(date_event.timestamp() * 1000)
+def adjust_date_and_convert_to_timestamp_ms(matchDate, livetvtimestr):
+    date_obj = parser.parse(matchDate[2:])
 
-    except ValueError:
-        return None
+    hours, minutes = map(int, livetvtimestr.split(":"))
+    date_obj = date_obj.replace(hour=hours, minute=minutes)
+
+    date_obj += timedelta(days=1)
+
+    user_timezone = tz.gettz(xbmc.getRegion('time'))
+    date_obj = date_obj.astimezone(user_timezone)
+
+    timestamp_ms = int(date_obj.timestamp() * 1000)
+
+    return timestamp_ms
+
+
+
+
+# def matchdate_to_timestamp_ms(matchdate, livetvtime):
+#     matchdate = matchdate[2:-5]
+#     time_h, time_m = livetvtime.split(":")
+#     matchdate_format = "%Y-%m-%dT%H:%M:%S"
+#
+#     try:
+#         date_event = datetime.strptime(matchdate, matchdate_format)
+#     except TypeError:
+#         date_event = datetime(*(time.strptime(matchdate, matchdate_format)[0:6]))
+#     except ValueError:
+#         return None
+#     date_event = date_event + timedelta(hours=int(time_h)+6, minutes=int(time_m))
+#     return int(date_event.timestamp() * 1000)
 
 ##########################################################################################
 ##########################################################################################
@@ -196,8 +217,16 @@ def sports_menu():
 JSON_FILE_PATH = control.translatePath(ADDON_DATA + 'channels.json')
 LAST_UPDATE_FILE = control.translatePath(ADDON_DATA + 'last_update.txt')
 
-os.makedirs(os.path.dirname(JSON_FILE_PATH), exist_ok=True)
-os.makedirs(os.path.dirname(LAST_UPDATE_FILE), exist_ok=True)
+if six.PY2:
+    os.makedirs(os.path.dirname(JSON_FILE_PATH))
+    os.makedirs(os.path.dirname(LAST_UPDATE_FILE))
+elif six.PY3:
+    os.makedirs(os.path.dirname(JSON_FILE_PATH), exist_ok=True)
+    os.makedirs(os.path.dirname(LAST_UPDATE_FILE), exist_ok=True)
+else:
+    os.makedirs(os.path.dirname(JSON_FILE_PATH))
+    os.makedirs(os.path.dirname(LAST_UPDATE_FILE))
+
 
 def is_time_to_update(hours=6):
     try:
@@ -289,10 +318,6 @@ def get_events(url):  # 5
     data = six.ensure_text(data, encoding='utf-8', errors='ignore')
     data = re.sub('\t', '', data).replace('&nbsp', '')
 
-    # events = list(zip(client.parseDOM(data, 'li', attrs={'class': "item itemhov"}),
-    #                   client.parseDOM(data, 'li', attrs={'class': "bahamas"})))
-
-    # events = re.findall('''next_f\.push\((\[1,"6.+?\n"\])\)</script>''', data, re.DOTALL)[0]
     events = client.parseDOM(data, 'script')
     try:
         events = [i for i in events if '''matchDate''' in i][0]
@@ -321,12 +346,10 @@ def get_events(url):  # 5
             try:
                 matchdt = match['matchDate']
                 tvtime = match['livetvtimestr']
-                date_part = matchdt[:13]
-                newMatchDate = "{}{}:00.000Z".format(date_part, tvtime)
-                compare = matchdate_to_timestamp_ms(newMatchDate)
+                compare = adjust_date_and_convert_to_timestamp_ms(matchdt, tvtime)
                 ftime = time_convert(compare)
             except:
-                compare = '999999999999'
+                compare = int('999999999999')
                 ftime = '-'
 
 
@@ -337,7 +360,7 @@ def get_events(url):  # 5
             is_live = True
 
         m_color = "lime" if is_live else "gold"
-        ftime = '[COLORcyan]{}[/COLOR]'.format(ftime)
+        ftime = '[COLOR cyan]{}[/COLOR]'.format(ftime)
         name = '{0} [COLOR {1}]{2}[/COLOR] - [I]{3}-{4}[/I]'.format( ftime, m_color, event, lname, country)
         event_list.append((name, compare, links, icon))
 
@@ -348,61 +371,7 @@ def get_events(url):  # 5
         name = event[0]
         icon = event[3]
         addDir(name, streams, 4, icon, FANART, name)
-    # for event in sorted(event_list, key=lambda x:x[1]):
-    #     name, links = event[0], event[2]
-    #     xbmc.log("MATCH: {}".format(name))
-    #
-    #     streams = []
-    #
-    #     # {'name': 'TNT Sports 1', 'link': 'https://smycdn.ru/flash1', 'lang': 'EN'}
-    #     for stream in links:
-    #         xbmc.log("STREAM: {}".format(stream))
-    #         link = stream['link']
-    #         lang = stream['lang']
-    #         chan = stream['name']
-    #         chan = '[COLOR gold]{}[/COLOR] - {}'.format(chan, lang)
-    #         streams.append((link, chan))
 
-
-
-    # for event, streams in events:
-    #
-    #     watch = '[COLORlime]*[/COLOR]' if '>Live<' in event else '[COLORred]*[/COLOR]'
-    #     try:
-    #         teams = client.parseDOM(event, 'td')
-    #         home, away = re.sub(r'\s*(<img.+?>)\s*', '', client.replaceHTMLCodes(teams[0])),\
-    #             re.sub(r'\s*(<img.+?>)\s*', '', client.replaceHTMLCodes(teams[2]))
-    #         if six.PY2:
-    #             home = home.strip().encode('utf-8')
-    #             away = away.strip().encode('utf-8')
-    #         teams = '[B]{0} vs {1}[/B]'.format(home, away)
-    #         teams = teams.replace('\t', '')
-    #     except IndexError:
-    #         teams = client.parseDOM(event, 'center')[0]
-    #         teams = re.sub(r'<.+?>|\s{2}', '', teams)
-    #         teams = client.replaceHTMLCodes(teams)
-    #         teams = teams.encode('utf-8') if six.PY2 else teams
-    #         teams = '[B]{}[/B]'.format(teams.replace('-->', ''))
-    #     lname = client.parseDOM(event, 'a')[1]
-    #     lname = client.parseDOM(lname, 'span')[0]
-    #     lname = re.sub(r'<.+?>', '', lname)
-    #     lname = client.replaceHTMLCodes(lname)
-    #     # time = client.parseDOM(event, 'span', attrs={'class': 'gmt_m_time'})[0]
-    #     # time = time.split('GMT')[0].strip()
-    #     # cov_time = convDateUtil(time, 'default', 'GMT+2')#.format(str(control.setting('timezone'))))
-    #     time = client.parseDOM(event, 'span', ret='mtime', attrs={'class': 'gmt_m_time'})[0]
-    #     # xbmc.log('@#@TIMESTAMP: {}'.format(time))
-    #     cov_time = time_convert(time)
-    #     # xbmc.log('@#@COVTIME: {}'.format(cov_time))
-    #     ftime = '[COLORcyan]{}[/COLOR]'.format(cov_time)
-    #     name = '{0}{1} [COLOR gold]{2}[/COLOR] - [I]{3}[/I]'.format(watch, ftime, teams, lname)
-    #
-    #     # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
-    #     streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
-    #
-    #     icon = client.parseDOM(event, 'img', ret='src')[0]
-    #     icon = urljoin(BASEURL, icon)
-    #
 xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 
@@ -415,7 +384,6 @@ def get_livetv(url):
                     client.parseDOM(data, 'a', ret='href')))
     for chan, stream in chans:
         # stream = str(quote(base64.b64encode(six.ensure_binary(stream))))
-
         chan = chan.encode('utf-8') if six.PY2 else chan
         chan = '[COLOR gold][B]{}[/COLOR][/B]'.format(chan)
 
