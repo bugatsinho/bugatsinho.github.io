@@ -30,8 +30,8 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'https://sportl.ivesoccer.sx/'
-Live_url = 'https://sportl.ivesoccer.sx/'
+BASEURL = 'https://sporthd.me/'#'https://sportl.ivesoccer.sx/'
+Live_url = 'https://sporthd.me/' #'https://sportl.ivesoccer.sx/'
 Alt_url = 'https://liveon.sx/program'#'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
@@ -74,6 +74,22 @@ def time_convert(timestamp):
     time_ = dt_object.strftime("%d-%b, %H:%M")
     return time_
 
+def matchdate_to_timestamp_ms(matchdate):
+    matchdate = matchdate[2:-5]
+    matchdate_format = "%Y-%m-%dT%H:%M:%S"
+
+    try:
+        date_event = datetime.strptime(matchdate, matchdate_format)
+        return int(date_event.timestamp() * 1000)
+    except TypeError:
+        date_event = datetime(*(time.strptime(matchdate, matchdate_format)[0:6]))
+        return int(date_event.timestamp() * 1000)
+
+    except ValueError:
+        return None
+
+##########################################################################################
+##########################################################################################
 
 def Main_menu():
 
@@ -172,14 +188,7 @@ def sports_menu():
     #        BASEURL + 'images/chess.png', FANART, 'Chess')
 
 
-def matchdate_to_timestamp_ms(matchdate):
-    matchdate_format = "$D%Y-%m-%dT%H:%M:%S.%fZ"
 
-    try:
-        date_obj = datetime.strptime(matchdate, matchdate_format)
-        return int(date_obj.timestamp() * 1000)
-    except ValueError:
-        return None
 ################################################################################
 #########################CHANNELS HELPERS#######################################
 ################################################################################
@@ -285,37 +294,59 @@ def get_events(url):  # 5
 
     # events = re.findall('''next_f\.push\((\[1,"6.+?\n"\])\)</script>''', data, re.DOTALL)[0]
     events = client.parseDOM(data, 'script')
-    events = [i for i in events if '''matchDate''' in i][0]
+    try:
+        events = [i for i in events if '''matchDate''' in i][0]
+    except:
+        control.infoDialog("[COLOR red]No Match Scheduled.[/COLOR]", NAME,
+                           iconimage, 5000)
+        return
     events = events[:-1].replace('self.__next_f.push(', '').replace('\\', '')
-    matches = re.findall('''null\,(\{"matches.+?)\]\}\]n''', events, re.DOTALL)[0]
+    matches = re.findall('''null\,(\{"(?:matches|customNotFoundMessage).+?)\]\}\]n''', events, re.DOTALL)[0]
     matches = json.loads(matches)
+
     event_list = []
+    now_time_in_ms = datetime.now().timestamp()*1000
     for match in matches['matches']:
         links = match['additionalLinks']
-        if not len(links) > 1:
-            links = match['channels']
-        icon = BASEURL + 'sport/' + match['sportSlug'] + '.png'
+        links.extend(match['channels'])
+        icon = match['team1Img']
         lname = six.ensure_text(match['league'], encoding='utf-8', errors='ignore')
         country = six.ensure_text(match['country'], encoding='utf-8', errors='ignore')
         event = six.ensure_text(match['fullName'], encoding='utf-8', errors='ignore')
 
         try:
-            ftime = time_convert(match['timestampInMs'])
             compare = match['timestampInMs']
-        except ValueError:
-            matchdate = match['matchDate']
-            ftime = time_convert(matchdate_to_timestamp_ms(matchdate))
-            compare = ftime
+            ftime = time_convert(compare)
+        except:
+            try:
+                matchdt = match['matchDate']
+                tvtime = match['livetvtimestr']
+                date_part = matchdt[:13]
+                newMatchDate = "{}{}:00.000Z".format(date_part, tvtime)
+                compare = matchdate_to_timestamp_ms(newMatchDate)
+                ftime = time_convert(compare)
+            except:
+                compare = '999999999999'
+                ftime = '-'
 
+
+        duration_in_ms = match['duration']*60*1000
+
+        is_live = False
+        if compare <= now_time_in_ms <= compare+duration_in_ms:
+            is_live = True
+
+        m_color = "lime" if is_live else "gold"
         ftime = '[COLORcyan]{}[/COLOR]'.format(ftime)
-        name = '{0} [COLOR gold]{1}[/COLOR] - [I]{2}-{3}[/I]'.format( ftime, event, lname, country)
-        event_list.append((name, compare, links))
+        name = '{0} [COLOR {1}]{2}[/COLOR] - [I]{3}-{4}[/I]'.format( ftime, m_color, event, lname, country)
+        event_list.append((name, compare, links, icon))
 
         # streams = str(quote(base64.b64encode(six.ensure_binary(str(streams)))))
     events = sorted(event_list, key=lambda x:x[1])
     for event in events:
         streams = str(quote(base64.b64encode(six.ensure_binary(str(event[2])))))
         name = event[0]
+        icon = event[3]
         addDir(name, streams, 4, icon, FANART, name)
     # for event in sorted(event_list, key=lambda x:x[1]):
     #     name, links = event[0], event[2]
@@ -733,12 +764,12 @@ def resolve(url, name):
             stream_url = flink
 
     elif any(i in url for i in ragnaru):
-        headers = {'User-Agent': 'iPad'}
+        hdrs = {'User-Agent': 'iPad'}
         referer = 'https://liveon.sx/' if 'liveon' in url else url
-        r = six.ensure_text(client.request(url, headers=headers, referer=referer))
+        r = six.ensure_text(client.request(url, headers=hdrs, referer=referer))
         stream = client.parseDOM(r, 'iframe', ret='src')[-1]
         stream = 'https:' + stream if stream.startswith('//') else stream
-        rr = six.ensure_str(client.request(stream, headers=headers, referer=referer))
+        rr = six.ensure_str(client.request(stream, headers=hdrs, referer=referer))
         from resources.modules import jsunpack
         if '<script>eval' in rr:
             rr = six.ensure_text(rr, encoding='utf-8').replace('\t', '')
@@ -860,6 +891,7 @@ def resolve(url, name):
 
     else:
         stream_url = url
+
     liz = xbmcgui.ListItem(name)
     liz.setArt({'poster': 'poster.png', 'banner': 'banner.png'})
     liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage, 'fanart': fanart})
