@@ -5,7 +5,7 @@ import base64
 import re
 import sys
 import six
-from six.moves.urllib.parse import urljoin, unquote_plus, quote_plus, quote, unquote
+from six.moves.urllib.parse import unquote_plus, quote_plus, quote, unquote
 from six.moves import zip
 from datetime import datetime, timedelta
 import json
@@ -17,7 +17,6 @@ from resources.modules import control, client
 import time
 from dateutil.parser import parse
 from dateutil.tz import gettz
-from dateutil.tz import tzlocal
 from dateutil import parser, tz
 
 
@@ -42,26 +41,34 @@ headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
 
-# reload(sys)
-# sys.setdefaultencoding("utf-8")
-
 #######################################
 # Time and Date Helpers
 #######################################
-try:
-    local_tzinfo = tzlocal()
-    locale_timezone = json.loads(xbmc.executeJSONRPC(
-        '{"jsonrpc": "2.0", "method": "Settings.GetSettingValue", "params": {"setting": "locale.timezone"}, "id": 1}'))
-    if locale_timezone['result']['value']:
-        local_tzinfo = gettz(locale_timezone['result']['value'])
-except:
-    pass
+def fetch_user_timezone():
+    try:
+        locale_timezone = json.loads(xbmc.executeJSONRPC(
+            '{"jsonrpc": "2.0", "method": "Settings.GetSettingValue", "params": {"setting": "locale.timezone"}, "id": 1}'))
+
+        if locale_timezone['result']['value']:
+            local_tzinfo = gettz(locale_timezone['result']['value'])
+            if local_tzinfo:
+                # xbmc.log('SHOW FINAL ΤΙΜΕΖΟΝΕ: {}'.format(local_tzinfo))
+                return local_tzinfo
+            else:
+                xbmc.log("Failed to get tzinfo for timezone: {}".format(locale_timezone['result']['value']))
+        else:
+            xbmc.log("No timezone value found in Kodi settings")
+    except Exception as e:
+        xbmc.log("Error fetching timezone from Kodi settings: {}".format(e))
+
+    return gettz()
 
 
 def convDateUtil(timestring, newfrmt='default', in_zone='UTC'):
     if newfrmt == 'default':
         newfrmt = xbmc.getRegion('time').replace(':%S', '')
     try:
+        local_tzinfo = fetch_user_timezone()
         in_time = parse(timestring)
         in_time_with_timezone = in_time.replace(tzinfo=gettz(in_zone))
         local_time = in_time_with_timezone.astimezone(local_tzinfo)
@@ -79,35 +86,18 @@ def time_convert(timestamp):
 
 def adjust_date_and_convert_to_timestamp_ms(matchDate, livetvtimestr):
     date_obj = parser.parse(matchDate[2:])
-
     hours, minutes = map(int, livetvtimestr.split(":"))
     date_obj = date_obj.replace(hour=hours, minute=minutes)
 
     date_obj += timedelta(days=1)
-
-    user_timezone = tz.gettz(xbmc.getRegion('time'))
+    user_timezone = fetch_user_timezone()
     date_obj = date_obj.astimezone(user_timezone)
 
-    timestamp_ms = int(date_obj.timestamp() * 1000)
-
+    if six.PY2:
+        timestamp_ms = int((time.mktime(date_obj.timetuple()) + date_obj.microsecond / 1e6) * 1000)
+    else:
+        timestamp_ms = int(date_obj.timestamp() * 1000)
     return timestamp_ms
-
-
-
-
-# def matchdate_to_timestamp_ms(matchdate, livetvtime):
-#     matchdate = matchdate[2:-5]
-#     time_h, time_m = livetvtime.split(":")
-#     matchdate_format = "%Y-%m-%dT%H:%M:%S"
-#
-#     try:
-#         date_event = datetime.strptime(matchdate, matchdate_format)
-#     except TypeError:
-#         date_event = datetime(*(time.strptime(matchdate, matchdate_format)[0:6]))
-#     except ValueError:
-#         return None
-#     date_event = date_event + timedelta(hours=int(time_h)+6, minutes=int(time_m))
-#     return int(date_event.timestamp() * 1000)
 
 ##########################################################################################
 ##########################################################################################
@@ -218,21 +208,20 @@ JSON_FILE_PATH = control.translatePath(ADDON_DATA + 'channels.json')
 LAST_UPDATE_FILE = control.translatePath(ADDON_DATA + 'last_update.txt')
 
 if six.PY2:
-    os.makedirs(os.path.dirname(JSON_FILE_PATH))
-    os.makedirs(os.path.dirname(LAST_UPDATE_FILE))
+    control.makeFile(os.path.dirname(LAST_UPDATE_FILE))
+    control.makeFile(os.path.dirname(JSON_FILE_PATH))
 elif six.PY3:
     os.makedirs(os.path.dirname(JSON_FILE_PATH), exist_ok=True)
     os.makedirs(os.path.dirname(LAST_UPDATE_FILE), exist_ok=True)
 else:
-    os.makedirs(os.path.dirname(JSON_FILE_PATH))
-    os.makedirs(os.path.dirname(LAST_UPDATE_FILE))
-
+    control.makeFile(os.path.dirname(LAST_UPDATE_FILE))
+    control.makeFile(os.path.dirname(JSON_FILE_PATH))
 
 def is_time_to_update(hours=6):
     try:
-        with open(LAST_UPDATE_FILE, 'r') as f:
+        with control.openFile(LAST_UPDATE_FILE, 'r') as f:
             last_update_timestamp = float(f.read().strip())
-    except (FileNotFoundError, ValueError):
+    except:
         return True
 
     hours_in_seconds = hours * 60 * 60
@@ -241,8 +230,12 @@ def is_time_to_update(hours=6):
     return (current_time - last_update_timestamp) >= hours_in_seconds
 
 def update_last_update_time():
-    with open(LAST_UPDATE_FILE, 'w') as f:
+    try:
+        f = control.openFile(LAST_UPDATE_FILE, 'w')
         f.write(str(time.time()))
+        f.close()
+    except:
+        print("Error updating last update time")
 
 
 def fetch_and_store_channel_data():
@@ -261,9 +254,9 @@ def fetch_and_store_channel_data():
             return
 
         try:
-            with open(JSON_FILE_PATH, 'r') as file:
+            with control.openFile(JSON_FILE_PATH, 'r') as file:
                 existing_data = json.load(file)
-        except FileNotFoundError:
+        except:
             existing_data = []
 
         changes_made = False
@@ -281,21 +274,25 @@ def fetch_and_store_channel_data():
                 changes_made = True
 
         if changes_made:
-            with open(JSON_FILE_PATH, 'w') as file:
+            try:
+                file = control.openFile(JSON_FILE_PATH, 'w')
                 updated_data = list(existing_data_map.values())
-                json.dump(updated_data, file)
-            print("Channel links updated")
+                file.write(json.dumps(updated_data))
+                file.close()
+                xbmc.log("Channel links updated")
+            except Exception as e:
+                xbmc.log("Error updating channel data: {}".format(e))
         else:
-            print("No updates")
+            xbmc.log("No updates needed for channel data")
 
     except requests.RequestException as e:
         print("Error fetching data from API: {}".format(e))
 
 def load_data_from_json():
     try:
-        with open(JSON_FILE_PATH, 'r') as file:
+        with control.openFile(JSON_FILE_PATH, 'r') as file:
             return json.load(file)
-    except FileNotFoundError:
+    except:
         return []
 
 def get_links_for_channel(channel_name):
@@ -330,7 +327,12 @@ def get_events(url):  # 5
     matches = json.loads(matches)
 
     event_list = []
-    now_time_in_ms = datetime.now().timestamp()*1000
+
+    if six.PY2:
+        now = datetime.now()
+        now_time_in_ms = (time.mktime(now.timetuple()) + now.microsecond / 1e6) * 1000
+    else:
+        now_time_in_ms = datetime.now().timestamp()*1000
     for match in matches['matches']:
         links = match['additionalLinks']
         links.extend(match['channels'])
@@ -348,6 +350,7 @@ def get_events(url):  # 5
                 tvtime = match['livetvtimestr']
                 compare = adjust_date_and_convert_to_timestamp_ms(matchdt, tvtime)
                 ftime = time_convert(compare)
+                # xbmc.log('SHOW FTIME: {}'.format(ftime))
             except:
                 compare = int('999999999999')
                 ftime = '-'
@@ -429,10 +432,10 @@ def get_new_events(url):# 15
                     time = 'N/A'
                 tevents.append((event, streams, time))
         #xbmc.log('EVENTSSS: {}'.format(tevents))
-        for event, streams, time in sorted(tevents, key=lambda x: x[2]):
+        for event, streams, mtime in sorted(tevents, key=lambda x: x[2]):
             # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
             streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
-            cov_time = convDateUtil(time, 'default', 'GMT{}'.format(str(control.setting('timezone'))))
+            cov_time = convDateUtil(mtime, 'default', 'GMT{}'.format(str(control.setting('timezone'))))
             ftime = '[COLOR cyan]{}[/COLOR]'.format(cov_time)
 
             event = event.encode('utf-8') if six.PY2 else event
