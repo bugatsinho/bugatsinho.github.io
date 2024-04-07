@@ -446,10 +446,13 @@
 				<platform>all</platform>
 		</extension>
 	</addon>
-	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.52" provider-name="Bugatsinho">
+	<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.53" provider-name="Bugatsinho">
 	  <requires>
 		<!--import addon="xbmc.python" version="2.1.0"/-->
 		<import addon="script.module.dateutil" />
+		<import addon="script.module.six" />
+		<import addon="script.module.requests" version="2.19.1"/>
 	  </requires>
 	  <extension point="xbmc.python.pluginsource" library="default.py">
 		<provides>video</provides>
@@ -458,13 +461,21 @@
 		<summary lang="en">SportHD by Bugatsinho</summary>
 		<description lang="en">Sport Streams from SportHD.me</description>
 		<disclaimer lang="en">All the streams on this add-on are hosted on the third party site and uploaded by other people. We are not responsible for any content that hosted on on the third-party sites. If you have any legal issues please contact appropriate video owners hosters.</disclaimer>
-		<language>EN</language>
+		  <language>EN</language>
 		<license>GNU GPL, version 2</license>
 		<twitter>https://twitter.com/Bugatsinho</twitter>
 		<news>
+		  - compatible with Kodi 18.x - 19.x - 20.x - 21.x version
+		  - timestamps fix finally credits to GKOBU
+		  - fix s2watch resolver
 		</news>
+		<assets>
+		  <icon>icon.png</icon>
+		  <fanart>fanart.jpg</fanart>
+		</assets>
 	  </extension>
 	</addon>
+
 	<addon id="script.module.idna"
        name="idna"
        version="2.8"
