@@ -42,45 +42,80 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 gmtfile = ADDON_DATA + 'gamato_url.txt'
+gmtcat = ADDON_DATA + 'category_links.txt'
+
 
 def get_gamdomain():
     try:
         if xbmcvfs.exists(gmtfile):
             creation_time = xbmcvfs.Stat(gmtfile).st_mtime()
-            if not (creation_time + 18000) < time.time():  # 5 hour gmtfile life
-                with xbmcvfs.File(gmtfile, 'r') as f:
-                    a = f.read()
-                return a
+            if (creation_time + 18000) >= time.time():
+                file = xbmcvfs.File(gmtfile)
+                domain = file.read()
+                file.close()
+                return domain
 
         mainurl = 'https://gamatotv.info/'
-        resp = six.ensure_str(requests.get(mainurl).text)
-        resp = client.parseDOM(resp, 'a', ret='href')
-        for link in resp:
-            if "/page/" in link:
-                resp = link
-                break
-            else:
-                continue
+        response = requests.get(mainurl)
+        if response.status_code == 200:
+            resp = six.ensure_str(response.text)
+            links = client.parseDOM(resp, 'a', ret='href')
+            domain = re.split(r'(genre|status|tainies|\?)', links[-1])[0] if links else 'https://m.gamatotv.info/'
+
+            file = xbmcvfs.File(gmtfile, 'w')
+            file.write(six.ensure_str(domain))
+            file.close()
         else:
-            resp = resp[1]
-        # xbmc.log("GAMATOLINK: {}".format(resp))
-        if 'genre' in resp:
-            resp = resp.split('genre')[0]
-        elif '?' in resp:
-            resp = resp.replace('?', '')
-        elif 'status' in resp:
-            resp = resp.split('status')[0]
+            raise Exception("Failed to reach the website")
+
+    except BaseException:
+        domain = 'https://m.gamatotv.info/'
+
+    return domain
+
+
+def get_categories_links():
+    try:
+        if xbmcvfs.exists(gmtcat):
+            creation_time = xbmcvfs.Stat(gmtcat).st_mtime()
+            if (creation_time + 18000) >= time.time():
+                gamatokids()
+
+        response = requests.get(GAMATO)
+        if response.status_code == 200:
+            html = six.ensure_str(response.text, encoding='utf-8', errors='replace')
+            cat_link = client.parseDOM(html, 'div', attrs={'id': 'menu-primary'})[0]
+            cat_link = client.parseDOM(cat_link, 'li')
+            cat_link = [client.parseDOM(i, 'a', ret='href')[0] for i in cat_link if 'Κατηγορίες' in i][0]
+            html = six.ensure_str(requests.get(cat_link).text, encoding='utf-8', errors='replace')
+            cats = client.parseDOM(html, 'div', attrs={'class': 'entry-content'})[0]
+            cats = client.parseDOM(cats, 'p')[0]
+            cats = list(zip(client.parseDOM(cats, 'a', ret='href'), client.parseDOM(cats, 'a')))
+            f = xbmcvfs.File(gmtcat, 'w')
+            for link, cat in cats:
+                link = link[1:]
+                text = cat + '_' + link
+                f.write(text + '\n')
+            f.close()
+
         else:
-            resp = re.findall(r'''^(http.+?\..+?/)''', resp)[0]
-        f = xbmcvfs.File(gmtfile, 'w')
-        f.write(six.ensure_str(resp))
-        f.close()
-    except IndexError:
-        resp = 'https://gamatotv.info/'
+            xbmc.log('Failed to reach the base URL')
 
-    return resp
+    except Exception as e:
+        xbmc.log('Error fetching category links: {}'.format(str(e)))
 
-
+# def get_category_links():
+#     links = []
+#     if xbmcvfs.exists(gmtcat):
+#         f = xbmcvfs.File(gmtcat)
+#         links = f.read().splitlines()
+#         addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + '64567/', 4, ART + 'dub.jpg', FANART, '')
+#         addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + '46/', 4, ART + 'genre.jpg', FANART, '')
+#         addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + '/51/', 4, ART + 'top.png', FANART, '')
+#         addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
+#         views.selectView('menu', 'menu-view')
+#         f.close()
+#     return links
 
 BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
 GAMATO = get_gamdomain()  #control.setting('gamato.domain') #or 'https://gmtv.co/'  # 'https://gamatokid.com/'
@@ -88,10 +123,8 @@ Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 
 def Main_addDir():
-    addDir('[B][COLOR yellow]' + Lang(32044) + '[/COLOR][/B]', GAMATO + 'category/205/', 4,
-           ART + 'mas.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Gamato ' + Lang(32000) + '[/COLOR][/B]', '', 20, ART + 'dub.jpg',
-           FANART, '')
+    # addDir('[B][COLOR yellow]' + Lang(32044) + '[/COLOR][/B]', GAMATO + '205/', 4, ART + 'mas.jpg', FANART, '')
+    addDir('[B][COLOR yellow]Gamato ' + Lang(32000) + '[/COLOR][/B]', '', 20, ART + 'dub.jpg',  FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32005) + '[/COLOR][/B]', BASEURL, 8, ART + 'random.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32008) + '[/COLOR][/B]', BASEURL, 5, ART + 'latest.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', BASEURL + 'quality/metaglotismeno/',
@@ -117,10 +150,34 @@ def Main_addDir():
 
 
 def gamatokids():
-    addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + 'id11088/', 4, ART + 'dub.jpg', FANART, '')
-    addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + 'category/46/', 4, ART + 'genre.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + 'category/51/', 4, ART + 'top.png', FANART, '')
-    addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
+    if xbmcvfs.exists(gmtcat):
+        file = xbmcvfs.File(gmtcat)
+        text = file.read().splitlines()
+        for line in text:
+            # xbmc.log('LINEEE: {}'.format(line))
+            cat, link = line.split('_')
+            if 'Μεταγλω' in cat:
+                fname = '[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]'
+                icon = ART + 'dub.jpg'
+            elif 'Κινο' in cat:
+                fname = '[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]'
+                icon = ART + 'genre.jpg'
+            elif 'Οικο' in cat:
+                fname = '[B][COLOR yellow]Family[/COLOR][/B]'
+                icon = ART + 'top.png'
+            elif 'Χριστ' in cat:
+                fname = '[B][COLOR yellow]' + Lang(32044) + '[/COLOR][/B]'
+                icon = ART + 'mas.jpg'
+            else:
+                continue
+            link = GAMATO + link
+            addDir(fname, link, 4, icon, FANART, '')
+        file.close()
+
+    # addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + '64567/', 4, ART + 'dub.jpg', FANART, '')
+    # addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + '46/', 4, ART + 'genre.jpg', FANART, '')
+    # addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + '/51/', 4, ART + 'top.png', FANART, '')
+    # addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
     views.selectView('menu', 'menu-view')
 
 
@@ -707,9 +764,9 @@ def gamatokids_top(url):  # 21
 
 
 def gamato_links(url, name, poster, description):  # 12
-    try:
+    # try:
         url = quote(url, ':/.')
-        data = six.ensure_text(requests.get(url).text)
+        data = six.ensure_text(requests.get(url).text, encoding='utf-8', errors='replace')
         html = client.parseDOM(data, 'div', attrs={'id': 'content'})[0]
         # xbmc.log('DATA: {}'.format(html))
         try:
@@ -725,25 +782,40 @@ def gamato_links(url, name, poster, description):  # 12
             fanart = FANART
 
         dlink = client.parseDOM(html, 'div', attrs={'class': 'entry-content'})[0]
+        main_links = []
+        trailer_links = []
         try:
-            trailer = client.parseDOM(dlink, 'a', ret='href')
-            # xbmc.log('Trailer LINK: {}'.format(str(trailer)))
-            trailer = [i for i in trailer if 'youtube' in i][0]
-            addDir('[B][COLOR lime]Trailer[/COLOR][/B]', trailer, 100, iconimage, fanart, str(desc))
-        except IndexError:
-            pass
-        # poster = client.parseDOM(html, 'img', ret='src')[0]
+            iframes = client.parseDOM(dlink, 'iframe', ret='src')
+            xbmc.log('LINKSS222: {}'.format(str(iframes)))
+        except:
+            iframes = []
+        try:
+            hrefs = client.parseDOM(dlink, 'a', ret='href')
+            xbmc.log('LINKSS111: {}'.format(str(hrefs)))
+        except:
+            hrefs = []
 
-        links = zip(client.parseDOM(dlink, 'a'), client.parseDOM(dlink, 'a', ret='href'))
-        links = [i[1] for i in links if 'L' in i[0]]
-
-        for link in links:
+        for href in hrefs:
+            if "youtube" in href or "trailer" in href.lower():
+                trailer_links.append(href)
+            else:
+                main_links.append(href)
+        for src in iframes:
+            if "youtube" in src:
+                trailer_links.append(src)
+            else:
+                main_links.append(src)
+        if len(trailer_links) < 1:
+            addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
+        else:
+            addDir('[B][COLOR lime]Trailer[/COLOR][/B]', trailer_links[0], 100, iconimage, fanart, str(desc))
+        for link in main_links:
             link = unquote_plus(link)
             addDir(name, link, 100, poster, fanart, str(desc))
-        # xbmc.log('Finally LINK: {}'.format(link))
-    except BaseException:
-        return
-    views.selectView('movies', 'movie-view')
+
+    # except BaseException:
+    #     return
+        views.selectView('movies', 'movie-view')
 
 
 def get_links(name, url, iconimage, description):
@@ -1098,8 +1170,6 @@ xbmc.log('{}: {}'.format('ICON', str(iconimage)))
 
 if mode is None:
     Main_addDir()
-
-
 ###############GAMATOKIDS#################
 elif mode == 3:
     get_gam_genres(url)
