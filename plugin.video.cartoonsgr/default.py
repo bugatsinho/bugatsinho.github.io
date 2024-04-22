@@ -47,75 +47,36 @@ gmtcat = ADDON_DATA + 'category_links.txt'
 
 def get_gamdomain():
     try:
+        adpath = control.transPath(ADDON_DATA)
+        if not xbmcvfs.exists(adpath):
+            xbmcvfs.mkdir(adpath)
         if xbmcvfs.exists(gmtfile):
             creation_time = xbmcvfs.Stat(gmtfile).st_mtime()
             if (creation_time + 18000) >= time.time():
                 file = xbmcvfs.File(gmtfile)
-                domain = file.read()
+                domains = json.loads(file.read())
+                domain = domains['gamato']['main']
                 file.close()
                 return domain
 
-        mainurl = 'https://gamatotv.info/'
+        mainurl = 'https://pastebin.com/raw/AdKpPAHC'
         response = requests.get(mainurl)
-        if response.status_code == 200:
-            resp = six.ensure_str(response.text)
-            links = client.parseDOM(resp, 'a', ret='href')
-            domain = re.split(r'(genre|status|tainies|\?)', links[-1])[0] if links else 'https://m.gamatotv.info/'
+        resp = response.json()
+        domain = resp['gamato']['main']
 
-            file = xbmcvfs.File(gmtfile, 'w')
-            file.write(six.ensure_str(domain))
-            file.close()
+        file = xbmcvfs.File(gmtfile, 'w')
+        data = json.dumps(resp)
+        if isinstance(data, six.string_types):
+            file.write(data)
         else:
-            raise Exception("Failed to reach the website")
+            file.write(six.ensure_text(data, 'utf-8', 'replace'))
+        file.close()
+        return domain
 
     except BaseException:
-        domain = 'https://m.gamatotv.info/'
+        domain = 'https://gamatotv.info/m/'
+        return domain
 
-    return domain
-
-
-def get_categories_links():
-    try:
-        if xbmcvfs.exists(gmtcat):
-            creation_time = xbmcvfs.Stat(gmtcat).st_mtime()
-            if (creation_time + 18000) >= time.time():
-                gamatokids()
-
-        response = requests.get(GAMATO)
-        if response.status_code == 200:
-            html = six.ensure_str(response.text, encoding='utf-8', errors='replace')
-            cat_link = client.parseDOM(html, 'div', attrs={'id': 'menu-primary'})[0]
-            cat_link = client.parseDOM(cat_link, 'li')
-            cat_link = [client.parseDOM(i, 'a', ret='href')[0] for i in cat_link if 'Κατηγορίες' in i][0]
-            html = six.ensure_str(requests.get(cat_link).text, encoding='utf-8', errors='replace')
-            cats = client.parseDOM(html, 'div', attrs={'class': 'entry-content'})[0]
-            cats = client.parseDOM(cats, 'p')[0]
-            cats = list(zip(client.parseDOM(cats, 'a', ret='href'), client.parseDOM(cats, 'a')))
-            f = xbmcvfs.File(gmtcat, 'w')
-            for link, cat in cats:
-                link = link[1:]
-                text = cat + '_' + link
-                f.write(text + '\n')
-            f.close()
-
-        else:
-            xbmc.log('Failed to reach the base URL')
-
-    except Exception as e:
-        xbmc.log('Error fetching category links: {}'.format(str(e)))
-
-# def get_category_links():
-#     links = []
-#     if xbmcvfs.exists(gmtcat):
-#         f = xbmcvfs.File(gmtcat)
-#         links = f.read().splitlines()
-#         addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + '64567/', 4, ART + 'dub.jpg', FANART, '')
-#         addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + '46/', 4, ART + 'genre.jpg', FANART, '')
-#         addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + '/51/', 4, ART + 'top.png', FANART, '')
-#         addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
-#         views.selectView('menu', 'menu-view')
-#         f.close()
-#     return links
 
 BASEURL = 'https://tenies-online1.gr/genre/kids/'  # 'https://paidikestainies.online/'
 GAMATO = get_gamdomain()  #control.setting('gamato.domain') #or 'https://gmtv.co/'  # 'https://gamatokid.com/'
@@ -123,8 +84,7 @@ Teniesonline = control.setting('tenies.domain') or 'https://tenies-online1.gr/'
 
 
 def Main_addDir():
-    # addDir('[B][COLOR yellow]' + Lang(32044) + '[/COLOR][/B]', GAMATO + '205/', 4, ART + 'mas.jpg', FANART, '')
-    addDir('[B][COLOR yellow]Gamato ' + Lang(32000) + '[/COLOR][/B]', '', 20, ART + 'dub.jpg',  FANART, '')
+    addDir('[B][COLOR yellow]Gamato ' + Lang(32000) + '[/COLOR][/B]', '', 20, ART + 'dub.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32005) + '[/COLOR][/B]', BASEURL, 8, ART + 'random.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32008) + '[/COLOR][/B]', BASEURL, 5, ART + 'latest.jpg', FANART, '')
     # addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', BASEURL + 'quality/metaglotismeno/',
@@ -150,34 +110,24 @@ def Main_addDir():
 
 
 def gamatokids():
-    if xbmcvfs.exists(gmtcat):
-        file = xbmcvfs.File(gmtcat)
-        text = file.read().splitlines()
-        for line in text:
-            # xbmc.log('LINEEE: {}'.format(line))
-            cat, link = line.split('_')
-            if 'Μεταγλω' in cat:
-                fname = '[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]'
-                icon = ART + 'dub.jpg'
-            elif 'Κινο' in cat:
-                fname = '[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]'
-                icon = ART + 'genre.jpg'
-            elif 'Οικο' in cat:
-                fname = '[B][COLOR yellow]Family[/COLOR][/B]'
-                icon = ART + 'top.png'
-            elif 'Χριστ' in cat:
-                fname = '[B][COLOR yellow]' + Lang(32044) + '[/COLOR][/B]'
-                icon = ART + 'mas.jpg'
-            else:
-                continue
-            link = GAMATO + link
-            addDir(fname, link, 4, icon, FANART, '')
+    if xbmcvfs.exists(gmtfile):
+        file = xbmcvfs.File(gmtfile)
+        text = json.loads(file.read())
         file.close()
+        meta = text['gamato']['meta']
+        anim = text['gamato']['animation']
+        fam = text['gamato']['family']
+        chris = text['gamato']['christmas']
+        addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', meta, 4, ART + 'dub.jpg', FANART, '')
+        addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', anim, 4, ART + 'genre.jpg', FANART, '')
+        addDir('[B][COLOR yellow]Family[/COLOR][/B]', fam, 4, ART + 'genre.png', FANART, '')
+        addDir('[B][COLOR yellow]' + Lang(32044) + '[/COLOR][/B]', chris, 4, ART + 'mas.jpg', FANART, '')
+        addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
 
-    # addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', GAMATO + '64567/', 4, ART + 'dub.jpg', FANART, '')
-    # addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', GAMATO + '46/', 4, ART + 'genre.jpg', FANART, '')
-    # addDir('[B][COLOR yellow]Family[/COLOR][/B]', GAMATO + '/51/', 4, ART + 'top.png', FANART, '')
-    # addDir('[B][COLOR gold]' + Lang(32002) + '[/COLOR][/B]', GAMATO, 18, ICON, FANART, '')
+    else:
+        get_gamdomain()
+        gamatokids()
+
     views.selectView('menu', 'menu-view')
 
 
@@ -444,15 +394,6 @@ def __top_domain(url):
     if res: domain = res.group(1)
     domain = domain.lower()
     return domain
-
-
-# def Trailer(url):
-#     lcookie = cache.get(_Login, 4, BASEURL)
-#     OPEN = cache.get(client.request, 4, url, True, True, False, None, None, None, False, None, None, lcookie)
-#     patron = 'class="youtube_id.+?src="([^"]+)".+?></iframe>'
-#     trailer_link = find_single_match(OPEN, patron)
-#     trailer_link = trailer_link.replace('//www.', 'http://')
-#     return trailer_link
 
 
 def search_menu():  # 6
@@ -1170,6 +1111,8 @@ xbmc.log('{}: {}'.format('ICON', str(iconimage)))
 
 if mode is None:
     Main_addDir()
+
+
 ###############GAMATOKIDS#################
 elif mode == 3:
     get_gam_genres(url)
