@@ -15,9 +15,12 @@
 		<setting type="lsep" label="32042" />
 		<setting type="lsep" label="32043" />
     </category>
-	<category label="DOMAINS">
+	<category label="GAMATO DOMAINS">
         <setting type="lsep" label="32037" />
-        <setting id="gamato.domain" type="text" label="GAMATO URL" default="https://gamatotv.best/" />
-        <setting id="tenies.domain" type="text" label="TENIES ONLINE URL" default="https://tenies-online1.gr/" />
+        <setting id="gamato.domain" type="text" label="Main" default="https://gamatotv.info/" />
+        <setting id="gamato.metag" type="text" label="Metaglotismena" default="https://gamatotv.info/64567/" />
+        <setting id="gamato.anim" type="text" label="Kinoumena-sxedia" default="https://gamatotv.info/46/" />
+        <setting id="gamato.fam" type="text" label="Oikogeneiakes" default="https://gamatotv.info/51/" />
+        <setting id="gamato.chris" type="text" label="Christmas" default="https://gamatotv.info/51/" />
 	</category>
 </settings>

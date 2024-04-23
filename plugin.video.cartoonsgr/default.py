@@ -42,7 +42,6 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 gmtfile = ADDON_DATA + 'gamato_url.txt'
-gmtcat = ADDON_DATA + 'category_links.txt'
 
 
 def get_gamdomain():
@@ -56,6 +55,7 @@ def get_gamdomain():
                 file = xbmcvfs.File(gmtfile)
                 domains = json.loads(file.read())
                 domain = domains['gamato']['main']
+                control.setSetting('gamato.domain', domain)
                 file.close()
                 return domain
 
@@ -115,9 +115,13 @@ def gamatokids():
         text = json.loads(file.read())
         file.close()
         meta = text['gamato']['meta']
+        control.setSetting('gamato.metag', meta)
         anim = text['gamato']['animation']
+        control.setSetting('gamato.anim', anim)
         fam = text['gamato']['family']
+        control.setSetting('gamato.fam', fam)
         chris = text['gamato']['christmas']
+        control.setSetting('gamato.chris', chris)
         addDir('[B][COLOR yellow]' + Lang(32004) + '[/COLOR][/B]', meta, 4, ART + 'dub.jpg', FANART, '')
         addDir('[B][COLOR yellow]' + Lang(32010) + '[/COLOR][/B]', anim, 4, ART + 'genre.jpg', FANART, '')
         addDir('[B][COLOR yellow]Family[/COLOR][/B]', fam, 4, ART + 'genre.png', FANART, '')
@@ -906,6 +910,7 @@ def Open_settings():
 
 def cache_clear():
     cache.clear(withyes=False)
+    xbmcvfs.delete(gmtfile)
 
 
 def search_clear():
