@@ -572,25 +572,16 @@ def resolve(name, url):
     liz.setArt({'icon': ICON, 'thumb': ICON, 'poster': ICON, 'fanart': FANART})
     liz.setProperty("IsPlayable", "true")
     liz.setPath(stream_url)
+    if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 17.5:
+        liz.setProperty('inputstream', 'inputstream.adaptive')
+    else:
+        liz.setProperty('inputstreamaddon', 'inputstream.adaptive')
     liz.setMimeType('application/vnd.apple.mpegurl')
     liz.setContentLookup(False)
-    if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) < 19:
-        liz.setInfo(type="Video", infoLabels={"Title": name})
-        liz.setProperty('inputstreamaddon', 'inputstream.adaptive')
-    if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 19 < 21:
-        liz.setInfo(type="Video", infoLabels={"Title": name})
-        liz.setProperty('inputstream', 'inputstream.adaptive')
-        liz.setProperty('inputstream.adaptive.manifest_type', 'hls')
-        # stream_url, headers = stream_url.split('|')
-        liz.setProperty('inputstream.adaptive.stream_headers', hdrs)
-    if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 20:
-        # liz.InfoTagVideo(False)
-        liz.setProperty('inputstream', 'inputstream.adaptive')
-        liz.setProperty('inputstream.adaptive.max_bandwidth', '100000000000')
-        liz.setProperty('inputstream.adaptive.stream_selection_type', 'adaptive')
-        liz.setProperty('inputstream.adaptive.stream_headers', hdrs)
-    else:
-        liz.setProperty('inputstreamaddon', None)
+    liz.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    liz.setProperty('inputstream.adaptive.stream_headers', str(hdrs))
+    liz.setProperty('inputstream.adaptive.manifest_headers', str(hdrs))
+    liz.setProperty('inputstream.adaptive.stream_selection_type', 'adaptive')
     # xbmcplugin.setResolvedUrl(_handle, True, listitem=liz)
     xbmc.Player().play(stream_url, liz, False)
 
@@ -737,16 +728,18 @@ def time_convert(timestamp):
 
 
 def time_to_update(hours=6):
-    f = control.openFile(LAST_UPDATE_FILE, 'r')
-    content = f.read()
-    last_update_timestamp = float(content.strip())
-    f.close()
+    try:
+        f = control.openFile(LAST_UPDATE_FILE, 'r')
+        content = f.read()
+        last_update_timestamp = float(content.strip())
+        f.close()
+    except:
+        return True
 
     hours_in_seconds = int(hours) * 60 * 60
     current_time = time.time()
 
     return (current_time - last_update_timestamp) >= hours_in_seconds
-
 
 def update_last_update_time():
     try:
