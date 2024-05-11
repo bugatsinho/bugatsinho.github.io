@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-import os
+import xbmcvfs
 import base64
 import re
 import sys
 import six
-from six.moves.urllib.parse import unquote_plus, quote_plus, quote, unquote
-from six.moves import zip
+from six.moves.urllib.parse import unquote_plus, quote_plus, quote, unquote, parse_qsl, urlencode
 from datetime import datetime, timedelta
 import json
 import xbmc
@@ -19,6 +18,8 @@ from dateutil.parser import parse
 from dateutil.tz import gettz
 from dateutil import parser, tz
 
+_url = sys.argv[0]
+_handle = int(sys.argv[1])
 
 ADDON = xbmcaddon.Addon()
 ADDON_DATA = ADDON.getAddonInfo('profile')
@@ -34,280 +35,24 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'https://sporthd.me/'#'https://sportl.ivesoccer.sx/'
-Live_url = 'https://sporthd.me/' #'https://sportl.ivesoccer.sx/'
-Alt_url = 'https://liveon.sx/program'#'https://1.livesoccer.sx/program'
+BASEURL = 'https://sporthd.me/'  #'https://sportl.ivesoccer.sx/'
+Live_url = 'https://sporthd.me/'  #'https://sportl.ivesoccer.sx/'
+Alt_url = 'https://liveon.sx/program'  #'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
 
-#######################################
-# Time and Date Helpers
-#######################################
-def fetch_user_timezone():
-    try:
-        locale_timezone = json.loads(xbmc.executeJSONRPC(
-            '{"jsonrpc": "2.0", "method": "Settings.GetSettingValue", "params": {"setting": "locale.timezone"}, "id": 1}'))
-
-        if locale_timezone['result']['value']:
-            local_tzinfo = gettz(locale_timezone['result']['value'])
-            if local_tzinfo:
-                # xbmc.log('SHOW FINAL ΤΙΜΕΖΟΝΕ: {}'.format(local_tzinfo))
-                return local_tzinfo
-            else:
-                xbmc.log("Failed to get tzinfo for timezone: {}".format(locale_timezone['result']['value']))
-        else:
-            xbmc.log("No timezone value found in Kodi settings")
-    except Exception as e:
-        xbmc.log("Error fetching timezone from Kodi settings: {}".format(e))
-
-    return gettz()
-
-
-def convDateUtil(timestring, newfrmt='default', in_zone='UTC'):
-    if newfrmt == 'default':
-        newfrmt = xbmc.getRegion('time').replace(':%S', '')
-    try:
-        local_tzinfo = fetch_user_timezone()
-        in_time = parse(timestring)
-        in_time_with_timezone = in_time.replace(tzinfo=gettz(in_zone))
-        local_time = in_time_with_timezone.astimezone(local_tzinfo)
-        return local_time.strftime(newfrmt)
-    except:
-        return timestring
-
-
-def time_convert(timestamp):
-    timestamp = int(str(timestamp)[:10])
-    dt_object = datetime.fromtimestamp(timestamp)
-    time_ = dt_object.strftime("%d-%b, %H:%M")
-    return time_
-
-
-def adjust_date_and_convert_to_timestamp_ms(matchDate, livetvtimestr):
-    date_obj = parser.parse(matchDate[2:])
-    hours, minutes = map(int, livetvtimestr.split(":"))
-    date_obj = date_obj.replace(hour=hours, minute=minutes)
-
-    date_obj += timedelta(days=1)
-    user_timezone = fetch_user_timezone()
-    date_obj = date_obj.astimezone(user_timezone)
-
-    if six.PY2:
-        timestamp_ms = int((time.mktime(date_obj.timetuple()) + date_obj.microsecond / 1e6) * 1000)
-    else:
-        timestamp_ms = int(date_obj.timestamp() * 1000)
-    return timestamp_ms
-
-##########################################################################################
-##########################################################################################
-
 def Main_menu():
-
     # addDir('[B][COLOR gold]Channels 24/7[/COLOR][/B]', 'https://1.livesoccer.sx/program.php', 14, ICON, FANART, '')
-    addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 5, ICON, FANART, '')
+    addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 'events', ICON, FANART, True)
     # addDir('[B][COLOR gold]Alternative VIEW [/COLOR][/B]', '', '', ICON, FANART, '')
     # addDir('[B][COLOR gold]Alternative LIVE EVENTS[/COLOR][/B]', Alt_url, 15, ICON, FANART, '')
-    addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
-    addDir('[B][COLOR white]BEST LEAGUES[/COLOR][/B]', '', 2, ICON, FANART, '')
-    addDir('[B][COLOR gold]Settings[/COLOR][/B]', '', 10, ICON, FANART, '')
-    addDir('[B][COLOR gold]Version: [COLOR lime]{}[/COLOR][/B]'.format(vers), '', 'BUG', ICON, FANART, '')
-    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-
-
-def leagues_menu():
-    addDir('[B][COLOR white]Uefa Champions League[/COLOR][/B]',
-           BASEURL + 'index.php?champ=uefa-champions-league', 5,
-           BASEURL + 'flags/uefa-champions-league.png', FANART, 'Uefa Champions League')
-    addDir('[B][COLOR white]Uefa Europa League[/COLOR][/B]', BASEURL + 'index.php?champ=uefa-europa-league',
-           5, BASEURL + 'flags/uefa-europa-league.png', FANART, 'Uefa Europa League')
-    addDir('[B][COLOR white]Premier League[/COLOR][/B]', BASEURL + 'index.php?champ=premier-league', 5,
-           BASEURL + 'flags/premier-league.png', FANART, 'Premier League')
-    addDir('[B][COLOR white]Bundesliga[/COLOR][/B]', BASEURL + 'index.php?champ=bundesliga', 5,
-           BASEURL + 'flags/bundesliga.png', FANART, 'Bundesliga')
-    addDir('[B][COLOR white]Laliga[/COLOR][/B]', BASEURL + 'index.php?champ=laliga', 5,
-           BASEURL + 'flags/spanish-primera-division.png', FANART, 'Laliga')
-    addDir('[B][COLOR white]Serie A[/COLOR][/B]', BASEURL + 'index.php?champ=serie-a', 5,
-           BASEURL + 'flags/serie-a.png', FANART, 'Serie a')
-    addDir('[B][COLOR white]France Ligue 1[/COLOR][/B]', BASEURL + 'index.php?champ=france-ligue-1', 5,
-           BASEURL + 'flags/france-ligue-1.png', FANART, 'France ligue 1')
-    addDir('[B][COLOR white]Eredivisie[/COLOR][/B]', BASEURL + 'index.php?champ=eredivisie', 5,
-           BASEURL + 'flags/eredivisie.png', FANART, 'Eredivisie')
-    addDir('[B][COLOR white]Australian A League[/COLOR][/B]',
-           BASEURL + 'index.php?champ=australian-a-league', 5,
-           BASEURL + 'flags/australian-a-league.png', FANART, 'Australian a league')
-    addDir('[B][COLOR white]MLS[/COLOR][/B]', BASEURL + 'index.php?champ=mls', 5,
-           BASEURL + 'flags/mls.png', FANART, 'Mls')
-    addDir('[B][COLOR white]Rugby Top 14[/COLOR][/B]', BASEURL + 'index.php?champ=rugby-top-14', 5,
-           BASEURL + 'flags/rugby-top-14.png', FANART, 'Rugby top 14')
-    addDir('[B][COLOR white]Greece Super League[/COLOR][/B]',
-           BASEURL + 'index.php?champ=greece-super-league', 5,
-           BASEURL + 'flags/greece-super-league.png', FANART, 'Greece super league')
-    addDir('[B][COLOR white]Argentina Superliga[/COLOR][/B]',
-           BASEURL + 'index.php?champ=argentina-superliga', 5,
-           BASEURL + 'flags/argentina-superliga.png', FANART, 'Argentina superliga')
-    addDir('[B][COLOR white]Portuguese Primeira Liga[/COLOR][/B]',
-           BASEURL + 'index.php?champ=portuguese-primeira-liga', 5,
-           BASEURL + 'flags/portuguese-primeira-liga.png', FANART, 'Portuguese primeira liga')
-    addDir('[B][COLOR white]Primera Division Apertura[/COLOR][/B]',
-           BASEURL + 'index.php?champ=primera-division-apertura', 5,
-           BASEURL + 'flags/primera-division-apertura.png', FANART, 'Primera division apertura')
-    addDir('[B][COLOR white]Bundesliga 2[/COLOR][/B]', BASEURL + 'index.php?champ=bundesliga-2', 5,
-           BASEURL + 'flags/bundesliga-2.png', FANART, 'Bundesliga 2')
-    addDir('[B][COLOR white]Greece Super League 2[/COLOR][/B]',
-           BASEURL + 'index.php?champ=greece-super-league-2', 5,
-           BASEURL + 'flags/greece-super-league-2.png', FANART, 'Greece super league 2')
-    addDir('[B][COLOR white]Belarus Vysheyshaya Liga[/COLOR][/B]',
-           BASEURL + 'index.php?champ=belarus-vysheyshaya-liga', 5,
-           BASEURL + 'flags/belarus-vysheyshaya-liga.png', FANART, 'Belarus vysheyshaya liga')
-
-
-def sports_menu():
-    addDir('[B][COLOR white]Football[/COLOR][/B]', BASEURL + 'sport/football', 5,
-           BASEURL + 'images/football.png', FANART, 'Football')
-    addDir('[B][COLOR white]Basketball[/COLOR][/B]', BASEURL + 'sport/basketball', 5,
-           BASEURL + 'images/basketball.png', FANART, 'Basketball')
-    addDir('[B][COLOR white]MotorSport[/COLOR][/B]', BASEURL + 'sport/motorsport', 5,
-           BASEURL + 'images/motorsport.png', FANART, 'MotorSport')
-    addDir('[B][COLOR white]Rugby[/COLOR][/B]', BASEURL + 'sport/rugby', 5,
-           BASEURL + 'images/rugby.png', FANART, 'Rugby')
-    addDir('[B][COLOR white]NFL[/COLOR][/B]', BASEURL + 'sport/american-football', 5,
-           BASEURL + 'images/nfl.png', FANART, 'NFL')
-    addDir('[B][COLOR white]UFC[/COLOR][/B]', BASEURL + 'sport/ufc', 5,
-           BASEURL + 'images/ufc.png', FANART, 'UFC')
-    addDir('[B][COLOR white]Hockey[/COLOR][/B]', BASEURL + 'sport/hockey', 5,
-           'https://s2watch.ru/images/hockey-puck-solid.svg', FANART, 'Hokey')
-    addDir('[B][COLOR white]Volleyball[/COLOR][/B]', BASEURL + 'sport/volleyball', 5,
-           BASEURL + 'images/volleyball.png', FANART, 'Volleyball')
-    # addDir('[B][COLOR white]Wrestling[/COLOR][/B]', BASEURL + '?type=wresling', 5,
-    #        BASEURL + 'images/wresling.png', FANART, 'Wresling')
-    # addDir('[B][COLOR white]Handball[/COLOR][/B]', BASEURL + '?type=handball', 5,
-    #        BASEURL + 'images/handball.png', FANART, 'Handball')
-    # addDir('[B][COLOR white]Darts[/COLOR][/B]', BASEURL + '?type=darts', 5,
-    #        BASEURL + 'images/darts.png', FANART, 'Darts')
-    # addDir('[B][COLOR white]Tennis[/COLOR][/B]', BASEURL + '?type=tennis', 5,
-    #        BASEURL + 'images/tennis.png', FANART, 'Tennis')
-    # addDir('[B][COLOR white]Boxing[/COLOR][/B]', BASEURL + '?type=boxing', 5,
-    #        BASEURL + 'images/boxing.png', FANART, 'Boxing')
-    # addDir('[B][COLOR white]Cricket[/COLOR][/B]', BASEURL + '?type=cricket', 5,
-    #        BASEURL + 'images/cricket.png', FANART, 'Cricket')
-    # addDir('[B][COLOR white]Baseball[/COLOR][/B]', BASEURL + '?type=baseball', 5,
-    #        BASEURL + 'images/baseball.png', FANART, 'Baseball')
-    # addDir('[B][COLOR white]Snooker[/COLOR][/B]', BASEURL + '?type=snooker', 5,
-    #        BASEURL + 'images/snooker.png', FANART, 'Snooker')
-    # addDir('[B][COLOR white]Chess[/COLOR][/B]', BASEURL + '?type=chess', 5,
-    #        BASEURL + 'images/chess.png', FANART, 'Chess')
-
-
-
-################################################################################
-#########################CHANNELS HELPERS#######################################
-################################################################################
-
-JSON_FILE_PATH = control.translatePath(ADDON_DATA + 'channels.json')
-LAST_UPDATE_FILE = control.translatePath(ADDON_DATA + 'last_update.txt')
-
-if six.PY2:
-    control.makeFile(os.path.dirname(LAST_UPDATE_FILE))
-    control.makeFile(os.path.dirname(JSON_FILE_PATH))
-elif six.PY3:
-    os.makedirs(os.path.dirname(JSON_FILE_PATH), exist_ok=True)
-    os.makedirs(os.path.dirname(LAST_UPDATE_FILE), exist_ok=True)
-else:
-    control.makeFile(os.path.dirname(LAST_UPDATE_FILE))
-    control.makeFile(os.path.dirname(JSON_FILE_PATH))
-
-def is_time_to_update(hours=6):
-    try:
-        with control.openFile(LAST_UPDATE_FILE, 'r') as f:
-            last_update_timestamp = float(f.read().strip())
-    except:
-        return True
-
-    hours_in_seconds = hours * 60 * 60
-    current_time = time.time()
-
-    return (current_time - last_update_timestamp) >= hours_in_seconds
-
-def update_last_update_time():
-    try:
-        f = control.openFile(LAST_UPDATE_FILE, 'w')
-        f.write(str(time.time()))
-        f.close()
-    except:
-        print("Error updating last update time")
-
-
-def fetch_and_store_channel_data():
-    import requests
-    try:
-        response = requests.get('''https://sporthd.me/api/trpc/mutual.getTopTeams,saves.getAllUserSaves,mutual.getFooterData,mutual.getAllChannels,mutual.getWebsiteConfig?batch=1&input={"0":{"json":null,"meta":{"values":["undefined"]}},"1":{"json":null,"meta":{"values":["undefined"]}},"2":{"json":null,"meta":{"values":["undefined"]}},"3":{"json":null,"meta":{"values":["undefined"]}},"4":{"json":null,"meta":{"values":["undefined"]}}}''')
-        response.raise_for_status()
-        new_data = response.json()
-        for result in new_data:
-            if "result" in result and "data" in result["result"] and "json" in result["result"][
-                "data"] and "allChannels" in result["result"]["data"]["json"]:
-                new_channels_data = result["result"]["data"]["json"]["allChannels"]
-                break
-        else:
-            print("Channels not found")
-            return
-
-        try:
-            with control.openFile(JSON_FILE_PATH, 'r') as file:
-                existing_data = json.load(file)
-        except:
-            existing_data = []
-
-        changes_made = False
-
-        existing_data_map = {channel['_id']: channel for channel in existing_data}
-
-        for new_channel in new_channels_data:
-            channel_id = new_channel['_id']
-            if channel_id in existing_data_map:
-                if new_channel['links'] != existing_data_map[channel_id]['links']:
-                    existing_data_map[channel_id]['links'] = new_channel['links']
-                    changes_made = True
-            else:
-                existing_data_map[channel_id] = new_channel
-                changes_made = True
-
-        if changes_made:
-            try:
-                file = control.openFile(JSON_FILE_PATH, 'w')
-                updated_data = list(existing_data_map.values())
-                file.write(json.dumps(updated_data))
-                file.close()
-                xbmc.log("Channel links updated")
-            except Exception as e:
-                xbmc.log("Error updating channel data: {}".format(e))
-        else:
-            xbmc.log("No updates needed for channel data")
-
-    except requests.RequestException as e:
-        print("Error fetching data from API: {}".format(e))
-
-def load_data_from_json():
-    try:
-        with control.openFile(JSON_FILE_PATH, 'r') as file:
-            return json.load(file)
-    except:
-        return []
-
-def get_links_for_channel(channel_name):
-    channels_data = load_data_from_json()
-    for channel in channels_data:
-        datos = []
-        if channel['channelName'] == channel_name:
-            for link in channel['links']:
-                chan = channel['channelName']
-                lang = channel['language']
-                datos.append((chan, link, lang))
-            return datos
-    return None
-##################################################################################
-##################################################################################
+    # addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
+    # addDir('[B][COLOR white]BEST LEAGUES[/COLOR][/B]', '', 2, ICON, FANART, '')
+    addDir('[B][COLOR gold]Settings[/COLOR][/B]', 'set', 'settings', ICON, FANART, False)
+    addDir('[B][COLOR gold]Version: [COLOR lime]{}[/COLOR][/B]'.format(vers), '', 'version', ICON, FANART, False)
+    xbmcplugin.setContent(_handle, 'movies')
+    xbmcplugin.endOfDirectory(_handle)
 
 
 def get_events(url):  # 5
@@ -319,11 +64,15 @@ def get_events(url):  # 5
     try:
         events = [i for i in events if '''matchDate''' in i][0]
     except:
-        control.infoDialog("[COLOR red]No Match Scheduled.[/COLOR]", NAME,
-                           iconimage, 5000)
+        control.infoDialog("[COLOR red]No Match Scheduled.[/COLOR]", NAME, ICON, 5000)
         return
     events = events[:-1].replace('self.__next_f.push(', '').replace('\\', '')
-    matches = re.findall('''null\,(\{"(?:matches|customNotFoundMessage).+?)\]\}\]n''', events, re.DOTALL)[0]
+
+    # matches = re.findall('''null\,(\{"(?:matches|customNotFoundMessage).+?)\]\}\]n''', events, re.DOTALL)[0]
+    # pattern = r'("matches"\s*\:\s*\[.+?])}]}]n"'
+    pattern = r'"matches"\s*\:\s*(\[.+?])}]}]n'
+    matches = re.findall(pattern, events, re.DOTALL)[0]
+    # xbmc.log('EVENTSSS: {}'.format(matches))
     matches = json.loads(matches)
 
     event_list = []
@@ -332,8 +81,8 @@ def get_events(url):  # 5
         now = datetime.now()
         now_time_in_ms = (time.mktime(now.timetuple()) + now.microsecond / 1e6) * 1000
     else:
-        now_time_in_ms = datetime.now().timestamp()*1000
-    for match in matches['matches']:
+        now_time_in_ms = datetime.now().timestamp() * 1000
+    for match in matches:
         links = match['additionalLinks']
         links.extend(match['channels'])
         icon = match['team1Img']
@@ -355,107 +104,37 @@ def get_events(url):  # 5
                 compare = int('999999999999')
                 ftime = '-'
 
-
-        duration_in_ms = match['duration']*60*1000
+        duration_in_ms = match['duration'] * 60 * 1000
 
         is_live = False
-        if compare <= now_time_in_ms <= compare+duration_in_ms:
+        if compare <= now_time_in_ms <= compare + duration_in_ms:
             is_live = True
 
         m_color = "lime" if is_live else "gold"
         ftime = '[COLOR cyan]{}[/COLOR]'.format(ftime)
-        name = u'{0} [COLOR {1}]{2}[/COLOR] - [I]{3}-{4}[/I]'.format( ftime, m_color, event, lname, country)
+        name = u'{0} [COLOR {1}]{2}[/COLOR] - [I]{3}-{4}[/I]'.format(ftime, m_color, event, lname, country)
         event_list.append((name, compare, links, icon))
 
         # streams = str(quote(base64.b64encode(six.ensure_binary(str(streams)))))
-    events = sorted(event_list, key=lambda x:x[1])
+    events = sorted(event_list, key=lambda x: x[1])
     for event in events:
         streams = str(quote(base64.b64encode(six.ensure_binary(str(event[2])))))
         name = event[0]
         icon = event[3]
-        addDir(name, streams, 4, icon, FANART, name)
+        addDir(name, streams, 'get_streams', icon, FANART, isFolder=True)
 
-xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-
-
-def get_livetv(url):
-    data = client.request(url)
-    # xbmc.log('@#@EDATAAA: {}'.format(data))
-    data = six.ensure_text(data, encoding='utf-8', errors='ignore')
-    data = client.parseDOM(data, 'table', attrs={'class': 'styled-table'})[0]
-    chans = list(zip(client.parseDOM(data, 'button', attrs={'class': 'tvch'}),
-                    client.parseDOM(data, 'a', ret='href')))
-    for chan, stream in chans:
-        # stream = str(quote(base64.b64encode(six.ensure_binary(stream))))
-        chan = chan.encode('utf-8') if six.PY2 else chan
-        chan = '[COLOR gold][B]{}[/COLOR][/B]'.format(chan)
-
-        addDir(chan, stream, 100, ICON, FANART, name)
+    xbmcplugin.setContent(_handle, 'videos')
+    xbmcplugin.endOfDirectory(_handle)
 
 
-xbmcplugin.setContent(int(sys.argv[1]), 'videos')
-
-
-def get_new_events(url):# 15
-    #import requests
-    data = six.ensure_text(client.request(url, headers=headers))
-    # xbmc.log('@#@EDATAAA: {}'.format(data))
-    data = six.ensure_text(data, encoding='utf-8', errors='ignore')
-    data = re.sub('\t', '', data)
-    days = list(zip(client.parseDOM(data, 'button', attrs={'class': 'accordion'}),
-                    client.parseDOM(data, 'div', attrs={'class': "panel"})))
-    # data = client.parseDOM(str(data), 'div', attrs={'class': "panel"})
-    # xbmc.log('@#@DAYSSS: {}'.format(str(days)))
-    for day, events in days[1:]:
-        dia = client.parseDOM(day, 'span')[-1]
-        dia = '[COLOR lime][B]{}[/B][/COLOR]'.format(dia)
-        events = six.ensure_text(events, encoding='utf-8', errors='ignore')
-        events = list(zip(client.parseDOM(events, 'div', attrs={'class': "left.*?"}),
-                          client.parseDOM(events, 'div', attrs={'class': r"d\d+"})))
-        #xbmc.log('@#@EVENTS: {}'.format(str(events)))
-    # addDir('[COLORcyan]Time in GMT+2[/COLOR]', '', 'BUG', ICON, FANART, '')
-        addDir(dia, '', 'BUG', ICON, FANART, name)
-        tevents = []
-        for event, streams in events:
-            if '\n' in event:
-                ev = event.split('\n')
-                for i in ev:
-                    try:
-                        time = re.findall(r'(\d{2}:\d{2})', i, re.DOTALL)[0]
-                    except IndexError:
-                        time = 'N/A'
-                    tevents.append((i, streams, time))
-            else:
-                try:
-                    time = re.findall(r'(\d{2}:\d{2})', event, re.DOTALL)[0]
-                except IndexError:
-                    time = 'N/A'
-                tevents.append((event, streams, time))
-        #xbmc.log('EVENTSSS: {}'.format(tevents))
-        for event, streams, mtime in sorted(tevents, key=lambda x: x[2]):
-            # links = re.findall(r'<a href="(.+?)".+?>( Link.+? )</a>', event, re.DOTALL)
-            streams = str(quote(base64.b64encode(six.ensure_binary(streams))))
-            cov_time = convDateUtil(mtime, 'default', 'GMT{}'.format(str(control.setting('timezone'))))
-            ftime = '[COLOR cyan]{}[/COLOR]'.format(cov_time)
-
-            event = event.encode('utf-8') if six.PY2 else event
-            event = client.replaceHTMLCodes(event)
-            event = re.sub('<.+?>', '', event)
-            event = re.sub(r'(\d{2}:\d{2})', '', event)
-            event = ftime + ' [COLOR gold][B]{}[/COLOR][/B]'.format(event.replace('\t', ''))
-
-            addDir(event, streams, 4, ICON, FANART, name)
-
-
-xbmcplugin.setContent(int(sys.argv[1]), 'videos')
-
-def get_stream(url):  # 4
+def get_stream(name, url):  # 4
     data = six.ensure_text(base64.b64decode(unquote(url))).strip('\n')
     import ast
     sstreams = []
     for event in ast.literal_eval(data):
         if not 'http' in str(event):  #TNT Sports 1
             datos = get_links_for_channel(event)
+            xbmc.log('SHOW DATOS: {}'.format(datos))
             for chan, link, lang in datos:
                 chan = '[COLOR gold]{}[/COLOR] - {}'.format(chan, lang)
                 sstreams.append((link, chan))
@@ -463,13 +142,13 @@ def get_stream(url):  # 4
         else:
             link = event['link']
             lang = event['lang']
-            chan = six.ensure_text(event['name'], encoding='utf-8', errors='ignore')
+            chan = six.ensure_text(event['name'], encoding='utf-8', errors='replace')
             chan = '[COLOR gold]{}[/COLOR] - {}'.format(chan, lang)
             sstreams.append((link, chan))
 
     if len(sstreams) < 1:
         control.infoDialog("[COLOR gold]No Links available ATM.\n [COLOR lime]Try Again Later![/COLOR]", NAME,
-                           iconimage, 5000)
+                           ICON, 5000)
         return
     else:
         titles = []
@@ -485,6 +164,7 @@ def get_stream(url):  # 4
                     title += ' | {}'.format(link)
                 streams.append(link.rstrip())
                 titles.append(title)
+
         if len(streams) > 1:
             dialog = xbmcgui.Dialog()
             ret = dialog.select('[COLOR gold][B]Choose Stream[/B][/COLOR]', titles)
@@ -492,29 +172,16 @@ def get_stream(url):  # 4
                 return
             elif ret > -1:
                 host = streams[ret]
-                return resolve(host, name)
+                resolve(name, host)
             else:
                 return False
         else:
             link = streams[0][0]
-            return resolve(link, name)
+            resolve(name, link)
 
 
-def idle():
-    if float(xbmcaddon.Addon('xbmc.addon').getAddonInfo('version')[:4]) > 17.6:
-        xbmc.executebuiltin('Dialog.Close(busydialognocancel)')
-    else:
-        xbmc.executebuiltin('Dialog.Close(busydialog)')
-
-
-def busy():
-    if float(xbmcaddon.Addon('xbmc.addon').getAddonInfo('version')[:4]) > 17.6:
-        xbmc.executebuiltin('ActivateWindow(busydialognocancel)')
-    else:
-        xbmc.executebuiltin('ActivateWindow(busydialog)')
-
-
-def resolve(url, name):
+def resolve(name, url):
+    stream_url = ''
     ragnaru = ['liveon.sx/embed', '//em.bedsport', 'cdnz.one/ch', 'cdn1.link/ch', 'cdn2.link/ch', 'onlive.sx',
                'reditsport', 's2watch']
     xbmc.log('RESOLVE-URL: {}'.format(url))
@@ -524,19 +191,17 @@ def resolve(url, name):
     if 'webplay' in url or 'livestreames' in url:
         html = six.ensure_text(client.request(url, referer=BASEURL))
         # xbmc.log('HTMLLLLL: {}'.format(html))
-        url = client.parseDOM(html,'div', attrs={'class': 'container'})[0]
-        url = client.parseDOM(url, 'iframe', ret='src')[0]
-    if 'acestream' in url:
+        url = client.parseDOM(html, 'div', attrs={'class': 'container'})[0]
+        stream_url = client.parseDOM(url, 'iframe', ret='src')[0]
+    elif 'acestream' in url:
         url1 = "plugin://program.plexus/?url=" + url + "&mode=1&name=acestream+"
         liz = xbmcgui.ListItem(name)
         liz.setArt({'poster': 'poster.png', 'banner': 'banner.png'})
-        liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage,
-                    'fanart': fanart})
         liz.setPath(url)
         xbmc.Player().play(url1, liz, False)
         quit()
 
-    if '/live.cdnz' in url:
+    elif '/live.cdnz' in url:
         r = six.ensure_str(client.request(url, referer=BASEURL)).replace('\t', '')
         # xbmc.log("[{}] - HTML: {}".format(ADDON.getAddonInfo('id'), str(r)))
         from resources.modules import jsunpack
@@ -605,10 +270,10 @@ def resolve(url, name):
                     flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
 
-            flink += '|Referer={}'.format(quote(stream)) #if not 'azcdn' in flink else ''
+            flink += '|Referer={}'.format(quote(stream))  #if not 'azcdn' in flink else ''
         stream_url = flink
 
-    elif '1l1l.to/' in url or 'l1l1.to/' in url:#https://l1l1.to/ch18
+    elif '1l1l.to/' in url or 'l1l1.to/' in url:  #https://l1l1.to/ch18
         #'//cdn122.com/embed/2k2kr220ol6yr6i&scrolling=no&frameborder=0&allowfullscreen=true'
         if 'l1l1.' in url:
             referer = 'https://l1l1.to/'
@@ -659,11 +324,48 @@ def resolve(url, name):
                 link = re.findall(r'''hls:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
                 # ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
                 stream_url = link + '|Referer=https://video.netwrk.ru.com/&User-Agent=iPad'.format(referer, ua)
+            elif 'class="player"' in r:
+                frame = client.parseDOM(r, 'div', attrs={'class': 'player'})[0]
+                frame = client.parseDOM(frame, 'iframe', ret='src')[0]
+                rr = six.ensure_str(client.request(frame, referer=referer))
+                if '<script>eval' in rr:
+                    rr = six.ensure_text(rr, encoding='utf-8').replace('\t', '')
+                    from resources.modules import jsunpack
+                    unpack = re.findall(r'''<script>(eval.+?\{\}\))\)''', rr, re.DOTALL)[0].strip()
+                    # xbmc.log("[{}] - STREAM-UNPACK: {}".format(ADDON.getAddonInfo('id'), str(unpack)))
+                    rr = jsunpack.unpack(str(unpack) + ')')
+                    # xbmc.log("STREAM-UNPACK: {}".format(str(unpack)))
+                    if '<script>eval' in rr and not '.m3u8?':
+                        unpack = re.findall(r'''<script>(eval.+?\{\}\))\)''', rr, re.DOTALL)[0].strip()
+                        rr = jsunpack.unpack(str(unpack) + ')')
+                        # xbmc.log("STREAM-UNPACK22: {}".format(str(unpack)))
+                    else:
+                        rr = rr
+                    if 'player.src({src:' in rr:
+                        flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', rr, re.DOTALL)[0]
+                    elif 'hlsjsConfig' in rr:
+                        flink = re.findall(r'''src=\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
+                    elif 'new Clappr' in rr:
+                        flink = re.findall(r'''source\s*:\s*["'](.+?)['"]\,''', str(rr), re.DOTALL)[0]
+                    elif 'player.setSrc' in rr:
+                        flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', rr, re.DOTALL)[0]
+                    else:
+                        try:
+                            flink = re.findall(r'''source:\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
+                        except IndexError:
+                            ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', rr, re.DOTALL)[0]
+                            ea = six.ensure_text(client.request(ea)).split('=')[1]
+                            flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
+                            flink = flink.replace('" + ea + "', ea)
+                    flink += '|Referer={}'.format(quote(frame))
+                    stream_url = flink
             elif 'stream2watch' in r:
                 frame = client.parseDOM(r, 'div', attrs={'class': 'player'})[0]
                 frame = client.parseDOM(frame, 'iframe', ret='src')[0]
                 data = six.ensure_str(client.request(frame, referer=referer))
-                hlsurl, pk, ea = re.findall('.*hlsUrl\s*=\s*"(.*?&\w+=)".*?var\s+\w+\s*=\s*"([^"]+).*?>\s*ea\s*=\s*"([^"]+)', data, re.DOTALL)[0]
+                hlsurl, pk, ea = \
+                    re.findall('.*hlsUrl\s*=\s*"(.*?&\w+=)".*?var\s+\w+\s*=\s*"([^"]+).*?>\s*ea\s*=\s*"([^"]+)', data,
+                               re.DOTALL)[0]
                 link = hlsurl.replace('" + ea + "', ea) + pk
                 data_link = six.ensure_str(client.request(link, referer='https://stream2watch.freeucp.com'))
                 link2 = re.findall('.*(http.+?$)', data_link)[0]
@@ -684,7 +386,8 @@ def resolve(url, name):
                     except IndexError:
                         link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
 
-                    stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
+                    stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/',
+                                                                                                                  '/')
                     stream_url += '|Referer={}/&User-Agent={}'.format(host.split('embed')[0], quote(ua))
 
     elif 'fastreams' in url:
@@ -705,12 +408,13 @@ def resolve(url, name):
                 # xbmc.log('FLINK2: {}'.format(flink))
             else:
                 flink = flink
-            flink += '|User-Agent={}&Referer={}&Origin={}'.format(quote(ua), quote('https://ftmstreams.click/'), quote('https://ftmstreams.click'))
+            flink += '|User-Agent={}&Referer={}&Origin={}'.format(quote(ua), quote('https://ftmstreams.click/'),
+                                                                  quote('https://ftmstreams.click'))
         stream_url = flink
 
     elif 'smycdn' in url:
-        xbmc.log('URL: {}'.format(url))
         html = six.ensure_text(client.request(url))
+        xbmc.log('HTMLSTART: {}'.format(html))
         #https://godzcast.com/embed2.php?player='+ embedded +'&live='+ fid +'" '
         if 'fid=' in html:
             regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
@@ -725,13 +429,14 @@ def resolve(url, name):
             except IndexError:
                 link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
             stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
-            stream_url += '|Referer={}/&User-Agent={}'.format(host.split('embed')[0], quote(ua))
+            stream_url += '|Referer={}&User-Agent={}'.format(host.split('embed')[0], quote('Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
         else:
             stream = client.parseDOM(html, 'iframe', ret='src')[0]
-            html = six.ensure_text(client.request(stream))
+            html = six.ensure_text(client.request(stream)) #https://candlenorth.net/embed/xdpq3ptcuts1qpp
+            xbmc.log('HTML: {}'.format(html))
             tok, srv = re.findall(r'''"player","(.+?)",\{"(.+?)"''', html, re.DOTALL)[0]
             flink = 'https://' + srv + '/hls/' + tok + '/live.m3u8'
-            flink += '|Origin=https://nobodywalked.com&Referer=https://nobodywalked.com/'
+            flink += '|Referer={}&User-Agent=iPad'.format(quote('https://candlenorth.net/'))
             stream_url = flink
 
     elif any(i in url for i in ragnaru):
@@ -753,11 +458,6 @@ def resolve(url, name):
             if jsunpack.detect(rr) and not '.m3u8?':
                 unpack = re.findall(r'''<script>(eval.+?\{\}\))\)''', rr, re.DOTALL)[0].strip()
                 rr = jsunpack.unpack(str(unpack) + ')')
-                # xbmc.log("STREAM-UNPACK22: {}".format(str(rr)))
-            # elif 'eval(function' in rr:
-            #     xbmc.log("MALAKASSSS")
-            #     rr = jsunpack.unpack(str(rr))
-            #     xbmc.log("STREAM-UNPACK222: {}".format(str(unpack)))
             else:
                 rr = rr
             if 'player.src({src:' in rr:
@@ -805,14 +505,14 @@ def resolve(url, name):
             flink += '&User-Agent={}'.format(quote(ua))
             stream_url = flink
 
-    elif '//bedsport' in url:
-        r = six.ensure_str(client.request(url))
-        frame = client.parseDOM(r, 'iframe', ret='src')[0]
-        data = six.ensure_str(client.request(frame))
-        unpack = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[0]
-
-        from resources.modules import jsunpack
-        data = six.ensure_text(jsunpack.unpack(str(unpack) + ')'), encoding='utf-8')
+    # elif '//bedsport' in url:
+    #     r = six.ensure_str(client.request(url))
+    #     frame = client.parseDOM(r, 'iframe', ret='src')[0]
+    #     data = six.ensure_str(client.request(frame))
+    #     unpack = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[0]
+    #
+    #     from resources.modules import jsunpack
+    #     data = six.ensure_text(jsunpack.unpack(str(unpack) + ')'), encoding='utf-8')
     elif '//istorm' in url or '//coolrea' in url or '//zvision':
         referer = 'https://istorm.live/' if 'istorm' in url else 'https://coolrea.link/'
         r = six.ensure_str(client.request(url))
@@ -833,7 +533,7 @@ def resolve(url, name):
             stream_url += '|Referer={}/&User-Agent={}'.format(host.split('embed')[0], quote(ua))
         else:
             # r = six.ensure_str(client.request(url))
-            frame = client.parseDOM(r,'iframe', ret='src')[-1]
+            frame = client.parseDOM(r, 'iframe', ret='src')[-1]
             # xbmc.log('FRAME: {}'.format(frame))
             data = six.ensure_str(client.request(frame, referer=url, output=url))
             unpack = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[0]
@@ -862,135 +562,264 @@ def resolve(url, name):
 
     else:
         stream_url = url
-
+    if '|' in stream_url:
+        stream_url, hdrs = stream_url.split('|')
+    else:
+        stream_url = stream_url
+        hdrs = ''
+    xbmc.log('STREAM: {} | {}'.format(stream_url, hdrs))
     liz = xbmcgui.ListItem(name)
-    liz.setArt({'poster': 'poster.png', 'banner': 'banner.png'})
-    liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage, 'fanart': fanart})
-    liz.setInfo(type="Video", infoLabels={"Title": name})
+    liz.setArt({'icon': ICON, 'thumb': ICON, 'poster': ICON, 'fanart': FANART})
     liz.setProperty("IsPlayable", "true")
-    liz.setPath(str(stream_url))
-    if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 17.5:
-        liz.setMimeType('application/vnd.apple.mpegurl')
+    liz.setPath(stream_url)
+    liz.setMimeType('application/vnd.apple.mpegurl')
+    liz.setContentLookup(False)
+    if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) < 19:
+        liz.setInfo(type="Video", infoLabels={"Title": name})
+        liz.setProperty('inputstreamaddon', 'inputstream.adaptive')
+    if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 19 < 21:
+        liz.setInfo(type="Video", infoLabels={"Title": name})
+        liz.setProperty('inputstream', 'inputstream.adaptive')
         liz.setProperty('inputstream.adaptive.manifest_type', 'hls')
-        # liz.setProperty('inputstream.adaptive.stream_headers', str(headers))
+        # stream_url, headers = stream_url.split('|')
+        liz.setProperty('inputstream.adaptive.stream_headers', hdrs)
+    if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 20:
+        # liz.InfoTagVideo(False)
+        liz.setProperty('inputstream', 'inputstream.adaptive')
+        liz.setProperty('inputstream.adaptive.max_bandwidth', '100000000000')
+        liz.setProperty('inputstream.adaptive.stream_selection_type', 'adaptive')
+        liz.setProperty('inputstream.adaptive.stream_headers', hdrs)
     else:
         liz.setProperty('inputstreamaddon', None)
-        liz.setContentLookup(True)
+    # xbmcplugin.setResolvedUrl(_handle, True, listitem=liz)
     xbmc.Player().play(stream_url, liz, False)
-    quit()
-    xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, liz)
+
+
+################################################################################
+#########################CHANNELS HELPERS#######################################
+################################################################################
+
+xbmcvfs.mkdir(control.translatePath(ADDON_DATA))
+JSON_FILE_PATH = control.translatePath(ADDON_DATA + 'channels.json')
+LAST_UPDATE_FILE = control.translatePath(ADDON_DATA + 'last_update.txt')
+
+
+def is_time_to_update(hours=6):
+    if not xbmcvfs.exists(LAST_UPDATE_FILE):
+        f = control.openFile(LAST_UPDATE_FILE, 'w')
+        f.write(str(time.time()))
+        f.close()
+    f = control.openFile(LAST_UPDATE_FILE, 'r')
+    content = f.read()
+    last_update_timestamp = float(content.strip())
+    f.close()
+
+    hours_in_seconds = hours * 60 * 60
+    current_time = time.time()
+
+    return (current_time - last_update_timestamp) >= hours_in_seconds
+
+
+def fetch_and_store_channel_data():
+    hdrs = {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36'}
+    try:
+        url = '''https://sporthd.me/api/trpc/mutual.getTopTeams,saves.getAllUserSaves,mutual.getFooterData,mutual.getAllChannels,mutual.getWebsiteConfig?batch=1&input={"0":{"json":null,"meta":{"values":["undefined"]}},"1":{"json":null,"meta":{"values":["undefined"]}},"2":{"json":null,"meta":{"values":["undefined"]}},"3":{"json":null,"meta":{"values":["undefined"]}},"4":{"json":null,"meta":{"values":["undefined"]}}}'''
+        response = six.ensure_text(client.request(url, headers=hdrs), encoding='utf-8', errors='ignore')
+        new_data = json.loads(response)
+
+        new_channels_data = None
+        for result in new_data:
+            if ("result" in result and "data" in result["result"] and
+                    "json" in result["result"]["data"] and "allChannels" in result["result"]["data"]["json"]):
+                new_channels_data = result["result"]["data"]["json"]["allChannels"]
+                break
+
+        if not new_channels_data:
+            return
+
+        if not xbmcvfs.exists(JSON_FILE_PATH):
+            existing_data = []
+        else:
+            file = xbmcvfs.File(JSON_FILE_PATH)
+            existing_data = json.load(file)
+            file.close()
+
+        existing_data_map = {channel['_id']: channel for channel in existing_data}
+        changes_made = False
+
+        for new_channel in new_channels_data:
+            channel_id = new_channel['_id']
+            if channel_id not in existing_data_map or new_channel['links'] != existing_data_map[channel_id]['links']:
+                existing_data_map[channel_id] = new_channel
+                changes_made = True
+
+        if changes_made:
+            file = xbmcvfs.File(JSON_FILE_PATH, 'w')
+            file.write(json.dumps(list(existing_data_map.values())))
+            file.close()
+            print("Channel links updated")
+
+    except Exception as e:
+        print("Error fetching or updating channel data: {}".format(e))
+
+
+def load_data_from_json():
+    f = control.openFile(JSON_FILE_PATH, 'r')
+    contents = f.read()
+    f.close()
+    return json.loads(contents)
+
+
+def get_links_for_channel(channel_name):
+    channels_data = load_data_from_json()
+    for channel in channels_data:
+        datos = []
+        if channel['channelName'] == channel_name:
+            for link in channel['links']:
+                chan = channel['channelName']
+                lang = channel['language']
+                datos.append((chan, link, lang))
+            return datos
+        else:
+            if channel['channelName'].replace(' ', '') == channel_name.replace(' ', ''):
+                for link in channel['links']:
+                    chan = channel['channelName']
+                    lang = channel['language']
+                    datos.append((chan, link, lang))
+                return datos
+    return None
+
+
+###################################################
+###################################################
+###################################################
+########### Time and Date Helpers #################
+###################################################
+def fetch_user_timezone():
+    try:
+        locale_timezone = json.loads(xbmc.executeJSONRPC(
+            '{"jsonrpc": "2.0", "method": "Settings.GetSettingValue", "params": {"setting": "locale.timezone"}, "id": 1}'))
+
+        if locale_timezone['result']['value']:
+            local_tzinfo = gettz(locale_timezone['result']['value'])
+            if local_tzinfo:
+                xbmc.log('SHOW FINAL ΤΙΜΕΖΟΝΕ: {}'.format(local_tzinfo))
+                return local_tzinfo
+            else:
+                xbmc.log("Failed to get tzinfo for timezone: {}".format(locale_timezone['result']['value']))
+        else:
+            xbmc.log("No timezone value found in Kodi settings")
+    except Exception as e:
+        xbmc.log("Error fetching timezone from Kodi settings: {}".format(e))
+
+    return gettz()
+
+
+def convDateUtil(timestring, newfrmt='default', in_zone='UTC'):
+    if newfrmt == 'default':
+        newfrmt = xbmc.getRegion('time').replace(':%S', '')
+    try:
+        local_tzinfo = fetch_user_timezone()
+        in_time = parse(timestring)
+        in_time_with_timezone = in_time.replace(tzinfo=gettz(in_zone))
+        local_time = in_time_with_timezone.astimezone(local_tzinfo)
+        return local_time.strftime(newfrmt)
+    except:
+        return timestring
+
+
+def time_convert(timestamp):
+    timestamp = int(str(timestamp)[:10])
+    dt_object = datetime.fromtimestamp(timestamp)
+    time_ = dt_object.strftime("%d-%b, %H:%M")
+    return time_
+
+
+def time_to_update(hours=6):
+    f = control.openFile(LAST_UPDATE_FILE, 'r')
+    content = f.read()
+    last_update_timestamp = float(content.strip())
+    f.close()
+
+    hours_in_seconds = int(hours) * 60 * 60
+    current_time = time.time()
+
+    return (current_time - last_update_timestamp) >= hours_in_seconds
+
+
+def update_last_update_time():
+    try:
+        f = control.openFile(LAST_UPDATE_FILE, 'w')
+        f.write(str(time.time()))
+        f.close()
+    except:
+        print("Error updating last update time")
+
+
+def adjust_date_and_convert_to_timestamp_ms(matchDate, livetvtimestr):
+    date_obj = parser.parse(matchDate[2:])
+    hours, minutes = map(int, livetvtimestr.split(":"))
+    date_obj = date_obj.replace(hour=hours, minute=minutes)
+
+    date_obj += timedelta(days=1)
+    user_timezone = fetch_user_timezone()
+    date_obj = date_obj.astimezone(user_timezone)
+
+    if six.PY2:
+        timestamp_ms = int((time.mktime(date_obj.timetuple()) + date_obj.microsecond / 1e6) * 1000)
+    else:
+        timestamp_ms = int(date_obj.timestamp() * 1000)
+    return timestamp_ms
+
+
+##########################################################################################
+##########################################################################################
 
 
 def Open_settings():
     control.openSettings()
 
 
-def addDir(name, url, mode, iconimage, fanart, description):
+def addDir(name, url, mode, iconimage, description, isFolder=True, infoLabels=None):
     url_encoded = quote_plus(url.encode('utf-8'))
     name_encoded = quote_plus(name.encode('utf-8'))
     iconimage_encoded = quote_plus(iconimage.encode('utf-8'))
     description_encoded = quote_plus(description.encode('utf-8'))
-    u = sys.argv[0] + "?url=" + url_encoded + "&mode=" + str(mode) + "&name=" + name_encoded + "&iconimage=" + iconimage_encoded + "&description=" + description_encoded
-    ok = True
+    u = sys.argv[0] + "?url=" + url_encoded + "&mode=" + str(
+        mode) + "&name=" + name_encoded + "&iconimage=" + iconimage_encoded + "&description=" + description_encoded
+
     liz = xbmcgui.ListItem(name)
-    liz.setArt({'poster': 'poster.png', 'banner': 'banner.png'})
-    liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage, 'fanart': fanart})
-    liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
-    liz.setProperty('fanart_image', fanart)
-    if mode == 100:
-        liz.setProperty("IsPlayable", "true")
-        liz.addContextMenuItems([('GRecoTM Pair Tool', 'RunAddon(script.grecotm.pair)',)])
-        ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
-    elif mode == 10 or mode == 'BUG' or mode == 4:
-        ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
+    liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage, 'fanart': FANART})
+    if infoLabels:
+        liz.setInfo(type="Video", infoLabels=infoLabels)
+    if not isFolder:
+        if mode == 'settings' or mode == 'version':
+            isFolder = False
+        else:
+            liz.setProperty('IsPlayable', 'true')
+    xbmcplugin.addDirectoryItem(_handle, url=u, listitem=liz, isFolder=isFolder)
+
+
+def router(paramstring):
+    params = dict(parse_qsl(paramstring))
+    if params:
+        if params['mode'] == 'events':
+            if time_to_update():
+                fetch_and_store_channel_data()
+                update_last_update_time()
+            else:
+                print("Not yet time to check for updates.")
+            get_events(params['url'])
+        elif params['mode'] == 'get_streams':
+            get_stream(params['name'], params['url'])
+        elif params['mode'] == 'settings':
+            Open_settings()
+        elif params['mode'] == 'version':
+            xbmc.executebuiltin('UpdateAddonRepos')
     else:
-        ok = xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=True)
-    return ok
+        Main_menu()
 
 
-def get_params():
-    param = []
-    paramstring = sys.argv[2]
-    if len(paramstring) >= 2:
-        params = sys.argv[2]
-        cleanedparams = params.replace('?', '')
-        if (params[len(params) - 1] == '/'): params = params[0:len(params) - 2]
-        pairsofparams = cleanedparams.split('&')
-        param = {}
-        for i in range(len(pairsofparams)):
-            splitparams = {}
-            splitparams = pairsofparams[i].split('=')
-            if (len(splitparams)) == 2: param[splitparams[0]] = splitparams[1]
-    return param
-
-
-params = get_params()
-url = BASEURL
-name = NAME
-iconimage = ICON
-mode = None
-fanart = FANART
-description = DESCRIPTION
-query = None
-
-try:
-    url = unquote_plus(params["url"])
-except:
-    pass
-try:
-    name = unquote_plus(params["name"])
-except:
-    pass
-try:
-    iconimage = unquote_plus(params["iconimage"])
-except:
-    pass
-try:
-    mode = int(params["mode"])
-except:
-    pass
-try:
-    fanart = unquote_plus(params["fanart"])
-except:
-    pass
-try:
-    description = unquote_plus(params["description"])
-except:
-    pass
-try:
-    query = unquote_plus(params["query"])
-except:
-    pass
-
-print(str(ADDON_PATH) + ': ' + str(VERSION))
-print("Mode: " + str(mode))
-print("URL: " + str(url))
-print("Name: " + str(name))
-print("IconImage: " + str(iconimage))
-#########################################################
-
-if mode == None:
-    Main_menu()
-elif mode == 3:
-    sports_menu()
-elif mode == 2:
-    leagues_menu()
-elif mode == 5:
-    if is_time_to_update():
-        fetch_and_store_channel_data()
-        update_last_update_time()
-    else:
-        print("Not yet time to check for updates.")
-    get_events(url)
-elif mode == 4:
-    get_stream(url)
-elif mode == 10:
-    Open_settings()
-elif mode == 14:
-    get_livetv(url)
-elif mode == 15:
-    get_new_events(url)
-
-elif mode == 100:
-    resolve(url, name)
-xbmcplugin.endOfDirectory(int(sys.argv[1]))
+if __name__ == '__main__':
+    router(sys.argv[2][1:])
