@@ -414,22 +414,24 @@ def resolve(name, url):
 
     elif 'smycdn' in url:
         html = six.ensure_text(client.request(url))
-        xbmc.log('HTMLSTART: {}'.format(html))
+        # xbmc.log('HTMLSTART: {}'.format(html))
         #https://godzcast.com/embed2.php?player='+ embedded +'&live='+ fid +'" '
         if 'fid=' in html:
             regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
             vid, getembed = re.findall(regex, html, re.DOTALL)[0]
             getembed = 'https:' + getembed if getembed.startswith('//') else getembed
             embed = six.ensure_str(client.request(getembed))
+            # xbmc.log('EMBED: {}'.format(embed))
             embed = re.findall(r'''document.write.+?src=['"](.+?player)=''', embed, re.DOTALL)[0]
-            host = '{}=desktop&live={}'.format(embed, str(vid))
+            host = '{}&live={}'.format(embed, str(vid))
             data = six.ensure_str(client.request(host, referer='https://smycdn.ru/'))
+            # xbmc.log('HTMLSTART: {}'.format(data))
             try:
                 link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
             except IndexError:
                 link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
             stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
-            stream_url += '|Referer={}&User-Agent={}'.format(host.split('embed')[0], quote('Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
+            stream_url += '|Referer={}&User-Agent=iPad'.format(host.split('embed')[0])
         else:
             stream = client.parseDOM(html, 'iframe', ret='src')[0]
             html = six.ensure_text(client.request(stream)) #https://candlenorth.net/embed/xdpq3ptcuts1qpp
@@ -505,15 +507,18 @@ def resolve(name, url):
             flink += '&User-Agent={}'.format(quote(ua))
             stream_url = flink
 
-    # elif '//bedsport' in url:
-    #     r = six.ensure_str(client.request(url))
-    #     frame = client.parseDOM(r, 'iframe', ret='src')[0]
-    #     data = six.ensure_str(client.request(frame))
-    #     unpack = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[0]
-    #
-    #     from resources.modules import jsunpack
-    #     data = six.ensure_text(jsunpack.unpack(str(unpack) + ')'), encoding='utf-8')
-    elif '//istorm' in url or '//coolrea' in url or '//zvision':
+    elif '//coolrea' in url:
+        '''https://f6hmx3jswd83sq.librarywhispering.com/hls/039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109/live.m3u8'''
+        #039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109
+        r = six.ensure_str(client.request(url))
+        frame = client.parseDOM(r, 'iframe', ret='src')[0]
+        data = six.ensure_str(client.request(frame, referer=url))
+        # xbmc.log('DATAAAAA: {}'.format(data))
+        player = re.findall(r'''new\s*Player.+?player['"]\,['"](.+?)['"].+?['"](.+?)['"]''', data, re.DOTALL)[0]
+        stream_url = 'https://' + player[1] + '/hls/' + player[0] + '/live.m3u8'
+        stream_url += '|Referer={0}&Origin={0}&User-Agent={1}'.format(quote('https://librarywhispering.com/'), quote('Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
+
+    elif '//istorm' in url or '//zvision':
         referer = 'https://istorm.live/' if 'istorm' in url else 'https://coolrea.link/'
         r = six.ensure_str(client.request(url))
         if 'fid=' in r:
@@ -530,7 +535,7 @@ def resolve(name, url):
                 link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
 
             stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
-            stream_url += '|Referer={}/&User-Agent={}'.format(host.split('embed')[0], quote(ua))
+            stream_url += '|Referer={}&User-Agent={}'.format(host.split('embed')[0], quote(ua))
         else:
             # r = six.ensure_str(client.request(url))
             frame = client.parseDOM(r, 'iframe', ret='src')[-1]
@@ -562,26 +567,32 @@ def resolve(name, url):
 
     else:
         stream_url = url
-    if '|' in stream_url:
-        stream_url, hdrs = stream_url.split('|')
-    else:
-        stream_url = stream_url
-        hdrs = ''
-    xbmc.log('STREAM: {} | {}'.format(stream_url, hdrs))
+
+    xbmc.log('STREAM: {}'.format(stream_url))
     liz = xbmcgui.ListItem(name)
     liz.setArt({'icon': ICON, 'thumb': ICON, 'poster': ICON, 'fanart': FANART})
     liz.setProperty("IsPlayable", "true")
     liz.setPath(stream_url)
-    if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 17.5:
-        liz.setProperty('inputstream', 'inputstream.adaptive')
-    else:
-        liz.setProperty('inputstreamaddon', 'inputstream.adaptive')
-    liz.setMimeType('application/vnd.apple.mpegurl')
-    liz.setContentLookup(False)
-    liz.setProperty('inputstream.adaptive.manifest_type', 'hls')
-    liz.setProperty('inputstream.adaptive.stream_headers', str(hdrs))
-    liz.setProperty('inputstream.adaptive.manifest_headers', str(hdrs))
-    liz.setProperty('inputstream.adaptive.stream_selection_type', 'adaptive')
+    # liz.setMimeType('application/vnd.apple.mpegurl')
+    # liz.setContentLookup(False)
+    # if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) < 19:
+    #     liz.setInfo(type="Video", infoLabels={"Title": name})
+    #     # liz.setProperty('inputstreamaddon', 'inputstream.adaptive')
+    # if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 19 < 21:
+    #     liz.setInfo(type="Video", infoLabels={"Title": name})
+    #     liz.setProperty('inputstream', 'inputstream.adaptive')
+    #     liz.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    #     stream_url, headers = stream_url.split('|')
+    #     liz.setProperty('inputstream.adaptive.stream_headers', headers)
+    # if float(xbmc.getInfoLabel('System.BuildVersion')[0:4]) >= 20:
+    #     # liz.InfoTagVideo(False)
+    #     liz.setProperty('inputstream', 'inputstream.adaptive')
+    #     # liz.setProperty('inputstream.adaptive.max_bandwidth', '100000000000')
+    #     liz.setProperty('inputstream.adaptive.stream_selection_type', 'adaptive')
+    #     stream_url, headers = stream_url.split('|')
+    #     liz.setProperty('inputstream.adaptive.stream_headers', headers)
+    # else:
+    #     liz.setProperty('inputstreamaddon', None)
     # xbmcplugin.setResolvedUrl(_handle, True, listitem=liz)
     xbmc.Player().play(stream_url, liz, False)
 
@@ -728,18 +739,16 @@ def time_convert(timestamp):
 
 
 def time_to_update(hours=6):
-    try:
-        f = control.openFile(LAST_UPDATE_FILE, 'r')
-        content = f.read()
-        last_update_timestamp = float(content.strip())
-        f.close()
-    except:
-        return True
+    f = control.openFile(LAST_UPDATE_FILE, 'r')
+    content = f.read()
+    last_update_timestamp = float(content.strip())
+    f.close()
 
     hours_in_seconds = int(hours) * 60 * 60
     current_time = time.time()
 
     return (current_time - last_update_timestamp) >= hours_in_seconds
+
 
 def update_last_update_time():
     try:
