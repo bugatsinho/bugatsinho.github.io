@@ -445,6 +445,8 @@ def resolve(name, url):
     elif any(i in url for i in ragnaru):
         hdrs = {'User-Agent': 'iPad'}
         referer = 'https://liveon.sx/' if 'liveon' in url else url
+        if 'link/player.' in url:
+            url = re.sub('player.php\?id=ch', 'flash', url)
         r = six.ensure_text(client.request(url, headers=hdrs, referer=referer))
         stream = client.parseDOM(r, 'iframe', ret='src')[-1]
         stream = 'https:' + stream if stream.startswith('//') else stream
@@ -627,7 +629,7 @@ def fetch_and_store_channel_data():
     hdrs = {
         'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36'}
     try:
-        url = '''https://sporthd.me/api/trpc/mutual.getTopTeams,saves.getAllUserSaves,mutual.getFooterData,mutual.getAllChannels,mutual.getWebsiteConfig?batch=1&input={"0":{"json":null,"meta":{"values":["undefined"]}},"1":{"json":null,"meta":{"values":["undefined"]}},"2":{"json":null,"meta":{"values":["undefined"]}},"3":{"json":null,"meta":{"values":["undefined"]}},"4":{"json":null,"meta":{"values":["undefined"]}}}'''
+        url = BASEURL + '''api/trpc/mutual.getTopTeams,saves.getAllUserSaves,mutual.getFooterData,mutual.getAllChannels,mutual.getWebsiteConfig?batch=1&input={"0":{"json":null,"meta":{"values":["undefined"]}},"1":{"json":null,"meta":{"values":["undefined"]}},"2":{"json":null,"meta":{"values":["undefined"]}},"3":{"json":null,"meta":{"values":["undefined"]}},"4":{"json":null,"meta":{"values":["undefined"]}}}'''
         response = six.ensure_text(client.request(url, headers=hdrs), encoding='utf-8', errors='ignore')
         new_data = json.loads(response)
 
