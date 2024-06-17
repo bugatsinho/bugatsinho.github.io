@@ -35,8 +35,8 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'https://sporthd.me/'  #'https://sportl.ivesoccer.sx/'
-Live_url = 'https://sporthd.me/'  #'https://sportl.ivesoccer.sx/'
+BASEURL = 'https://sporthd.live/'  #'https://sportl.ivesoccer.sx/'
+Live_url = 'https://sporthd.live/'  #'https://sportl.ivesoccer.sx/'
 Alt_url = 'https://liveon.sx/program'  #'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
@@ -50,6 +50,7 @@ def Main_menu():
     # addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
     # addDir('[B][COLOR white]BEST LEAGUES[/COLOR][/B]', '', 2, ICON, FANART, '')
     addDir('[B][COLOR gold]Settings[/COLOR][/B]', 'set', 'settings', ICON, FANART, False)
+    addDir('[B][COLOR gold]Clear Addon Data[/COLOR][/B]', 'clear', 'clear', ICON, FANART, False)
     addDir('[B][COLOR gold]Version: [COLOR lime]{}[/COLOR][/B]'.format(vers), '', 'version', ICON, FANART, False)
     xbmcplugin.setContent(_handle, 'movies')
     xbmcplugin.endOfDirectory(_handle)
@@ -568,7 +569,7 @@ def resolve(name, url):
     else:
         stream_url = url
 
-    xbmc.log('STREAM: {}'.format(stream_url))
+    # xbmc.log('STREAM: {}'.format(stream_url))
     liz = xbmcgui.ListItem(name)
     liz.setArt({'icon': ICON, 'thumb': ICON, 'poster': ICON, 'fanart': FANART})
     liz.setProperty("IsPlayable", "true")
@@ -798,7 +799,7 @@ def addDir(name, url, mode, iconimage, description, isFolder=True, infoLabels=No
     if infoLabels:
         liz.setInfo(type="Video", infoLabels=infoLabels)
     if not isFolder:
-        if mode == 'settings' or mode == 'version':
+        if mode == 'settings' or mode == 'version' or mode == 'clear':
             isFolder = False
         else:
             liz.setProperty('IsPlayable', 'true')
@@ -819,6 +820,10 @@ def router(paramstring):
             get_stream(params['name'], params['url'])
         elif params['mode'] == 'settings':
             Open_settings()
+        elif params['mode'] == 'clear':
+            control.deleteFile(LAST_UPDATE_FILE)
+            control.infoDialog("[COLOR gold]Files cleared[/COLOR]", NAME,
+                               ICON, 5000)
         elif params['mode'] == 'version':
             xbmc.executebuiltin('UpdateAddonRepos')
     else:
