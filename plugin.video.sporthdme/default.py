@@ -35,9 +35,9 @@ Dialog = xbmcgui.Dialog()
 vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
-BASEURL = 'https://my.ivesoccer.sx/' #'https://sporthd.live/'  #'https://sportl.ivesoccer.sx/'
-Live_url = 'https://sporthd.live/'  #'https://sportl.ivesoccer.sx/'
-Alt_url = 'https://liveon.sx/program'  #'https://1.livesoccer.sx/program'
+BASEURL = 'https://my.ivesoccer.sx/'  # 'https://sporthd.live/'  #'https://sportl.ivesoccer.sx/'
+Live_url = 'https://sporthd.live/'  # 'https://sportl.ivesoccer.sx/'
+Alt_url = 'https://liveon.sx/program'  # 'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
@@ -74,7 +74,7 @@ def get_events(url):  # 5
 
     # matches = re.findall('''null\,(\{"(?:matches|customNotFoundMessage).+?)\]\}\]n''', events, re.DOTALL)[0]
     # pattern = r'("matches"\s*\:\s*\[.+?])}]}]n"'
-    pattern = r'"matches"\s*\:\s*(\[.+?])\s*,\s*"websiteConfig"' #r'"matches"\s*\:\s*(\[.+?])}]}]n'
+    pattern = r'"matches"\s*\:\s*(\[.+?])}]]}]n'
     matches = re.findall(pattern, events, re.DOTALL)[0]
     # xbmc.log('EVENTSSS: {}'.format(matches))
     matches = json.loads(matches)
@@ -87,15 +87,21 @@ def get_events(url):  # 5
     else:
         now_time_in_ms = datetime.now().timestamp() * 1000
     for match in matches:
-        links = match['additionalLinks']
-        links.extend(match['channels'])
-        icon = match['team1Img']
-        lname = six.ensure_text(match['league'], encoding='utf-8', errors='replace')
-        country = six.ensure_text(match['country'], encoding='utf-8', errors='replace')
-        event = six.ensure_text(match['fullName'], encoding='utf-8', errors='replace')
+        channels = match.get("channels", [])
+        # links = match['additionalLinks']
+        # links.extend(match['channels'])
+        icon = match.get('team1Img', ICON)
+        sport = match.get('sport', '')
+        lname = match.get('league', None)
+        lname = six.ensure_text(lname, encoding='utf-8', errors='replace') if lname else sport
+        team1 = match.get('team1', None)
+        team1 = six.ensure_text(team1, encoding='utf-8', errors='replace') if team1 else ' '
+        team2 = match.get('team2', None)
+        team2 = six.ensure_text(team2, encoding='utf-8', errors='replace') if team2 else ' '
+        event = "{} vs {}".format(team1, team2) if team1 and team2 else team1
 
         try:
-            compare = match['timestampInMs']
+            compare = match['startTimestamp']
             ftime = time_convert(compare)
         except:
             try:
@@ -116,8 +122,8 @@ def get_events(url):  # 5
 
         m_color = "lime" if is_live else "gold"
         ftime = '[COLOR cyan]{}[/COLOR]'.format(ftime)
-        name = u'{0} [COLOR {1}]{2}[/COLOR] - [I]{3}-{4}[/I]'.format(ftime, m_color, event, lname, country)
-        event_list.append((name, compare, links, icon))
+        name = u'{0} [COLOR {1}]{2}[/COLOR] - [I]{3}[/I]'.format(ftime, m_color, event, lname)
+        event_list.append([name, compare, channels, icon])
 
         # streams = str(quote(base64.b64encode(six.ensure_binary(str(streams)))))
     events = sorted(event_list, key=lambda x: x[1])
@@ -133,10 +139,11 @@ def get_events(url):  # 5
 
 def get_stream(name, url):  # 4
     data = six.ensure_text(base64.b64decode(unquote(url))).strip('\n')
+
     import ast
     sstreams = []
     for event in ast.literal_eval(data):
-        if not isinstance(event, dict):  #TNT Sports 1
+        if not isinstance(event, dict):  # TNT Sports 1
             datos = get_links_for_channel(event)
             # xbmc.log('SHOW DATOS: {}'.format(datos))
             for chan, link, lang in datos:
@@ -144,11 +151,12 @@ def get_stream(name, url):  # 4
                 sstreams.append((link, chan))
 
         else:
-            link = event['link']
-            lang = event['lang']
-            chan = six.ensure_text(event['name'], encoding='utf-8', errors='replace')
+            link = event.get('links', [])
+            lang = event.get('language', '')
+            chan = six.ensure_text(event.get('name', ''), encoding='utf-8', errors='replace')
             chan = '[COLOR gold]{}[/COLOR] - {}'.format(chan, lang)
-            sstreams.append((link, chan))
+            for url_ in link:
+                sstreams.append((url_, chan))
 
     if len(sstreams) < 1:
         control.infoDialog("[COLOR gold]No Links available ATM.\n [COLOR lime]Try Again Later![/COLOR]", NAME,
@@ -274,11 +282,11 @@ def resolve(name, url):
                     flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
 
-            flink += '|Referer={}'.format(quote(stream))  #if not 'azcdn' in flink else ''
+            flink += '|Referer={}'.format(quote(stream))  # if not 'azcdn' in flink else ''
         stream_url = flink
 
-    elif '1l1l.to/' in url or 'l1l1.to/' in url:  #https://l1l1.to/ch18
-        #'//cdn122.com/embed/2k2kr220ol6yr6i&scrolling=no&frameborder=0&allowfullscreen=true'
+    elif '1l1l.to/' in url or 'l1l1.to/' in url:  # https://l1l1.to/ch18
+        # '//cdn122.com/embed/2k2kr220ol6yr6i&scrolling=no&frameborder=0&allowfullscreen=true'
         if 'l1l1.' in url:
             referer = 'https://l1l1.to/'
             r = six.ensure_str(client.request(url, referer=referer))
@@ -324,7 +332,7 @@ def resolve(name, url):
                 frame = client.parseDOM(r, 'div', attrs={'class': 'player'})[0]
                 frame = client.parseDOM(frame, 'iframe', ret='src')[0]
                 data = six.ensure_str(client.request(frame, referer=referer))
-                #hls:  "https://ad2017.vhls.ru.com/lb/nuevo40/index.m3u8",
+                # hls:  "https://ad2017.vhls.ru.com/lb/nuevo40/index.m3u8",
                 link = re.findall(r'''hls:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
                 # ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
                 stream_url = link + '|Referer=https://video.netwrk.ru.com/&User-Agent=iPad'.format(referer, ua)
@@ -379,7 +387,7 @@ def resolve(name, url):
                 if 'fid=' in r:
                     regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
                     vid, getembed = re.findall(regex, r, re.DOTALL)[0]
-                    #vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0]
+                    # vid = re.findall(r'''fid=['"](.+?)['"]''', r, re.DOTALL)[0]
                     getembed = 'https:' + getembed if getembed.startswith('//') else getembed
                     embed = six.ensure_str(client.request(getembed))
                     embed = re.findall(r'''document.write.+?src=['"](.+?player)=''', embed, re.DOTALL)[0]
@@ -419,7 +427,7 @@ def resolve(name, url):
     elif 'smycdn' in url:
         html = six.ensure_text(client.request(url))
         # xbmc.log('HTMLSTART: {}'.format(html))
-        #https://godzcast.com/embed2.php?player='+ embedded +'&live='+ fid +'" '
+        # https://godzcast.com/embed2.php?player='+ embedded +'&live='+ fid +'" '
         if 'fid=' in html:
             regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
             vid, getembed = re.findall(regex, html, re.DOTALL)[0]
@@ -438,7 +446,7 @@ def resolve(name, url):
             stream_url += '|Referer={}&User-Agent=iPad'.format(host.split('embed')[0])
         else:
             stream = client.parseDOM(html, 'iframe', ret='src')[0]
-            html = six.ensure_text(client.request(stream)) #https://candlenorth.net/embed/xdpq3ptcuts1qpp
+            html = six.ensure_text(client.request(stream))  # https://candlenorth.net/embed/xdpq3ptcuts1qpp
             xbmc.log('HTML: {}'.format(html))
             tok, srv = re.findall(r'''"player","(.+?)",\{"(.+?)"''', html, re.DOTALL)[0]
             flink = 'https://' + srv + '/hls/' + tok + '/live.m3u8'
@@ -518,14 +526,15 @@ def resolve(name, url):
 
     elif '//coolrea' in url:
         '''https://f6hmx3jswd83sq.librarywhispering.com/hls/039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109/live.m3u8'''
-        #039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109
+        # 039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109
         r = six.ensure_str(client.request(url))
         frame = client.parseDOM(r, 'iframe', ret='src')[0]
         data = six.ensure_str(client.request(frame, referer=url))
         # xbmc.log('DATAAAAA: {}'.format(data))
         player = re.findall(r'''new\s*Player.+?player['"]\,['"](.+?)['"].+?['"](.+?)['"]''', data, re.DOTALL)[0]
         stream_url = 'https://' + player[1] + '/hls/' + player[0] + '/live.m3u8'
-        stream_url += '|Referer={0}&Origin={0}&User-Agent={1}'.format(quote('https://librarywhispering.com/'), quote('Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
+        stream_url += '|Referer={0}&Origin={0}&User-Agent={1}'.format(quote('https://librarywhispering.com/'), quote(
+            'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
 
     elif '//istorm' in url or '//zvision':
         referer = 'https://istorm.live/' if 'istorm' in url else 'https://coolrea.link/'
@@ -760,6 +769,7 @@ def time_to_update(hours=6):
     current_time = time.time()
 
     return (current_time - last_update_timestamp) >= hours_in_seconds
+
 
 def update_last_update_time():
     try:
