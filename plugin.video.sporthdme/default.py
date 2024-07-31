@@ -95,10 +95,10 @@ def get_events(url):  # 5
         lname = match.get('league', None)
         lname = six.ensure_text(lname, encoding='utf-8', errors='replace') if lname else sport
         team1 = match.get('team1', None)
-        team1 = six.ensure_text(team1, encoding='utf-8', errors='replace') if team1 else ' '
+        team1 = six.ensure_text(team1, encoding='utf-8', errors='replace') if team1 else None
         team2 = match.get('team2', None)
-        team2 = six.ensure_text(team2, encoding='utf-8', errors='replace') if team2 else ' '
-        event = "{} vs {}".format(team1, team2) if team1 and team2 else team1
+        team2 = six.ensure_text(team2, encoding='utf-8', errors='replace') if team2 else None
+        event = u"{} vs {}".format(team1, team2) if team1 and team2 else team1
 
         try:
             compare = match['startTimestamp']
