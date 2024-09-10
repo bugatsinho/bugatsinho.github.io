@@ -36,7 +36,7 @@ vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
 BASEURL = 'https://one.sporthd.me/'  # 'https://sporthd.live/'  #'https://sportl.ivesoccer.sx/'
-Live_url = 'https://sporthd.live/'  # 'https://sportl.ivesoccer.sx/'
+Live_url = 'https://one.sporthd.me/'  # 'https://sportl.ivesoccer.sx/'
 Alt_url = 'https://liveon.sx/program'  # 'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
