@@ -36,7 +36,7 @@ vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
 BASEURL = 'https://one.sporthd.me/'  # 'https://sporthd.live/'  #'https://sportl.ivesoccer.sx/'
-Live_url = 'https://one.sporthd.me/'  # 'https://sportl.ivesoccer.sx/'
+Live_url = 'https://super.league.do'#'https://one.sporthd.me/'  # 'https://sportl.ivesoccer.sx/'
 Alt_url = 'https://liveon.sx/program'  # 'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
@@ -525,16 +525,35 @@ def resolve(name, url):
             stream_url = flink
 
     elif '//coolrea' in url:
+        referer = 'https://coolrea.link/'
         '''https://f6hmx3jswd83sq.librarywhispering.com/hls/039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109/live.m3u8'''
         # 039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109
+        #'https://locatedinfain.com/embed3.php?player=desktop&live=do5'
         r = six.ensure_str(client.request(url))
-        frame = client.parseDOM(r, 'iframe', ret='src')[0]
-        data = six.ensure_str(client.request(frame, referer=url))
-        # xbmc.log('DATAAAAA: {}'.format(data))
-        player = re.findall(r'''new\s*Player.+?player['"]\,['"](.+?)['"].+?['"](.+?)['"]''', data, re.DOTALL)[0]
-        stream_url = 'https://' + player[1] + '/hls/' + player[0] + '/live.m3u8'
-        stream_url += '|Referer={0}&Origin={0}&User-Agent={1}'.format(quote('https://librarywhispering.com/'), quote(
-            'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
+        #xbmc.log('DATAAAAA: {}'.format(r))
+        if 'fid=' in r:
+            regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
+            vid, getembed = re.findall(regex, r, re.DOTALL)[0]
+            getembed = 'https:' + getembed if getembed.startswith('//') else getembed
+            embed = six.ensure_str(client.request(getembed))
+            embed = re.findall(r'''document.write.+?src=['"](.+?player)=''', embed, re.DOTALL)[0]
+            host = '{}=desktop&live={}'.format(embed, str(vid))
+            data = six.ensure_str(client.request(host, referer=referer))
+            try:
+                link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
+            except IndexError:
+                link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
+
+            stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
+            stream_url += '|Referer={}&User-Agent={}'.format(host.split('embed')[0], quote(ua))
+        else:
+            frame = client.parseDOM(r, 'iframe', ret='src')[0]
+            data = six.ensure_str(client.request(frame, referer=url))
+            # xbmc.log('DATAAAAA: {}'.format(data))
+            player = re.findall(r'''new\s*Player.+?player['"]\,['"](.+?)['"].+?['"](.+?)['"]''', data, re.DOTALL)[0]
+            stream_url = 'https://' + player[1] + '/hls/' + player[0] + '/live.m3u8'
+            stream_url += '|Referer={0}&Origin={0}&User-Agent={1}'.format(quote('https://librarywhispering.com/'), quote(
+                'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
 
     elif '//istorm' in url or '//zvision':
         referer = 'https://istorm.live/' if 'istorm' in url else 'https://coolrea.link/'
