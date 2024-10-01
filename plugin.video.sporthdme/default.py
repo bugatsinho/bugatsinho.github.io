@@ -75,7 +75,7 @@ def get_events(url):  # 5
     # matches = re.findall('''null\,(\{"(?:matches|customNotFoundMessage).+?)\]\}\]n''', events, re.DOTALL)[0]
     # pattern = r'("matches"\s*\:\s*\[.+?])}]}]n"'
     pattern = r'"matches"\s*\:\s*(\[.+?])}]]}]n'
-    matches = re.findall(pattern, events, re.DOTALL)[0]
+    matches = re.findall(pattern, events.replace(',false', ''), re.DOTALL)[0]
     # xbmc.log('EVENTSSS: {}'.format(matches))
     matches = json.loads(matches)
 
