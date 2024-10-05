@@ -159,7 +159,10 @@ class s4f:
                     'Origin': 'https://www.subs4series.com/'}
                 # cj = {'PHPSESSID': php}
 
-                r = net_client().http_GET(url, headers=headers).content
+                resp = net_client().http_GET(url, headers=headers)
+                cj = resp.get_headers(as_dict=True).get('Set-Cookie')
+                headers.update({'cookie': cj})
+                r = resp.content
                 xbmc.sleep(3000)
                 # r = re.sub(r'[^\x00-\x7F]+', ' ', r)
                 if six.PY2:
@@ -187,7 +190,10 @@ class s4f:
                 # cj = {'PHPSESSID': php}
                 post_url = self.base_link + '/getSub.php'
 
-                r = net_client().http_GET(url, headers=headers).content
+                resp = net_client().http_GET(url, headers=headers)
+                cj = resp.get_headers(as_dict=True).get('Set-Cookie')
+                headers.update({'cookie': cj})
+                r = resp.content
                 xbmc.sleep(3000)
                 if six.PY2:
                     r = re.sub(r'[^\x00-\x7F]+', ' ', r)
