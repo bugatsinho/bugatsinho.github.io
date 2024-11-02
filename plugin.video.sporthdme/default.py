@@ -507,6 +507,9 @@ def resolve(name, url):
 
             elif 'player.setSrc' in rr:
                 flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', rr, re.DOTALL)[0]
+            elif 'new Player(' in rr:
+                p1, p2 = re.findall(r'''new Player\(.+?["']player["'],\s*["'](.+?)["'],\s*.+?["'](.+?)["']''', rr, re.DOTALL)[0]
+                flink = 'https://{}/hls/{}/live.m3u8'.format(p2, p1)
             else:
                 try:
                     if 'jwplayer.key' in rr:
