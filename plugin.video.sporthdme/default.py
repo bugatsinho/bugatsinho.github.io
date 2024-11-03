@@ -127,7 +127,7 @@ def get_events(url):  # 5
 
         # streams = str(quote(base64.b64encode(six.ensure_binary(str(streams)))))
     events = sorted(event_list, key=lambda x: x[1])
-    for event in events:
+    for event in deduplicate_events(events):
         streams = str(quote(base64.b64encode(six.ensure_binary(str(event[2])))))
         name = event[0]
         icon = event[3]
@@ -135,6 +135,15 @@ def get_events(url):  # 5
 
     xbmcplugin.setContent(_handle, 'videos')
     xbmcplugin.endOfDirectory(_handle)
+
+
+def deduplicate_events(events):
+    unique_events = []
+    for event in events:
+        unique_key = (event[0], event[1], tuple(event[2]), event[3])
+        if unique_key not in unique_events:
+            unique_events.append(unique_key)
+    return unique_events
 
 
 def get_stream(name, url):  # 4
