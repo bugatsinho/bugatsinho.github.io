@@ -5,7 +5,7 @@ import base64
 import re
 import sys
 import six
-from six.moves.urllib.parse import unquote_plus, quote_plus, quote, unquote, parse_qsl, urlencode
+from six.moves.urllib.parse import unquote_plus, quote_plus, quote, unquote, parse_qsl, urlencode, urlparse
 from datetime import datetime, timedelta
 import json
 import xbmc
@@ -36,7 +36,7 @@ vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
 BASEURL = 'https://one.sporthd.me/'  # 'https://sporthd.live/'  #'https://sportl.ivesoccer.sx/'
-Live_url = 'https://super.league.do'#'https://one.sporthd.me/'  # 'https://sportl.ivesoccer.sx/'
+Live_url = 'https://super.league.do'  #'https://one.sporthd.me/'  # 'https://sportl.ivesoccer.sx/'
 Alt_url = 'https://liveon.sx/program'  # 'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
@@ -172,32 +172,20 @@ def get_stream(name, url):  # 4
                            ICON, 5000)
         return
     else:
-        titles = []
-        streams = []
+        if len(sstreams) > 1:
+            for i in sstreams:
+                title, link = i[1], i[0]
+                if not 'vecdn' in link:
+                    # if not 'https://bedsport' in link and not 'vecdn' in link:
+                    if not str(link) == str(title):
+                        title += ' | {}'.format(urlparse(link).netloc)
+                info = {'title': title, 'sorttitle': '', 'plot': name}
+                addDir(title, link, 'play_stream', ICON, name, isFolder=False, infoLabels=info)
+            xbmcplugin.setContent(_handle, 'videos')
+            xbmcplugin.endOfDirectory(_handle)
 
-        for i in sstreams:
-            title, link = i[1], i[0]
-            # if not 'vecdn' in link:
-            if not 'https://bedsport' in link and not 'vecdn' in link:
-                if str(link) == str(title):
-                    title = title
-                else:
-                    title += ' | {}'.format(link)
-                streams.append(link.rstrip())
-                titles.append(title)
-
-        if len(streams) > 1:
-            dialog = xbmcgui.Dialog()
-            ret = dialog.select('[COLOR gold][B]Choose Stream[/B][/COLOR]', titles)
-            if ret == -1:
-                return
-            elif ret > -1:
-                host = streams[ret]
-                resolve(name, host)
-            else:
-                return False
         else:
-            link = streams[0][0]
+            link = sstreams[0][0]
             resolve(name, link)
 
 
@@ -208,7 +196,7 @@ def resolve(name, url):
     xbmc.log('RESOLVE-URL: {}'.format(url))
     ua_win = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
     ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
-    # dialog.notification(AddonTitle, '[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]', icon, 5000)
+    Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
     if 'webplay' in url or 'livestreames' in url:
         html = six.ensure_text(client.request(url, referer=BASEURL))
         # xbmc.log('HTMLLLLL: {}'.format(html))
@@ -534,7 +522,8 @@ def resolve(name, url):
                 elif 'player.setSrc' in rr:
                     flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', rr, re.DOTALL)[0]
                 elif 'new Player(' in rr:
-                    p1, p2 = re.findall(r'''new Player\(.+?["']player["'],\s*["'](.+?)["'],\s*.+?["'](.+?)["']''', rr, re.DOTALL)[0]
+                    p1, p2 = re.findall(r'''new Player\(.+?["']player["'],\s*["'](.+?)["'],\s*.+?["'](.+?)["']''', rr,
+                                        re.DOTALL)[0]
                     flink = 'https://{}/hls/{}/live.m3u8'.format(p2, p1)
                 else:
                     try:
@@ -581,10 +570,11 @@ def resolve(name, url):
             # xbmc.log('DATAAAAA: {}'.format(data))
             player = re.findall(r'''new\s*Player.+?player['"]\,['"](.+?)['"].+?['"](.+?)['"]''', data, re.DOTALL)[0]
             stream_url = 'https://' + player[1] + '/hls/' + player[0] + '/live.m3u8'
-            stream_url += '|Referer={0}&Origin={0}&User-Agent={1}'.format(quote('https://librarywhispering.com/'), quote(
-                'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
+            stream_url += '|Referer={0}&Origin={0}&User-Agent={1}'.format(quote('https://librarywhispering.com/'),
+                                                                          quote(
+                                                                              'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
 
-    elif '//istorm' in url or '//zvision':
+    elif '//istorm' in url or '//zvision' in url:
         referer = 'https://istorm.live/' if 'istorm' in url else 'https://coolrea.link/'
         r = six.ensure_str(client.request(url))
         if 'fid=' in r:
@@ -628,6 +618,31 @@ def resolve(name, url):
                     flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
             flink += '|Referer={}&User-Agent=iPad'.format(quote('https://candlenorth.net/'))
+            stream_url = flink
+    elif '//bedsport' in url:
+        r = six.ensure_str(client.request(url))
+        frame = client.parseDOM(r, 'iframe', ret='src')[-1]
+        parsed_frame = urlparse(frame)
+        referer = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_frame)
+        data = six.ensure_str(client.request(frame, referer=url, output=url))
+        try:
+            data = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[0]
+            from resources.modules import jsunpack
+            data = six.ensure_text(jsunpack.unpack(str(data) + ')'), encoding='utf-8')
+        except:
+            pass
+        if 'hlsjsConfig' in data:
+            try:
+                flink = re.findall(r'''src=\s*["'](.+?)['"]''', data, re.DOTALL)[0]
+            except:
+                hlsurl, pk, ea = \
+                    re.findall('.*hlsUrl\s*=\s*"(.*?&\w+=)".*?var\s+\w+\s*=\s*"([^"]+).*?>\s*ea\s*=\s*"([^"]+)', data,
+                               re.DOTALL)[0]
+                pk = pk[:53] + pk[53 + 1:]
+                link = hlsurl.replace('" + ea + "', ea) + pk
+                link_data = six.ensure_str(client.request(link))
+                flink = re.findall('.*(http.+?$)', link_data)[0]
+            flink += '|Referer={}&User-Agent=iPad'.format(quote(referer))
             stream_url = flink
 
 
@@ -865,7 +880,7 @@ def addDir(name, url, mode, iconimage, description, isFolder=True, infoLabels=No
     if infoLabels:
         liz.setInfo(type="Video", infoLabels=infoLabels)
     if not isFolder:
-        if mode == 'settings' or mode == 'version' or mode == 'clear':
+        if mode == 'settings' or mode == 'version' or mode == 'clear' or mode == 'play_stream':
             isFolder = False
         else:
             liz.setProperty('IsPlayable', 'true')
@@ -884,6 +899,8 @@ def router(paramstring):
             get_events(params['url'])
         elif params['mode'] == 'get_streams':
             get_stream(params['name'], params['url'])
+        elif params['mode'] == 'play_stream':
+            resolve(params['description'], params['url'])
         elif params['mode'] == 'settings':
             Open_settings()
         elif params['mode'] == 'clear':
