@@ -575,8 +575,9 @@ def resolve(name, url):
                                                                               'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
 
     elif '//istorm' in url or '//zvision' in url:
-        referer = 'https://istorm.live/' if 'istorm' in url else 'https://coolrea.link/'
+        referer = 'https://istorm.live/' if 'istorm' in url else 'https://eyespeeled.click/'
         r = six.ensure_str(client.request(url))
+        # xbmc.log("RRRRRR: {}".format(r))
         if 'fid=' in r:
             regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
             vid, getembed = re.findall(regex, r, re.DOTALL)[0]
@@ -595,12 +596,16 @@ def resolve(name, url):
         else:
             # r = six.ensure_str(client.request(url))
             frame = client.parseDOM(r, 'iframe', ret='src')[-1]
-            # xbmc.log('FRAME: {}'.format(frame))
+            xbmc.log('FRAME: {}'.format(frame))
             data = six.ensure_str(client.request(frame, referer=url, output=url))
-            unpack = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[0]
+            # xbmc.log("DATAAAA: {}".format(data))
+            if 'eval' in data:
+                unpack = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[0]
 
-            from resources.modules import jsunpack
-            rr = six.ensure_text(jsunpack.unpack(str(unpack) + ')'), encoding='utf-8')
+                from resources.modules import jsunpack
+                rr = six.ensure_text(jsunpack.unpack(str(unpack) + ')'), encoding='utf-8')
+            else:
+                rr = data
             if 'player.src({src:' in rr:
                 flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', rr, re.DOTALL)[0]
             elif 'hlsjsConfig' in rr:
@@ -609,6 +614,10 @@ def resolve(name, url):
                 flink = re.findall(r'''source\s*:\s*["'](.+?)['"]\,''', str(rr), re.DOTALL)[0]
             elif 'player.setSrc' in rr:
                 flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', rr, re.DOTALL)[0]
+            elif 'new Player(' in rr:
+                p1, p2 = re.findall(r'''new Player\(.+?["']player["'],\s*["'](.+?)["'],\s*.+?["'](.+?)["']''', rr,
+                                    re.DOTALL)[0]
+                flink = 'https://{}/hls/{}/live.m3u8'.format(p2, p1)
             else:
                 try:
                     flink = re.findall(r'''source:\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
@@ -617,7 +626,8 @@ def resolve(name, url):
                     ea = six.ensure_text(client.request(ea)).split('=')[1]
                     flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
-            flink += '|Referer={}&User-Agent=iPad'.format(quote('https://candlenorth.net/'))
+
+            flink += '|Referer={}&User-Agent=iPad'.format(quote(referer))
             stream_url = flink
     elif '//bedsport' in url:
         r = six.ensure_str(client.request(url))
@@ -626,9 +636,10 @@ def resolve(name, url):
         referer = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_frame)
         data = six.ensure_str(client.request(frame, referer=url, output=url))
         try:
-            data = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[0]
+            data = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[-1]
             from resources.modules import jsunpack
             data = six.ensure_text(jsunpack.unpack(str(data) + ')'), encoding='utf-8')
+            # xbmc.log("DATAAA: {}".format(data))
         except:
             pass
         if 'hlsjsConfig' in data:
