@@ -542,8 +542,8 @@ def resolve(name, url):
             flink += '&User-Agent={}'.format(quote(ua))
             stream_url = flink
 
-    elif '//coolrea' in url:
-        referer = 'https://coolrea.link/'
+    elif '//evfancy' in url:
+        referer = 'https://smartermuver.com/'
         '''https://f6hmx3jswd83sq.librarywhispering.com/hls/039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109/live.m3u8'''
         # 039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109
         #'https://locatedinfain.com/embed3.php?player=desktop&live=do5'
@@ -574,7 +574,7 @@ def resolve(name, url):
                                                                           quote(
                                                                               'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
 
-    elif '//istorm' in url or '//zvision' in url:
+    elif '//istorm' in url or '//glisco' in url:
         referer = 'https://istorm.live/' if 'istorm' in url else 'https://eyespeeled.click/'
         r = six.ensure_str(client.request(url))
         # xbmc.log("RRRRRR: {}".format(r))
