@@ -556,7 +556,7 @@ def resolve(name, url):
             embed = six.ensure_str(client.request(getembed))
             embed = re.findall(r'''document.write.+?src=['"](.+?player)=''', embed, re.DOTALL)[0]
             host = '{}=desktop&live={}'.format(embed, str(vid))
-            data = six.ensure_str(client.request(host, referer=referer))
+            data = six.ensure_str(client.request(host, referer=url))
             try:
                 link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
             except IndexError:
@@ -573,9 +573,13 @@ def resolve(name, url):
             stream_url += '|Referer={0}&Origin={0}&User-Agent={1}'.format(quote('https://librarywhispering.com/'),
                                                                           quote(
                                                                               'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
-
-    elif '//istorm' in url or '//glisco' in url:
-        referer = 'https://istorm.live/' if 'istorm' in url else 'https://eyespeeled.click/'
+    elif '//istorm' in url or '//glisco' in url or '//zvision' in url:
+        if 'istorm' in url:
+            referer = 'https://istorm.live/'
+        elif 'glisco' in url:
+            referer = 'https://eyespeeled.click/'
+        else:
+            referer = url
         r = six.ensure_str(client.request(url))
         # xbmc.log("RRRRRR: {}".format(r))
         if 'fid=' in r:
@@ -596,7 +600,7 @@ def resolve(name, url):
         else:
             # r = six.ensure_str(client.request(url))
             frame = client.parseDOM(r, 'iframe', ret='src')[-1]
-            xbmc.log('FRAME: {}'.format(frame))
+            #xbmc.log('FRAME: {}'.format(frame))
             data = six.ensure_str(client.request(frame, referer=url, output=url))
             # xbmc.log("DATAAAA: {}".format(data))
             if 'eval' in data:
@@ -608,7 +612,7 @@ def resolve(name, url):
                 rr = data
             if 'player.src({src:' in rr:
                 flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', rr, re.DOTALL)[0]
-            elif 'hlsjsConfig' in rr:
+            elif 'hlsjsConfig' in rr and not 'new Clappr' in rr:
                 flink = re.findall(r'''src=\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
             elif 'new Clappr' in rr:
                 flink = re.findall(r'''source\s*:\s*["'](.+?)['"]\,''', str(rr), re.DOTALL)[0]
@@ -627,7 +631,10 @@ def resolve(name, url):
                     flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
                     flink = flink.replace('" + ea + "', ea)
 
+            if '//zvision' in url:
+                referer = frame
             flink += '|Referer={}&User-Agent=iPad'.format(quote(referer))
+            #flink += '|Referer={}'.format(quote(referer))
             stream_url = flink
     elif '//bedsport' in url:
         r = six.ensure_str(client.request(url))
@@ -879,10 +886,20 @@ def Open_settings():
 
 
 def addDir(name, url, mode, iconimage, description, isFolder=True, infoLabels=None):
-    url_encoded = quote_plus(url.encode('utf-8'))
-    name_encoded = quote_plus(name.encode('utf-8'))
-    iconimage_encoded = quote_plus(iconimage.encode('utf-8'))
-    description_encoded = quote_plus(description.encode('utf-8'))
+    if isinstance(name, str):
+        name = six.ensure_text(name)
+    if isinstance(url, str):
+        url = six.ensure_text(url)
+    if isinstance(description, str):
+        description = six.ensure_text(description)
+    if isinstance(iconimage, str):
+        iconimage = six.ensure_text(iconimage)
+
+    url_encoded = quote_plus(url.encode('utf-8') if isinstance(url, six.text_type) else url)
+    name_encoded = quote_plus(name.encode('utf-8') if isinstance(name, six.text_type) else name)
+    iconimage_encoded = quote_plus(iconimage.encode('utf-8') if isinstance(iconimage, six.text_type) else iconimage)
+    description_encoded = quote_plus(description.encode('utf-8') if isinstance(description, six.text_type) else description)
+
     u = sys.argv[0] + "?url=" + url_encoded + "&mode=" + str(
         mode) + "&name=" + name_encoded + "&iconimage=" + iconimage_encoded + "&description=" + description_encoded
 

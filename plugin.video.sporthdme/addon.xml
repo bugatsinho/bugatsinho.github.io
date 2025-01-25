@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.72" provider-name="Bugatsinho">
+<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.73" provider-name="Bugatsinho">
   <requires>
     <!--import addon="xbmc.python" version="2.1.0"/-->
     <import addon="script.module.dateutil" />
