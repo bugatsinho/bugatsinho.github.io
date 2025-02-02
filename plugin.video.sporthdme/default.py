@@ -577,7 +577,8 @@ def resolve(name, url):
         if 'istorm' in url:
             referer = 'https://istorm.live/'
         elif 'glisco' in url:
-            referer = 'https://eyespeeled.click/'
+            referer = 'https://4kwebplay.xyz/'
+            #referer = 'https://eyespeeled.click/'
         else:
             referer = url
         r = six.ensure_str(client.request(url))
