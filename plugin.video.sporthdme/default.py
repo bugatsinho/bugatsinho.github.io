@@ -616,7 +616,15 @@ def resolve(name, url):
             elif 'hlsjsConfig' in rr and not 'new Clappr' in rr:
                 flink = re.findall(r'''src=\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
             elif 'new Clappr' in rr:
-                flink = re.findall(r'''source\s*:\s*["'](.+?)['"]\,''', str(rr), re.DOTALL)[0]
+                flink = re.findall(r'''source\s*:\s*["']?(.+?)['"]?\,''', str(rr), re.DOTALL)[0]
+                if flink == "m3u8Url":
+                    channelKey = re.findall(r'''var channelKey\s*=\s*["'](.+?)['"]''', str(rr), re.DOTALL)[0]
+                    server_lookup = "{}/server_lookup.php?channel_id={}".format(referer,channelKey)
+                    resp = six.ensure_str(client.request(server_lookup, referer=frame, output=url))
+                    serverKey = json.loads(resp).get("server_key")
+                    server = re.findall(r'''serverKey\s*\+\s*["'](.+?)['"]\s*\+\s*serverKey''', str(rr), re.DOTALL)[0]
+                    fname = re.findall(r'''channelKey\s*\+\s*["'](.+?)['"]''', str(rr), re.DOTALL)[0]
+                    flink = "https://{}{}{}/{}{}".format(serverKey,server,serverKey,channelKey,fname)
             elif 'player.setSrc' in rr:
                 flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', rr, re.DOTALL)[0]
             elif 'new Player(' in rr:
