@@ -543,7 +543,6 @@ def resolve(name, url):
             stream_url = flink
 
     elif '//evfancy' in url:
-        referer = 'https://smartermuver.com/'
         '''https://f6hmx3jswd83sq.librarywhispering.com/hls/039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109/live.m3u8'''
         # 039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109
         #'https://locatedinfain.com/embed3.php?player=desktop&live=do5'
@@ -567,12 +566,16 @@ def resolve(name, url):
         else:
             frame = client.parseDOM(r, 'iframe', ret='src')[0]
             data = six.ensure_str(client.request(frame, referer=url))
+            referer = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(frame))
             # xbmc.log('DATAAAAA: {}'.format(data))
-            player = re.findall(r'''new\s*Player.+?player['"]\,['"](.+?)['"].+?['"](.+?)['"]''', data, re.DOTALL)[0]
-            stream_url = 'https://' + player[1] + '/hls/' + player[0] + '/live.m3u8'
-            stream_url += '|Referer={0}&Origin={0}&User-Agent={1}'.format(quote('https://librarywhispering.com/'),
-                                                                          quote(
-                                                                              'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'))
+            try:
+                player = re.findall(r'''new\s*Player.+?player['"]\,['"](.+?)['"].+?['"](.+?)['"]''', data, re.DOTALL)[0]
+                stream_url = 'https://' + player[1] + '/hls/' + player[0] + '/live.m3u8'
+            except IndexError:
+                data = data.replace('\/','/')
+                stream_url = re.findall(r'(https?:\/\/[^\s]+\.m3u8)', data, re.DOTALL)[0]
+            stream_url += '|Referer={0}/&Origin={0}&User-Agent={1}'.format(quote(referer), quote(ua))
+
     elif '//istorm' in url or '//glisco' in url or '//zvision' in url:
         if 'istorm' in url:
             referer = 'https://istorm.live/'
