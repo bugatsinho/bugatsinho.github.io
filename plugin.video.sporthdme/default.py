@@ -12,6 +12,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
+import requests
 from resources.modules import control, client
 import time
 from dateutil.parser import parse
@@ -58,7 +59,6 @@ def Main_menu():
 
 def get_events(url):  # 5
     # data = client.request(url)
-    import requests
     data = requests.get(url)
     data = data.text
     data = six.ensure_text(data, encoding='utf-8', errors='ignore')
@@ -188,6 +188,8 @@ def get_stream(name, url):  # 4
             link = sstreams[0][0]
             resolve(name, link)
 
+def xbmc_curl_encode(url, headers):
+    return "{}|{}".format(url,urlencode(headers))
 
 def resolve(name, url):
     stream_url = ''
@@ -542,50 +544,28 @@ def resolve(name, url):
             flink += '&User-Agent={}'.format(quote(ua))
             stream_url = flink
 
-    elif '//evfancy' in url:
-        '''https://f6hmx3jswd83sq.librarywhispering.com/hls/039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109/live.m3u8'''
-        # 039beb93983959e1-0e2a3bb76283a966aa758ab00478ae20c590853264d6b277a7808d282b7c0109
-        #'https://locatedinfain.com/embed3.php?player=desktop&live=do5'
+    elif '//istorm' in url or '//zvision' in url or '//glisco' in url or '//bedsport' in url or '//coolrea' in url or '//evfancy' in url:
+        referer = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(url))
         r = six.ensure_str(client.request(url))
-        #xbmc.log('DATAAAAA: {}'.format(r))
-        if 'fid=' in r:
-            regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
-            vid, getembed = re.findall(regex, r, re.DOTALL)[0]
-            getembed = 'https:' + getembed if getembed.startswith('//') else getembed
-            embed = six.ensure_str(client.request(getembed))
-            embed = re.findall(r'''document.write.+?src=['"](.+?player)=''', embed, re.DOTALL)[0]
-            host = '{}=desktop&live={}'.format(embed, str(vid))
-            data = six.ensure_str(client.request(host, referer=url))
-            try:
-                link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
-            except IndexError:
-                link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
-
-            stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
-            stream_url += '|Referer={}&User-Agent={}'.format(host.split('embed')[0], quote(ua))
-        else:
-            frame = client.parseDOM(r, 'iframe', ret='src')[0]
-            data = six.ensure_str(client.request(frame, referer=url))
-            referer = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(frame))
-            # xbmc.log('DATAAAAA: {}'.format(data))
-            try:
-                player = re.findall(r'''new\s*Player.+?player['"]\,['"](.+?)['"].+?['"](.+?)['"]''', data, re.DOTALL)[0]
-                stream_url = 'https://' + player[1] + '/hls/' + player[0] + '/live.m3u8'
-            except IndexError:
-                data = data.replace('\/','/')
-                stream_url = re.findall(r'(https?:\/\/[^\s]+\.m3u8)', data, re.DOTALL)[0]
-            stream_url += '|Referer={0}/&Origin={0}&User-Agent={1}'.format(quote(referer), quote(ua))
-
-    elif '//istorm' in url or '//glisco' in url or '//zvision' in url:
-        if 'istorm' in url:
-            referer = 'https://istorm.live/'
-        elif 'glisco' in url:
-            referer = 'https://4kwebplay.xyz/'
-            #referer = 'https://eyespeeled.click/'
-        else:
-            referer = url
-        r = six.ensure_str(client.request(url))
-        # xbmc.log("RRRRRR: {}".format(r))
+        if 'get_content.php?channel=' in r or 'api/player.php?id=' in r:
+            id_ = re.findall(r'(\d+)$', url)[0]
+            if 'get_content.php?channel=' in r:
+                frame = referer+"get_content.php"
+                hdr = {
+                        'referer': url,
+                        'sec-fetch-mode': 'cors',
+                        'user-agent': ua_win,
+                    }
+                params = {'channel': id_,}
+            elif 'api/player.php?id=' in r:
+                frame = referer+"api/player.php"
+                hdr = {
+                        'referer': url,
+                        'sec-fetch-mode': 'cors',
+                        'user-agent': ua_win,
+                    }
+                params = {'id': id_,}
+            r = six.ensure_str(requests.get(frame, params=params, headers=hdr).content)
         if 'fid=' in r:
             regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
             vid, getembed = re.findall(regex, r, re.DOTALL)[0]
@@ -599,82 +579,113 @@ def resolve(name, url):
             except IndexError:
                 link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
 
-            stream_url = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
-            stream_url += '|Referer={}&User-Agent={}'.format(host.split('embed')[0], quote(ua))
+            flink = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
+            stream_headers = {'Referer': host.split('embed')[0], 'User-Agent':ua_win}
+            stream_url = xbmc_curl_encode(flink, stream_headers)
         else:
-            # r = six.ensure_str(client.request(url))
-            frame = client.parseDOM(r, 'iframe', ret='src')[-1]
-            #xbmc.log('FRAME: {}'.format(frame))
+            try:
+                frame = json.loads(r).get('url')
+            except:
+                frame = client.parseDOM(r, 'iframe', ret='src')[-1]
+            # xbmc.log('FRAME: {}'.format(frame))
+            referer = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(frame))
             data = six.ensure_str(client.request(frame, referer=url, output=url))
-            # xbmc.log("DATAAAA: {}".format(data))
-            if 'eval' in data:
-                unpack = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[0]
-
+            try:
+                data = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[-1]
                 from resources.modules import jsunpack
-                rr = six.ensure_text(jsunpack.unpack(str(unpack) + ')'), encoding='utf-8')
-            else:
-                rr = data
-            if 'player.src({src:' in rr:
-                flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', rr, re.DOTALL)[0]
-            elif 'hlsjsConfig' in rr and not 'new Clappr' in rr:
-                flink = re.findall(r'''src=\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
-            elif 'new Clappr' in rr:
-                flink = re.findall(r'''source\s*:\s*["']?(.+?)['"]?\,''', str(rr), re.DOTALL)[0]
-                if flink == "m3u8Url":
-                    channelKey = re.findall(r'''var channelKey\s*=\s*["'](.+?)['"]''', str(rr), re.DOTALL)[0]
-                    server_lookup = "{}/server_lookup.php?channel_id={}".format(referer,channelKey)
+                data = six.ensure_text(jsunpack.unpack(str(data) + ')'), encoding='utf-8')
+            except:
+                pass
+            if '"h","t","t","p"' in data:
+                link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
+                link = json.loads(link)
+                link = "".join(link)
+                flink = link.replace('////', '//')
+            elif 'player.src({src:' in data:
+                flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', data, re.DOTALL)[0]
+            elif 'hlsjsConfig' in data and not 'new Clappr' in data:
+                try:
+                    if 'data-page=' in data:
+                        data_page = client.parseDOM(data, 'div', ret='data-page', attrs={'id': 'app'})[0]
+                        data_page = client.replaceHTMLCodes(data_page)
+                        try:
+                            data_page = data_page.replace('\/', '/')
+                            flink = re.findall(r'''(https?:\/\/[^\s]+\.m3u8)''', data_page, re.DOTALL)[0]
+                        except:
+                            data_page = json.loads(data_page)
+                            flink = data_page['props']['streamData']['streamurl']
+                    else:
+                        xbmcgui.Dialog().textviewer('data', str(data))
+                        hlsurl, pk, ea = \
+                            re.findall('.*hlsUrl\s*=\s*"(.*?&\w+=)".*?var\s+\w+\s*=\s*"([^"]+).*?>\s*ea\s*=\s*"([^"]+)', data,
+                                       re.DOTALL)[0]
+                        pk = pk[:53] + pk[53 + 1:]
+                        link = hlsurl.replace('" + ea + "', ea) + pk
+                        link_data = six.ensure_str(client.request(link))
+                        flink = re.findall('.*(http.+?$)', link_data)[0]
+                except Exception as e:
+                    xbmcgui.Dialog().textviewer('e', str(e))
+                    flink = re.findall(r'''src=\s*["'](.+?)['"]''', data, re.DOTALL)[0]
+            elif 'new Clappr' in data:
+                flink = re.findall(r'''source\s*:\s*["']?(.+?)['"]?\,''', str(data), re.DOTALL)[0]
+                if flink == "m3u8Url" or flink == "m3u8":
+                    channelKey = re.findall(r'''var channelKey\s*=\s*["'](.+?)['"]''', str(data), re.DOTALL)[0]
+                    try:
+                        auth_host = re.findall(r'''(https?:\/\/[^\s]+/auth\.php\?channel_id=)''', str(data), re.DOTALL)
+                        if auth_host:
+                            auth_host = auth_host[0]
+                        else:
+                            auth_host = 'https://top2new.newkso.ru/auth.php?channel_id='
+                        authTs = re.findall(r'''var authTs\s*=\s*["'](.+?)['"]''', str(data), re.DOTALL)[0]
+                        authRnd = re.findall(r'''var authRnd\s*=\s*["'](.+?)['"]''', str(data), re.DOTALL)[0]
+                        authSig = re.findall(r'''var authSig\s*=\s*["'](.+?)['"]''', str(data), re.DOTALL)[0]
+                        auth_url = auth_host + channelKey + '&ts=' + authTs + '&rnd=' + authRnd + '&sig=' + quote(authSig)
+                        auth_hdr = {
+                                        'Referer': referer+"/",
+                                        'Origin': referer,
+                                        'User-Agent':ua_win,
+                                        'Connection':'keep-alive',
+                                    }
+                        auth_resp = six.ensure_str(requests.get(auth_url, headers=auth_hdr, verify=False, timeout=10).content)
+                    except:
+                        pass
+                    server_lookup = "{}/server_lookup.php?channel_id={}".format(referer,quote(channelKey))
                     resp = six.ensure_str(client.request(server_lookup, referer=frame, output=url))
                     serverKey = json.loads(resp).get("server_key")
-                    server = re.findall(r'''serverKey\s*\+\s*["'](.+?)['"]\s*\+\s*serverKey''', str(rr), re.DOTALL)[0]
-                    fname = re.findall(r'''channelKey\s*\+\s*["'](.+?)['"]''', str(rr), re.DOTALL)[0]
-                    flink = "https://{}{}{}/{}{}".format(serverKey,server,serverKey,channelKey,fname)
-            elif 'player.setSrc' in rr:
-                flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', rr, re.DOTALL)[0]
-            elif 'new Player(' in rr:
-                p1, p2 = re.findall(r'''new Player\(.+?["']player["'],\s*["'](.+?)["'],\s*.+?["'](.+?)["']''', rr,
+                    if flink == "m3u8Url":
+                        server = re.findall(r'''serverKey\s*\+\s*["'](.+?)['"]\s*\+\s*serverKey''', str(data), re.DOTALL)[0]
+                        fname = re.findall(r'''channelKey\s*\+\s*["'](.+?)['"]''', str(data), re.DOTALL)[-1]
+                        flink = "https://{}{}{}/{}{}".format(serverKey,server,serverKey,channelKey,fname)
+                    elif flink == "m3u8":
+                        server = re.findall(r'''sk\s*\+\s*["'](.+?)['"]\s*\+\s*sk''', str(data), re.DOTALL)[0]
+                        fname = re.findall(r'''channelKey\s*\+\s*["'](.+?)['"]''', str(data), re.DOTALL)[-1]
+                        flink = "https://{}{}{}/{}{}".format(serverKey,server,serverKey,channelKey,fname)
+                elif flink == "src":
+                    flink = re.findall(r'''src=\s*["'](.+?)['"]''', data, re.DOTALL)[0]
+            elif 'player.setSrc' in data:
+                flink = re.findall(r'''player.setSrc\(["'](.+?)['"]\)''', data, re.DOTALL)[0]
+            elif 'new Player(' in data:
+                player = re.findall(r'''new Player(\(.+?\))''', data,
                                     re.DOTALL)[0]
+                import ast, random
+                player = ast.literal_eval(player)
+                p1 = player[3]
+                p2 = random.choice(list(player[4].keys()))
                 flink = 'https://{}/hls/{}/live.m3u8'.format(p2, p1)
             else:
                 try:
-                    flink = re.findall(r'''source:\s*["'](.+?)['"]''', rr, re.DOTALL)[0]
-                except IndexError:
-                    ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', rr, re.DOTALL)[0]
-                    ea = six.ensure_text(client.request(ea)).split('=')[1]
-                    flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
-                    flink = flink.replace('" + ea + "', ea)
-
-            if '//zvision' in url:
-                referer = frame
-            flink += '|Referer={}&User-Agent=iPad'.format(quote(referer))
-            #flink += '|Referer={}'.format(quote(referer))
-            stream_url = flink
-    elif '//bedsport' in url:
-        r = six.ensure_str(client.request(url))
-        frame = client.parseDOM(r, 'iframe', ret='src')[-1]
-        parsed_frame = urlparse(frame)
-        referer = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_frame)
-        data = six.ensure_str(client.request(frame, referer=url, output=url))
-        try:
-            data = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[-1]
-            from resources.modules import jsunpack
-            data = six.ensure_text(jsunpack.unpack(str(data) + ')'), encoding='utf-8')
-            # xbmc.log("DATAAA: {}".format(data))
-        except:
-            pass
-        if 'hlsjsConfig' in data:
-            try:
-                flink = re.findall(r'''src=\s*["'](.+?)['"]''', data, re.DOTALL)[0]
-            except:
-                hlsurl, pk, ea = \
-                    re.findall('.*hlsUrl\s*=\s*"(.*?&\w+=)".*?var\s+\w+\s*=\s*"([^"]+).*?>\s*ea\s*=\s*"([^"]+)', data,
-                               re.DOTALL)[0]
-                pk = pk[:53] + pk[53 + 1:]
-                link = hlsurl.replace('" + ea + "', ea) + pk
-                link_data = six.ensure_str(client.request(link))
-                flink = re.findall('.*(http.+?$)', link_data)[0]
-            flink += '|Referer={}&User-Agent=iPad'.format(quote(referer))
-            stream_url = flink
-
+                    data = data.replace('\/','/')
+                    flink = re.findall(r'(https?:\/\/[^\s]+\.m3u8)', data, re.DOTALL)[0]
+                except:
+                    try:
+                        flink = re.findall(r'''source:\s*["'](.+?)['"]''', data, re.DOTALL)[0]
+                    except IndexError:
+                        ea = re.findall(r'''ajax\(\{url:\s*['"](.+?)['"],''', data, re.DOTALL)[0]
+                        ea = six.ensure_text(client.request(ea)).split('=')[1]
+                        flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
+                        flink = flink.replace('" + ea + "', ea)
+            stream_headers = {'Referer': referer+'/', 'Origin': referer, 'User-Agent':ua_win, 'Connection':'keep-alive'}
+            stream_url = xbmc_curl_encode(flink, stream_headers)
 
     else:
         stream_url = url
