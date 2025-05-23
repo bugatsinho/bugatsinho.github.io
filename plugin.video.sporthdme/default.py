@@ -5,7 +5,7 @@ import base64
 import re
 import sys
 import six
-from six.moves.urllib.parse import unquote_plus, quote_plus, quote, unquote, parse_qsl, urlencode, urlparse
+from six.moves.urllib.parse import urljoin, quote_plus, quote, unquote, parse_qsl, urlencode, urlparse
 from datetime import datetime, timedelta
 import json
 import xbmc
@@ -188,8 +188,10 @@ def get_stream(name, url):  # 4
             link = sstreams[0][0]
             resolve2(name, link)
 
+
 def xbmc_curl_encode(url, headers):
-    return "{}|{}".format(url,urlencode(headers))
+    return "{}|{}".format(url, urlencode(headers))
+
 
 def resolve2(name, url):
     stream_url = ''
@@ -341,6 +343,72 @@ def resolve2(name, url):
                         flink = flink.replace('" + ea + "', ea)
             stream_headers = {'Referer': referer+'/', 'Origin': referer, 'User-Agent':ua_win, 'Connection':'keep-alive'}
             stream_url = xbmc_curl_encode(flink, stream_headers)
+
+    elif "gopst" in url:
+        "https://gopst.link/api/player.php?id=32"
+        id = url.split("/flash")[-1]
+        nurl = "https://gopst.link/api/player.php?id={}".format(id)
+        data = six.ensure_text(client.request(nurl))
+        xbmc.log("URLLLLL: {}".format(nurl))
+        url = json.loads(data)["url"]
+        html = requests.get(url, headers=headers, timeout=10).text
+
+        vars_dict = dict(re.findall(r'var\s+(channelKey|authTs|authRnd|authSig)\s*=\s*"([^"]+)"', html))
+        channelKey = vars_dict.get("channelKey", "")
+        authTs = vars_dict.get("authTs", "")
+        authRnd = vars_dict.get("authRnd", "")
+        authSig = vars_dict.get("authSig", "")
+
+        if not all([channelKey, authTs, authRnd, authSig]):
+            xbmc.log("❌ Missing one or more required variables.")
+            m3u8_url = None
+
+        else:
+            possible_auth_domains = [
+                "https://top2new.newkso.ru",
+                "https://top1.newkso.ru",
+                "https://cdn1.newkso.ru"
+            ]
+
+            auth_url = None
+            for base in possible_auth_domains:
+                test_url = "{}/auth.php?channel_id={}&ts={}&rnd={}&sig={}".format(
+                    base, channelKey, authTs, authRnd, authSig
+                )
+                xbmc.log("🌐 Testing auth URL: {}".format(test_url))
+                try:
+                    r = requests.get(test_url, headers=headers, timeout=5)
+                    if r.status_code == 200:
+                        auth_url = test_url
+                        break
+                except Exception as e:
+                    xbmc.log("⚠️ Auth test failed: {}".format(e))
+
+            if not auth_url:
+                xbmc.log("❌ Auth failed from all base URLs.")
+                m3u8_url = None
+            else:
+                xbmc.log("✅ Auth succeeded at: {}".format(auth_url))
+
+                lookup_url = "https://zukiplay.cfd/server_lookup.php?channel_id={}".format(channelKey)
+                try:
+                    lookup_resp = requests.get(lookup_url, headers=headers, timeout=10)
+                    server_key = lookup_resp.json().get("server_key", "")
+                    xbmc.log("🛰️ Server Key: {}".format(server_key))
+
+                    if server_key == "top1/cdn":
+                        m3u8_url = "https://top1.newkso.ru/top1/cdn/{}/mono.m3u8".format(channelKey)
+                    else:
+                        m3u8_url = "https://{}new.newkso.ru/{}/{}/mono.m3u8".format(
+                            server_key, server_key, channelKey
+                        )
+                    xbmc.log("🎯 Final M3U8: {}".format(m3u8_url))
+
+                except Exception as e:
+                    xbmc.log("💥 Lookup failed: {}".format(e))
+                    m3u8_url = None
+            stream_url = m3u8_url + "|User-Agent=iPad"
+
     else:
         stream_url = url
 
