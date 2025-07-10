@@ -70,14 +70,30 @@ def get_events(url):  # 5
     except:
         control.infoDialog("[COLOR red]No Match Scheduled.[/COLOR]", NAME, ICON, 5000)
         return
-    events = events[:-1].replace('self.__next_f.push(', '').replace('\\', '')
+
+    new_pattern = r'window\.matches\s*=\s*JSON\.parse\(`(\[.+?\])`\)'
+
+    new_matches = re.findall(new_pattern, events, re.DOTALL)
+
+    if new_matches:
+        matches_json = new_matches[0]
+        matches = json.loads(matches_json)
+    else:
+        events = events[:-1].replace('self.__next_f.push(', '').replace('\\', '')
+        old_pattern = r'"matches"\s*\:\s*(\[.+?])}]]}]n'
+        old_matches = re.findall(old_pattern, events.replace(',false', ''), re.DOTALL)[0]
+        if old_matches:
+            matches = json.loads(old_matches)
+        else:
+            control.infoDialog("[COLOR red]No matches data found.[/COLOR]", NAME, ICON, 5000)
+            return
 
     # matches = re.findall('''null\,(\{"(?:matches|customNotFoundMessage).+?)\]\}\]n''', events, re.DOTALL)[0]
     # pattern = r'("matches"\s*\:\s*\[.+?])}]}]n"'
-    pattern = r'"matches"\s*\:\s*(\[.+?])}]]}]n'
-    matches = re.findall(pattern, events.replace(',false', ''), re.DOTALL)[0]
+    #pattern = r'"matches"\s*\:\s*(\[.+?])}]]}]n'
+    #matches = re.findall(pattern, events.replace(',false', ''), re.DOTALL)[0]
     # xbmc.log('EVENTSSS: {}'.format(matches))
-    matches = json.loads(matches)
+    #matches = json.loads(matches)
 
     event_list = []
 
@@ -349,7 +365,7 @@ def resolve2(name, url):
         id = url.split("/flash")[-1]
         nurl = "https://gopst.link/api/player.php?id={}".format(id)
         data = six.ensure_text(client.request(nurl))
-        xbmc.log("URLLLLL: {}".format(nurl))
+        #xbmc.log("URLLLLL: {}".format(nurl))
         url = json.loads(data)["url"]
         html = requests.get(url, headers=headers, timeout=10).text
 
