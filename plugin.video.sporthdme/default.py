@@ -214,7 +214,8 @@ def resolve2(name, url):
     ua_win = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
     ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
     
-    resolved = ['//istorm', '//zvision', '//glisco', '//bedsport', '//coolrea', '//evfancy', '//s2watch', '//vuen']
+    resolved = ['//istorm', '//zvision', '//glisco', '//bedsport', '//coolrea', '//evfancy', '//s2watch', '//vuen', '//gopst']
+    new_streams = ['//dabac']
     xbmc.log('RESOLVE-URL: {}'.format(url))
     if any(i in url for i in resolved):
         Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
@@ -269,11 +270,14 @@ def resolve2(name, url):
                 data = six.ensure_text(jsunpack.unpack(str(data) + ')'), encoding='utf-8')
             except:
                 pass
+            #xbmc.log('DATAAAA: {}'.format(data))
+
             if '"h","t","t","p"' in data:
                 link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
                 link = json.loads(link)
                 link = "".join(link)
                 flink = link.replace('////', '//')
+
             elif 'player.src({src:' in data:
                 flink = re.findall(r'''player.src\(\{src:\s*["'](.+?)['"]\,''', data, re.DOTALL)[0]
             elif 'hlsjsConfig' in data and not 'new Clappr' in data:
@@ -359,73 +363,30 @@ def resolve2(name, url):
                         flink = flink.replace('" + ea + "', ea)
             stream_headers = {'Referer': referer+'/', 'Origin': referer, 'User-Agent':ua_win, 'Connection':'keep-alive'}
             stream_url = xbmc_curl_encode(flink, stream_headers)
-
-    elif "//gopst" in url:
+    elif '//dabac' in url:
         Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
-        'https://gopst.link/ch.php?id=22'
-        "https://gopst.link/api/player.php?id=32"
+        referer = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(url))
+        frame = referer + "api/player.php?id={}"
         id = url.split("id=")[-1]
-        nurl = "https://gopst.link/api/player.php?id={}".format(id)
+        nurl = frame.format(id)
         data = six.ensure_text(client.request(nurl))
-        #xbmc.log("URLLLLL: {}".format(nurl))
         url = json.loads(data)["url"]
-        html = requests.get(url, headers=headers, timeout=10).text
-
-        vars_dict = dict(re.findall(r'var\s+(channelKey|authTs|authRnd|authSig)\s*=\s*"([^"]+)"', html))
-        channelKey = vars_dict.get("channelKey", "")
-        authTs = vars_dict.get("authTs", "")
-        authRnd = vars_dict.get("authRnd", "")
-        authSig = vars_dict.get("authSig", "")
-
-        if not all([channelKey, authTs, authRnd, authSig]):
-            xbmc.log("❌ Missing one or more required variables.")
-            m3u8_url = None
-
-        else:
-            possible_auth_domains = [
-                "https://top2new.newkso.ru",
-                "https://top1.newkso.ru",
-                "https://cdn1.newkso.ru"
-            ]
-
-            auth_url = None
-            for base in possible_auth_domains:
-                test_url = "{}/auth.php?channel_id={}&ts={}&rnd={}&sig={}".format(
-                    base, channelKey, authTs, authRnd, authSig
-                )
-                xbmc.log("🌐 Testing auth URL: {}".format(test_url))
-                try:
-                    r = requests.get(test_url, headers=headers, timeout=5)
-                    if r.status_code == 200:
-                        auth_url = test_url
-                        break
-                except Exception as e:
-                    xbmc.log("⚠️ Auth test failed: {}".format(e))
-
-            if not auth_url:
-                xbmc.log("❌ Auth failed from all base URLs.")
-                m3u8_url = None
-            else:
-                xbmc.log("✅ Auth succeeded at: {}".format(auth_url))
-
-                lookup_url = "https://zukiplay.cfd/server_lookup.php?channel_id={}".format(channelKey)
-                try:
-                    lookup_resp = requests.get(lookup_url, headers=headers, timeout=10)
-                    server_key = lookup_resp.json().get("server_key", "")
-                    xbmc.log("🛰️ Server Key: {}".format(server_key))
-
-                    if server_key == "top1/cdn":
-                        m3u8_url = "https://top1.newkso.ru/top1/cdn/{}/mono.m3u8".format(channelKey)
-                    else:
-                        m3u8_url = "https://{}new.newkso.ru/{}/{}/mono.m3u8".format(
-                            server_key, server_key, channelKey
-                        )
-                    xbmc.log("🎯 Final M3U8: {}".format(m3u8_url))
-
-                except Exception as e:
-                    xbmc.log("💥 Lookup failed: {}".format(e))
-                    m3u8_url = None
-            stream_url = m3u8_url + "|User-Agent=iPad"
+        data = requests.get(url, headers=headers, timeout=10).text
+        iframe = re.findall(r'<iframe[^>]+src="([^"]+?)\+encodeURIComponent\(document\.referrer\)', data, re.DOTALL)[-1]
+        ref = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(iframe))
+        iframe += quote_plus(referer)
+        hdr = {
+            'User-Agent': ua_win,  # ή ua_mob
+            'Referer': url,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
+        }
+        data = six.ensure_text(requests.get(iframe, headers=hdr, timeout=10).text)
+        m = re.search(r'id="crf__"\s+value=[\'"]([^\'"]+)', data)
+        if m:
+            b64url = m.group(1)
+            flink = base64.b64decode(b64url).decode("utf-8")
+            stream_headers = {'Referer': ref + '/', 'Origin': ref, 'User-Agent': 'iPad'}
+            stream_url = xbmc_curl_encode(flink, stream_headers)
 
     else:
         stream_url = url
