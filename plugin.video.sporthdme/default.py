@@ -305,38 +305,94 @@ def resolve2(name, url):
                     flink = re.findall(r'''src=\s*["'](.+?)['"]''', data, re.DOTALL)[0]
             elif 'new Clappr' in data:
                 flink = re.findall(r'''source\s*:\s*["']?(.+?)['"]?\,''', str(data), re.DOTALL)[0]
+                #xbmc.log('FLINKKK: {}'.format(flink))
                 if flink == "m3u8Url" or flink == "m3u8":
-                    channelKey = re.findall(r'''var channelKey\s*=\s*["'](.+?)['"]''', str(data), re.DOTALL)[0]
+                    html = six.ensure_str(data)
+                    m = re.search(r'const\s+CHANNEL_KEY\s*=\s*["\']([\w-]+)["\']', html)
+                    if not m:
+                        raise Exception('CHANNEL_KEY not found')
+                    channel_key = m.group(1)
+
+                    m = re.search(r'const\s+BUNDLE\s*=\s*["\']([A-Za-z0-9+/=]+)["\']', html)
+                    if not m:
+                        raise Exception('BUNDLE not found')
+                    bundle_b64 = m.group(1)
+
+                    parts_raw = base64.b64decode(bundle_b64)
+                    parts = json.loads(six.ensure_str(parts_raw))
+                    for k in list(parts.keys()):
+                        try:
+                            parts[k] = six.ensure_str(base64.b64decode(parts[k]))
+                        except Exception:
+                            pass
+
+                    auth_url = (
+                            parts.get('b_host', '') +
+                            parts.get('b_script', '') +
+                            '?channel_id=' + quote_plus(channel_key) +
+                            '&ts=' + quote_plus(parts.get('b_ts', '')) +
+                            '&rnd=' + quote_plus(parts.get('b_rnd', '')) +
+                            '&sig=' + quote_plus(parts.get('b_sig', ''))
+                    )
+
+                    pu = urlparse(referer)
+                    origin = '{}://{}'.format(pu.scheme or 'https', pu.netloc)
+                    ref_for_headers = frame or referer
                     try:
-                        auth_host = re.findall(r'''(https?:\/\/[^\s]+/auth\.php\?channel_id=)''', str(data), re.DOTALL)
-                        if auth_host:
-                            auth_host = auth_host[0]
-                        else:
-                            auth_host = 'https://top2new.newkso.ru/auth.php?channel_id='
-                        authTs = re.findall(r'''var authTs\s*=\s*["'](.+?)['"]''', str(data), re.DOTALL)[0]
-                        authRnd = re.findall(r'''var authRnd\s*=\s*["'](.+?)['"]''', str(data), re.DOTALL)[0]
-                        authSig = re.findall(r'''var authSig\s*=\s*["'](.+?)['"]''', str(data), re.DOTALL)[0]
-                        auth_url = auth_host + channelKey + '&ts=' + authTs + '&rnd=' + authRnd + '&sig=' + quote(authSig)
-                        auth_hdr = {
-                                        'Referer': referer+"/",
-                                        'Origin': referer,
-                                        'User-Agent':ua_win,
-                                        'Connection':'keep-alive',
-                                    }
-                        auth_resp = six.ensure_str(requests.get(auth_url, headers=auth_hdr, verify=False, timeout=10).content)
+                        client.request(auth_url, referer=ref_for_headers)
                     except:
                         pass
-                    server_lookup = "{}/server_lookup.php?channel_id={}".format(referer,quote(channelKey))
-                    resp = six.ensure_str(client.request(server_lookup, referer=frame, output=url))
-                    serverKey = json.loads(resp).get("server_key")
-                    if flink == "m3u8Url":
-                        server = re.findall(r'''serverKey\s*\+\s*["'](.+?)['"]\s*\+\s*serverKey''', str(data), re.DOTALL)[0]
-                        fname = re.findall(r'''channelKey\s*\+\s*["'](.+?)['"]''', str(data), re.DOTALL)[-1]
-                        flink = "https://{}{}{}/{}{}".format(serverKey,server,serverKey,channelKey,fname)
-                    elif flink == "m3u8":
-                        server = re.findall(r'''sk\s*\+\s*["'](.+?)['"]\s*\+\s*sk''', str(data), re.DOTALL)[0]
-                        fname = re.findall(r'''channelKey\s*\+\s*["'](.+?)['"]''', str(data), re.DOTALL)[-1]
-                        flink = "https://{}{}{}/{}{}".format(serverKey,server,serverKey,channelKey,fname)
+
+                    #server_lookup για server_key
+                    lookup_url = urljoin(origin, '/server_lookup.php?channel_id=' + quote_plus(channel_key))
+                    body = six.ensure_str(client.request(lookup_url, referer=ref_for_headers))
+
+                    server_key = ''
+                    try:
+                        resp = json.loads(body)
+                        server_key = six.ensure_str(resp.get('server_key', '')).strip()
+                    except Exception:
+                        m = re.search(r'"server_key"\s*:\s*"([^"]+)"', body)
+                        if m:
+                            server_key = six.ensure_str(m.group(1)).strip()
+
+                    if not server_key:
+                        raise Exception('server_key not found')
+
+                    sk_slug = server_key.strip().strip('/')  # π.χ. 'x4-cdn' ή 'x4-cdn/cdn'
+                    if sk_slug == 'top1/cdn':
+                        candidates = [
+                            'https://top1.newkso.ru/top1/cdn/{}/mono.m3u8'.format(channel_key),
+                            'http://top1.newkso.ru/top1/cdn/{}/mono.m3u8'.format(channel_key),
+                        ]
+                    else:
+                        host_prefix = sk_slug.replace('/', '.')  # 'x4-cdn.cdn' αν έχει subpath
+                        candidates = [
+                            'https://{}.new.newkso.ru/{}/{}/mono.m3u8'.format(host_prefix, sk_slug, channel_key),
+                            'https://new.newkso.ru/{}/{}/mono.m3u8'.format(sk_slug, channel_key),
+                            'http://{}.new.newkso.ru/{}/{}/mono.m3u8'.format(host_prefix, sk_slug, channel_key),
+                            'http://new.newkso.ru/{}/{}/mono.m3u8'.format(sk_slug, channel_key),
+                        ]
+
+                    candidates = [re.sub(r'(?<!:)/{2,}', '/', u) for u in candidates]
+                    working = None
+                    for u in candidates:
+                        try:
+                            chunk = client.request(u, referer=ref_for_headers)
+                            s = six.ensure_str(chunk) if chunk is not None else ''
+                            if s.startswith('#EXTM3U') or len(s) > 0:
+                                working = u
+                                break
+                        except Exception as e:
+                            xbmc.log('probe fail: {} -> {}'.format(u, e), xbmc.LOGDEBUG)
+                            continue
+
+                    if not working:
+                        working = candidates[0]
+                    #xbmc.log('FLINK (new Clappr): {}'.format(working))
+                    flink = working
+
+
                 elif flink == "src":
                     flink = re.findall(r'''src=\s*["'](.+?)['"]''', data, re.DOTALL)[0]
             elif 'player.setSrc' in data:
@@ -397,6 +453,7 @@ def resolve2(name, url):
     liz.setProperty("IsPlayable", "true")
     liz.setPath(stream_url)
     xbmc.Player().play(stream_url, liz, False)
+
 
 
 ################################################################################
