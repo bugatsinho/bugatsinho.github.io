@@ -214,8 +214,8 @@ def resolve2(name, url):
     ua_win = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
     ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
     
-    resolved = ['//istorm', '//zvision', '//glisco', '//bedsport', '//coolrea', '//evfancy', '//s2watch', '//vuen', '//gopst']
-    new_streams = ['//dabac']
+    resolved = ['//dabac', '//sansat', '//istorm', '//zvision', '//glisco', '//bedsport', '//coolrea', '//evfancy', '//s2watch', '//vuen', '//gopst']
+    #new_streams = ['//dabac']
     xbmc.log('RESOLVE-URL: {}'.format(url))
     if any(i in url for i in resolved):
         Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
@@ -426,6 +426,7 @@ def resolve2(name, url):
         id = url.split("id=")[-1]
         nurl = frame.format(id)
         data = six.ensure_text(client.request(nurl))
+        #xbmc.log("DATAAAAAA: {}".format(data))
         url = json.loads(data)["url"]
         data = requests.get(url, headers=headers, timeout=10).text
         iframe = re.findall(r'<iframe[^>]+src="([^"]+?)\+encodeURIComponent\(document\.referrer\)', data, re.DOTALL)[-1]
@@ -437,6 +438,7 @@ def resolve2(name, url):
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
         }
         data = six.ensure_text(requests.get(iframe, headers=hdr, timeout=10).text)
+        #xbmc.log("DATAAAAAA2: {}".format(data))
         m = re.search(r'id="crf__"\s+value=[\'"]([^\'"]+)', data)
         if m:
             b64url = m.group(1)
