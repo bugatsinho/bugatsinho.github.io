@@ -30,11 +30,15 @@ try:
 except ImportError:
     from http import cookiejar as cookielib
     import urllib.request as urllib2
-    URLopener = urllib2.URLopener
     import urllib.parse as urlparse
     quote_plus = urlparse.quote_plus
     unquote = urlparse.unquote
     from html import unescape as un_escape
+    # URLopener removed in Python 3.13+, use urllib.request.urlretrieve instead
+    try:
+        URLopener = urllib2.URLopener
+    except AttributeError:
+        URLopener = None
 
 try:
     uni_code = unicode
@@ -231,11 +235,23 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
 
 
 def retriever(source, destination, *args):
-
-    class Opener(URLopener):
-        version = randomagent()
-
-    Opener().retrieve(source, destination, *args)
+    """Download file from source to destination (Python 2/3 compatible)"""
+    try:
+        if URLopener is not None:
+            # Python 2 and Python 3 < 3.13
+            class Opener(URLopener):
+                version = randomagent()
+            Opener().retrieve(source, destination, *args)
+        else:
+            # Python 3.13+ - URLopener removed, use urlretrieve
+            import urllib.request
+            opener = urllib.request.build_opener()
+            opener.addheaders = [('User-Agent', randomagent())]
+            urllib.request.install_opener(opener)
+            urllib.request.urlretrieve(source, destination)
+    except Exception as e:
+        log_debug('Error in retriever: %s' % str(e))
+        raise
 
 
 def url2name(url):
@@ -571,7 +587,7 @@ def cfcookie(netloc, ua, timeout):
 
         jschl = re.findall('name="jschl_vc" value="(.+?)"/>', result)[0]
 
-        init = re.findall('setTimeout\(function\(\){\s*.*?.*:(.*?)};', result)[-1]
+        init = re.findall(r'setTimeout\(function\(\){\s*.*?.*:(.*?)};', result)[-1]
 
         builder = re.findall(r"challenge-form\'\);\s*(.*)a.v", result)[0]
 

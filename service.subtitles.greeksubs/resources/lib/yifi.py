@@ -30,7 +30,7 @@ from resources.modules import control
 class yifi:
     def __init__(self):
         self.list = []
-        self.base_link = 'https://yifysubtitles.org/' #https://yts-subs.net/ajax/search/?q=tt1365519
+        self.base_link = 'https://yifysubtitles.ch/' #https://yts-subs.net/ajax/search/?q=tt1365519
         self.search = 'search?q={}'
         #https://yifysubtitles.org/movie-imdb/tt4566758
 

@@ -6,6 +6,7 @@ import xbmcgui
 import xbmcaddon
 import xbmcplugin
 import re
+import json
 import sys
 import os
 import threading
@@ -184,15 +185,17 @@ def recommended_movies(url):
         # r = response_html(url, '8')
         r = cloudflare_mode(url)
         r = client.parseDOM(r, 'div', attrs={'class': 'textwidget'})[-1]
-        items = zip(client.parseDOM(r, 'a', ret='href'),
-                    client.parseDOM(r, 'img', ret='src'))
+        pattern = r'<a href="(https?://[^"]+?)/">\s*<img[^>]+?src="([^"]+)"[^>]*?/>\s*</a>'
+        items = re.findall(pattern, r, re.DOTALL)
 
         for item in items:
             movieUrl = urljoin(BASE_URL, item[0]) if not item[0].startswith('http') else item[0]
-            name = movieUrl.split('/')[-1] if not movieUrl.endswith('/') else movieUrl[:-1].split('/')[-1]
-            name = re.sub(r'-|\.', ' ', name)
+            # Extract title from URL (last part before trailing slash)
+            name = movieUrl.rstrip('/').split('/')[-1]
+            # Clean up title (replace hyphens with spaces, etc.)
+            name = name.replace('-', ' ').title()
 
-            if 'search' in movieUrl:
+            if 'search' in movieUrl and '?s=' in movieUrl:
                 query = name.split('?s=')[1]
                 query = query.replace('.', '+')
                 action = {'mode': 'search_bb', 'url': query}
@@ -203,6 +206,8 @@ def recommended_movies(url):
             name = '[B][COLORgold]{0}[/COLOR][/B]'.format(name)
             addon.add_directory(action, {'title': name, 'plot': 'N/A'}, allfun, img=item[1], fanart=FANART)
 
+
+
     except BaseException:
         control.infoDialog(
             control.lang(32011).encode('utf-8'), NAME, ICON, 5000)
@@ -210,6 +215,7 @@ def recommended_movies(url):
     control.content(int(sys.argv[1]), 'movies')
     control.directory(int(sys.argv[1]))
     view.setView('movies', {'skin.estuary': 55, 'skin.confluence': 500})
+
 
 
 def GetTitles(section, url, startPage='1', numOfPages='1'):  # Get Movie Titles
@@ -427,8 +433,18 @@ def GetLinks(section, url, img, plot):  # Get Links
         from resources.lib.modules import init
         # html = response_html(url, '3')
         html = cloudflare_mode(url)
-        listitem = GetMediaInfo(html)
-        name = '%s (%s)' % (listitem[0], listitem[1])
+        metadata = GetMediaInfo(html)
+        imdb_id = ExtractIMDB(html)
+        if imdb_id:
+            metadata['imdb_id'] = imdb_id
+
+        # Format display name
+        if metadata.get('year'):
+            name = '%s (%s)' % (metadata['title'], metadata['year'])
+        elif metadata.get('season'):
+            name = '%s S%02dE%02d' % (metadata['title'], metadata['season'], metadata['episode'])
+        else:
+            name = metadata['title']
         main = list()
         try:
             main = client.parseDOM(html, 'div', {'class': 'postContent'})
@@ -476,8 +492,9 @@ def GetLinks(section, url, img, plot):  # Get Links
                     host = host.replace('youtube.com', '[COLOR red][B][I]Movie Trailer[/B][/I][/COLOR]')
                     if 'railer' in host:
                         title = host + ' : ' + title
+                        metadata_json = json.dumps(metadata) if metadata else None
                         addon.add_directory(
-                            {'mode': 'PlayVideo', 'url': url, 'listitem': listitem, 'img': img, 'title': name,
+                            {'mode': 'PlayVideo', 'url': url, 'metadata': metadata_json, 'img': img, 'title': name,
                              'plot': plot},
                             {'title': title, 'plot': plot},
                             [(control.lang(32007).encode('utf-8'),
@@ -512,8 +529,9 @@ def GetLinks(section, url, img, plot):  # Get Links
                                'RunPlugin(plugin://plugin.video.releaseBB/?mode=download&title=%s&img=%s&url=%s)' %
                                (name, img, link))
                               )
+                metadata_json = json.dumps(metadata) if metadata else None
                 addon.add_directory(
-                    {'mode': 'PlayVideo', 'url': link, 'listitem': listitem, 'img': img, 'title': name, 'plot': plot},
+                    {'mode': 'PlayVideo', 'url': link, 'metadata': metadata_json, 'img': img, 'title': name, 'plot': plot},
                     {'title': title, 'plot': plot}, cm, img=img, fanart=FANART, is_folder=False)
 
         else:
@@ -532,8 +550,9 @@ def GetLinks(section, url, img, plot):  # Get Links
                                'RunPlugin(plugin://plugin.video.releaseBB/?mode=download&title=%s&img=%s&url=%s)' %
                                (name, img, link))
                               )
+                metadata_json = json.dumps(metadata) if metadata else None
                 addon.add_directory(
-                    {'mode': 'PlayVideo', 'url': link, 'listitem': listitem, 'img': img, 'title': name, 'plot': plot},
+                    {'mode': 'PlayVideo', 'url': link, 'metadata': metadata_json, 'img': img, 'title': name, 'plot': plot},
                     {'title': title, 'plot': plot}, cm, img=img, fanart=FANART, is_folder=False)
 
     except BaseException:
@@ -547,6 +566,7 @@ def GetLinks(section, url, img, plot):  # Get Links
 def cloudflare_mode(url):
     headers = {'User-Agent': client.randomagent()}
     result = client.request(url, headers=headers)
+    result = six.ensure_text(result, encoding='utf-8', errors='ignore')
     # from cloudscraper2 import CloudScraper
     # import requests
     # scraper = CloudScraper.create_scraper()
@@ -856,16 +876,67 @@ def link_tester(item):
         addon.log('URL ERROR: [%s]: URL: %s ' % (host.upper(), link))
 
 
-def PlayVideo(url, title, img, plot):
+def PlayVideo(url, title, img, plot, metadata=None):
+    """
+    Enhanced PlayVideo with full metadata support for subtitle addons
+    """
     try:
         import resolveurl
-        stream_url = resolveurl.resolve(url)
+        hmf = resolveurl.HostedMediaFile(url)
+        resolved = hmf.resolve()
+
+        # Create ListItem
         liz = xbmcgui.ListItem(title)
-        liz.setArt({"icon": "DefaultVideo.png", "thumbnail": img})
-        liz.setInfo(type="Video", infoLabels={"Title": title, "Plot": plot})
+        liz.setArt({"icon": "DefaultVideo.png", "thumbnail": img, "poster": img})
+
+        # Prepare infoLabels
+        infoLabels = {
+            "Title": title,
+            "Plot": plot
+        }
+
+        # Add metadata if provided
+        if metadata:
+            # metadata = json.loads(metadata)
+            # Clean title (without year/tags)
+            if metadata.get('title'):
+                infoLabels['Title'] = metadata['title']
+                infoLabels['OriginalTitle'] = metadata['title']
+
+            # Year (for movies)
+            if metadata.get('year'):
+                infoLabels['Year'] = metadata['year']
+
+            # Season & Episode (for TV shows)
+            if metadata.get('season'):
+                infoLabels['Season'] = metadata['season']
+
+            if metadata.get('episode'):
+                infoLabels['Episode'] = metadata['episode']
+
+            # IMDB ID (critical for subtitle matching)
+            if metadata.get('imdb_id'):
+                infoLabels['IMDBNumber'] = metadata['imdb_id']
+                # Also set as unique ID (Kodi 17+)
+                try:
+                    liz.setUniqueIDs({'imdb': metadata['imdb_id']}, 'imdb')
+                except:
+                    pass  # Kodi 16 or earlier
+
+            # Media type
+            if metadata.get('content_type') == 'tvshow':
+                infoLabels['MediaType'] = 'episode'
+            else:
+                infoLabels['MediaType'] = 'movie'
+
+        # Set all info
+        liz.setInfo(type="Video", infoLabels=infoLabels)
         liz.setProperty("IsPlayable", "true")
-        liz.setPath(str(stream_url))
+        liz.setPath(str(resolved))
+
+        # Resolve the URL
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, liz)
+
     except BaseException:
         control.infoDialog(
             '[COLOR red][B]Probably your service doesn\'t support this provider![/B][/COLOR]\n'
@@ -897,15 +968,73 @@ def GetDomain(url):
 
 
 def GetMediaInfo(html):
+    """
+        Enhanced metadata extraction from page HTML
+        Returns dict with: title, year, season, episode, original_title, content_type
+        """
+    metadata = {
+        'title': '',
+        'year': None,
+        'season': None,
+        'episode': None,
+        'original_title': '',
+        'content_type': 'movie'
+    }
+
     try:
-        # <h1 class="postTitle" rel="bookmark">American Dresser 2018 BRRip XviD AC3-RBG</h1>
-        match = client.parseDOM(html, 'h1', attrs={'class': 'entry-title'})[0]
-        match = re.findall(r'(.+?)\s+(\d{4}|S\d+E\d+)', match)[0]
-        return match
-    except IndexError:
-        match = client.parseDOM(html, 'h1', attrs={'class': 'entry-title'})[0]
-        match = re.sub('<.+?>', '', match)
-        return match
+        title_tag = client.parseDOM(html, 'h1', attrs={'class': 'entry-title'})[0]
+        metadata['original_title'] = title_tag
+
+        # Try to match: Title + Year
+        year_match = re.search(r'(.+?)\s+[\(]?(\d{4})[\)]?', title_tag)
+        if year_match:
+            metadata['title'] = year_match.group(1).strip()
+            metadata['year'] = int(year_match.group(2))
+            metadata['content_type'] = 'movie'
+            return metadata
+
+        # Try to match: Title + Season/Episode
+        se_match = re.search(r'(.+?)\s+S(\d+)E(\d+)', title_tag, re.IGNORECASE)
+        if se_match:
+            metadata['title'] = se_match.group(1).strip()
+            metadata['season'] = int(se_match.group(2))
+            metadata['episode'] = int(se_match.group(3))
+            metadata['content_type'] = 'tvshow'
+            return metadata
+
+        # If no pattern matches, return cleaned title
+        clean_title = re.sub(r'\b(BRRip|BluRay|WEBRip|HDTV|XviD|x264|x265|AAC|AC3|DTS|720p|1080p|2160p|4K)\b',
+                             '', title_tag, flags=re.IGNORECASE)
+        clean_title = re.sub(r'\s+', ' ', clean_title).strip()
+        metadata['title'] = clean_title
+
+        return metadata
+
+    except (IndexError, AttributeError):
+        try:
+            title_tag = client.parseDOM(html, 'h1', attrs={'class': 'entry-title'})[0]
+            title_tag = re.sub('<.+?>', '', title_tag)
+            metadata['title'] = title_tag
+            metadata['original_title'] = title_tag
+            return metadata
+        except:
+            return metadata
+
+
+def ExtractIMDB(html):
+    """
+    Extract IMDB ID from page HTML
+    Returns: IMDB ID (e.g., 'tt1234567') or None
+    """
+    try:
+        # Pattern: imdb.com/title/tt1234567
+        imdb_pattern = r'imdb\.com/title/(tt\d+)'
+        match = re.search(imdb_pattern, html, re.IGNORECASE)
+        if match:
+            return match.group(1)
+        return None
+    except Exception:
+        return None
 
 
 def Sinopsis(txt):
@@ -1060,7 +1189,12 @@ elif mode == 'del_search_item':
 
     search.del_search(query)
 elif mode == 'PlayVideo':
-    PlayVideo(url, title, img, plot)
+    metadata_json = addon.queries.get('metadata', None)
+    try:
+        metadata = json.loads(metadata_json) if metadata_json else None
+    except:
+        metadata = None
+    PlayVideo(url, title, img, plot, metadata)
 elif mode == 'settings':
     control.Settings(ADDON.getAddonInfo('id'))
 elif mode == 'ResolverSettings':
