@@ -173,7 +173,7 @@ def get_content(url):  # 5 <div id="content"><div class="container">
     data = client.parseDOM(r, 'div', attrs={'class': 'container'})[0]
     data = dom.parse_dom(data, 'a', req='href')
     data = [i for i in data if 'subt' in i.content]
-    # xbmc.log('DATA22: {}'.format(str(data)))
+    # xbmc.log('DATA22: {}'.format(str(r)))
     for item in data:
         link = item.attrs['href']
         if link == '#':
@@ -198,7 +198,7 @@ def get_content(url):  # 5 <div id="content"><div class="container">
             name = name.encode('utf-8')
             desc = desc.decode('ascii', errors='ignore')
             poster = poster.encode('utf-8')
-        link = '{}/{}'.format(base_url, link)
+        link = '{}/{}'.format(base_url, link) if not link.startswith('http') else link
         addDir('[B][COLOR white]%s[/COLOR][/B]' % name, link, 100, poster, '', desc)
 
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
@@ -237,10 +237,15 @@ def resolve(name, url, iconimage, description):
         # title = client.parseDOM(info, 'meta', ret='content', attrs={'name': 'description'})[0].encode('utf-8')
         # name = '{0} - {1}'.format(head, title)
         poster = client.parseDOM(info, 'meta', ret='content', attrs={'property': 'og:image'})[0]
-        link = re.findall(r'''source:['"](.+?)['"]\,''', info, re.DOTALL)[0]
-        link = "https://hd-auth.skylinewebcams.com/" + link.replace('livee', 'live') if link.startswith('live') else link
-        # xbmc.log('LINK: {}'.format(link))
-        link += '|User-Agent=iPad&Referer={}'.format(BASEURL)
+        if 'videoId:' in info:
+            youtube_id = re.findall('''videoId\s*:\s*['"]([a-zA-Z0-9_-]+)['"]''', info, re.DOTALL )[0]
+            link = 'plugin://plugin.video.youtube/play/?video_id={}'.format(youtube_id)
+        else:
+            link = re.findall(r'''source:['"](.+?)['"]\,''', info, re.DOTALL)[0]
+            link = "https://hd-auth.skylinewebcams.com/" + link.replace('livee', 'live') if link.startswith(
+                'live') else link
+            # xbmc.log('LINK: {}'.format(link))
+            link += '|User-Agent=iPad&Referer={}'.format(BASEURL)
         if six.PY2:
             head = head.encode('utf-8')
             link = str(link)
