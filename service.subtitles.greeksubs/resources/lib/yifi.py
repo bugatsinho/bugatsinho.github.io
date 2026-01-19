@@ -126,14 +126,79 @@ class yifi:
                 conversion = quote_plus
 
             if f.lower().endswith('.rar'):
-
-                uri = "rar://{0}/".format(conversion(f))
-                dirs, files = control.listDir(uri)
+                # Multi-method RAR extraction for maximum compatibility
+                extracted = False
+                
+                # Method 1: Try vfs.libarchive (Kodi 18+)
+                if control.kodi_version() >= 18 and control.conditional_visibility('System.HasAddon(vfs.libarchive)'):
+                    try:
+                        # Use proper path encoding based on OS
+                        if control.condVisibility('system.platform.windows'):
+                            rar_path = f.replace('\\', '/')
+                        else:
+                            rar_path = f
+                        
+                        import xbmc, xbmcvfs
+                        src = 'archive://' + quote(rar_path, safe='') + '/'
+                        xbmc.log('GreekSubs: Attempting archive protocol: %s' % src, xbmc.LOGINFO)
+                        
+                        (dirs, files) = xbmcvfs.listdir(src)
+                        for file in files:
+                            if file.endswith(('.srt', '.sub')):
+                                fsrc = src + file
+                                fdst = os.path.join(path, file)
+                                xbmc.log('GreekSubs: Copying %s to %s' % (fsrc, fdst), xbmc.LOGINFO)
+                                xbmcvfs.copy(fsrc, fdst)
+                        extracted = True
+                        xbmc.log('GreekSubs: RAR extracted successfully via archive protocol', xbmc.LOGINFO)
+                    except Exception as e:
+                        xbmc.log('GreekSubs: Archive protocol failed: %s' % str(e), xbmc.LOGWARNING)
+                        extracted = False
+                
+                # Method 2: Try built-in Extract command (Kodi 17+)
+                if not extracted:
+                    try:
+                        xbmc.log('GreekSubs: Attempting Extract command', xbmc.LOGINFO)
+                        control.execute('Extract("%s","%s")' % (f, path))
+                        control.sleep(2000)  # Wait for extraction
+                        # Check if files were extracted
+                        dirs, files = control.listDir(path)
+                        if any(file.endswith(('.srt', '.sub')) for file in files):
+                            extracted = True
+                            xbmc.log('GreekSubs: RAR extracted successfully via Extract command', xbmc.LOGINFO)
+                    except Exception as e:
+                        xbmc.log('GreekSubs: Extract command failed: %s' % str(e), xbmc.LOGWARNING)
+                
+                # Method 3: Try legacy rar:// protocol (may not work on all systems)
+                if not extracted:
+                    try:
+                        xbmc.log('GreekSubs: Attempting legacy rar:// protocol', xbmc.LOGINFO)
+                        uri = "rar://{0}/".format(conversion(f))
+                        dirs, files = control.listDir(uri)
+                        if files:
+                            # Copy files from rar to path
+                            for file in files:
+                                if file.endswith(('.srt', '.sub')):
+                                    content = control.openFile(uri + file).read()
+                                    fdst = os.path.join(path, file)
+                                    with open(fdst, 'wb') as subFile:
+                                        subFile.write(content)
+                            extracted = True
+                            xbmc.log('GreekSubs: RAR extracted successfully via rar:// protocol', xbmc.LOGINFO)
+                    except Exception as e:
+                        xbmc.log('GreekSubs: rar:// protocol failed: %s' % str(e), xbmc.LOGWARNING)
+                
+                # If all methods failed, show error to user
+                if not extracted:
+                    xbmc.log('GreekSubs: All RAR extraction methods failed', xbmc.LOGERROR)
+                    import xbmc
+                    control.infoDialog('Σφάλμα: Αδυναμία εξαγωγής RAR αρχείου.\nΔοκιμάστε άλλον υπότιτλο.', time=5000)
+                    control.deleteFile(f)
+                    return None
 
             else:
-
+                # Wait for ZIP extraction to complete
                 for i in range(0, 10):
-
                     try:
                         dirs, files = control.listDir(path)
                         if len(files) > 1:
@@ -144,7 +209,16 @@ class yifi:
                     except BaseException:
                         pass
 
-            filename = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])][0]
+            # Get list of extracted subtitle files
+            dirs, files = control.listDir(path)
+            filenames = [i for i in files if any(i.endswith(x) for x in ['.srt', '.sub'])]
+            
+            if not filenames:
+                xbmc.log('GreekSubs: No subtitle files found after extraction', xbmc.LOGERROR)
+                control.deleteFile(f)
+                return None
+            
+            filename = filenames[0]  # Get first subtitle file
 
             try:
                 filename = filename.decode('utf-8')
@@ -152,23 +226,8 @@ class yifi:
                 pass
 
             subtitle = os.path.join(path, filename)
-
-            if f.lower().endswith('.rar'):
-
-                content = control.openFile(uri + filename).read()
-
-                with open(subtitle, 'wb') as subFile:
-                    subFile.write(content)
-
-                control.deleteFile(f)
-
-                return subtitle
-
-            else:
-
-                control.deleteFile(f)
-
-                return subtitle
+            control.deleteFile(f)  # Clean up downloaded archive
+            return subtitle
 
         except BaseException:
 

@@ -238,16 +238,64 @@ class s4f:
                 conversion = quote_plus
 
             if f.lower().endswith('.rar'):
-                    if control.kodi_version() >= 18:
-                        src = 'archive' + '://' + quote_plus(f) + '/'
+                # Multi-method RAR extraction for maximum compatibility
+                extracted = False
+                
+                # Method 1: Try vfs.libarchive (Kodi 18+)
+                if control.kodi_version() >= 18 and control.conditional_visibility('System.HasAddon(vfs.libarchive)'):
+                    try:
+                        # Use proper path encoding based on OS
+                        if control.condVisibility('system.platform.windows'):
+                            rar_path = f.replace('\\', '/')
+                        else:
+                            rar_path = f
+                        
+                        src = 'archive://' + quote(rar_path, safe='') + '/'
+                        xbmc.log('GreekSubs: Attempting archive protocol: %s' % src, xbmc.LOGINFO)
+                        
                         (dirs, files) = xbmcvfs.listdir(src)
                         for file in files:
-                            fsrc = '{}{}'.format(src, file)
-                            xbmcvfs.copy(fsrc, path + file)
-                    else:
+                            if file.endswith(('.srt', '.sub')):
+                                fsrc = src + file
+                                fdst = os.path.join(path, file)
+                                xbmc.log('GreekSubs: Copying %s to %s' % (fsrc, fdst), xbmc.LOGINFO)
+                                xbmcvfs.copy(fsrc, fdst)
+                        extracted = True
+                        xbmc.log('GreekSubs: RAR extracted successfully via archive protocol', xbmc.LOGINFO)
+                    except Exception as e:
+                        xbmc.log('GreekSubs: Archive protocol failed: %s' % str(e), xbmc.LOGWARNING)
+                        extracted = False
+                
+                # Method 2: Try built-in Extract command (Kodi 17+)
+                if not extracted:
+                    try:
+                        xbmc.log('GreekSubs: Attempting Extract command', xbmc.LOGINFO)
+                        control.execute('Extract("%s","%s")' % (f, path))
+                        xbmc.sleep(2000)  # Wait for extraction
+                        # Check if files were extracted
+                        dirs, files = control.listDir(path)
+                        if any(file.endswith(('.srt', '.sub')) for file in files):
+                            extracted = True
+                            xbmc.log('GreekSubs: RAR extracted successfully via Extract command', xbmc.LOGINFO)
+                    except Exception as e:
+                        xbmc.log('GreekSubs: Extract command failed: %s' % str(e), xbmc.LOGWARNING)
+                
+                # Method 3: Fallback to XBMC.Extract (legacy method)
+                if not extracted and control.kodi_version() < 18:
+                    try:
+                        xbmc.log('GreekSubs: Attempting legacy XBMC.Extract', xbmc.LOGINFO)
                         xbmc.executebuiltin("XBMC.Extract(%s, %s)" % (
                             f.encode("utf-8"),
                             path.encode("utf-8")), True)
+                        extracted = True
+                    except Exception as e:
+                        xbmc.log('GreekSubs: Legacy extract failed: %s' % str(e), xbmc.LOGWARNING)
+                
+                # If all methods failed, show error to user
+                if not extracted:
+                    xbmc.log('GreekSubs: All RAR extraction methods failed', xbmc.LOGERROR)
+                    control.infoDialog('Σφάλμα: Αδυναμία εξαγωγής RAR αρχείου.\nΔοκιμάστε άλλον υπότιτλο.', time=5000)
+                    return None
                 # # if control.condVisibility('system.platform.osx'):
                 # #     uri = "rar://{}/".format(conversion(f))
                 #     uri = 'rar://%(archive_file)s' % {'archive_file': conversion(control.transPath(f))}

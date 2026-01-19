@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="service.subtitles.greeksubs" name="Greek Subs" version="2.0.12" provider-name="Bugatsinho">
+<addon id="service.subtitles.greeksubs" name="Greek Subs" version="2.0.13" provider-name="Bugatsinho">
 	<requires>
 		<import addon="xbmc.addon" version="16.1.000"/>
 		<import addon="script.module.requests" version="2.8.1" />
@@ -21,7 +21,12 @@
 		<website>https://subztv.club/</website>
 		<platform>all</platform>
 		<language>el</language>
-		<news>[B]2.0.12[/B] 27/12/2024
+		<news>[B]2.0.13[/B] 14/01/2026
+			-Fixed RAR subtitle extraction with multi-method fallback
+			-Improved compatibility across all platforms (Windows, Linux, CoreELEC)
+			-Better error handling and user feedback for failed extractions
+			-Fixed regex FutureWarning in cleantitle module
+		[B]2.0.12[/B] 27/12/2024
 			-Python 3.13+ compatibility fix (URLopener removed)
 			-Fixed regex escape sequence warning
 			-Now compatible with Kodi 22+ (Python 3.14.2)
