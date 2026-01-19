@@ -26,7 +26,7 @@ def get(title):
     if title is None:
         return
 
-    title = re.sub('&#(\d+);', '', title)
+    title = re.sub(r'&#(\d+);', '', title)
     title = re.sub('(&#[0-9]+)([^;^0-9]+)', '\\1;\\2', title)
     title = title.replace('&quot;', '\"').replace('&amp;', '&')
     # Fixed: escape square brackets properly to avoid FutureWarning
