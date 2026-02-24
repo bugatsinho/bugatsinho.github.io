@@ -12,7 +12,7 @@ You can buy me a ☕ or 🍺 https://pastebin.com/raw/9J1KGKsj
 
 [Join us in Telegram](http://bit.ly/bug_telegram)
 
-[Repository v2.7](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.7.zip?raw=true)
+[Repository v2.8](https://github.com/bugatsinho/bugatsinho.github.io/blob/master/repository.bugatsinho-2.8.zip?raw=true)
 
 [Register to Real Debrid](http://real-debrid.com/?id=1168800)
 

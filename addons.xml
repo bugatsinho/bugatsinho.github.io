@@ -1,5 +1,5 @@
 <addons>
-	<addon id="repository.bugatsinho" name=" Bugatsinho repository" version="2.7" provider-name="Bugatsinho">
+	<addon id="repository.bugatsinho" name=" Bugatsinho repository" version="2.8" provider-name="Bugatsinho">
 		<extension point="xbmc.addon.repository" name="Bugatsinho repository">
 			<dir>
 				<info compressed="false">https://raw.githubusercontent.com/bugatsinho/bugatsinho.github.io/master/addons.xml</info>
