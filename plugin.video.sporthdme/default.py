@@ -37,7 +37,7 @@ vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
 BASEURL = 'https://one.sporthd.me/'  # 'https://sporthd.live/'  #'https://sportl.ivesoccer.sx/'
-Live_url = 'https://super.league.do'  #'https://one.sporthd.me/'  # 'https://sportl.ivesoccer.sx/'
+Live_url = 'https://super.league.st'  # was super.league.do; domain rotated 2026
 Alt_url = 'https://liveon.sx/program'  # 'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
@@ -446,6 +446,28 @@ def resolve2(name, url):
             stream_headers = {'Referer': ref + '/', 'Origin': ref, 'User-Agent': 'iPad'}
             stream_url = xbmc_curl_encode(flink, stream_headers)
 
+    elif '//glisco' in url or '//sansat' in url:
+        Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
+        referer = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(url))
+        chan_id = url.split('id=')[-1]
+        api_resp = six.ensure_text(
+            client.request(referer + 'api/player.php?id=' + chan_id, referer=url)
+        )
+        frame = json.loads(api_resp)['url']
+        html = six.ensure_text(client.request(frame, referer=url))
+        from resources.modules import econfig as _econfig
+        flink, _cfg = _econfig.extract_stream_from_html(html)
+        if not flink:
+            raise Exception('econfig extraction failed for ' + url)
+        # Origin / Referer must match the iframe (fisherman.click / wilderness.click)
+        frame_origin = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(frame))
+        stream_headers = {
+            'Referer': frame_origin + '/',
+            'Origin': frame_origin,
+            'User-Agent': ua_win,
+        }
+        stream_url = xbmc_curl_encode(flink, stream_headers)
+
     else:
         stream_url = url
 
@@ -681,11 +703,11 @@ def router(paramstring):
     params = dict(parse_qsl(paramstring))
     if params:
         if params['mode'] == 'events':
-            if time_to_update():
-                fetch_and_store_channel_data()
-                update_last_update_time()
-            else:
-                print("Not yet time to check for updates.")
+            # if time_to_update():
+            #     fetch_and_store_channel_data()
+            #     update_last_update_time()
+            # else:
+            #     print("Not yet time to check for updates.")
             get_events(params['url'])
         elif params['mode'] == 'get_streams':
             get_stream(params['name'], params['url'])

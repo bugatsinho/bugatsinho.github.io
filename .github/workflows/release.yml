@@ -1,0 +1,127 @@
+name: release
+
+# Runs the same release pipeline that tools/release.py does locally, but in CI.
+#
+# Two ways to trigger it:
+#
+# 1. Push a tag like `plugin.video.sporthdme-0.1.85` -- the workflow extracts
+#    the addon id and version from the tag name and runs automatically.
+#
+# 2. Run it manually from the Actions tab (workflow_dispatch) and provide
+#    addon + version inputs.
+#
+# In both cases the workflow:
+#   - bumps version in <addon>/addon.xml and root addons.xml
+#   - builds the zip + copies assets into _zips/<addon>/
+#   - regenerates addons.xml.md5
+#   - commits the changes back to master
+#   - attaches the new zip as a GitHub Release asset (only on tag triggers)
+
+on:
+  push:
+    tags:
+      - "plugin.*-*"
+      - "script.*-*"
+      - "service.*-*"
+      - "repository.*-*"
+  workflow_dispatch:
+    inputs:
+      addon:
+        description: "Addon id (folder name), e.g. plugin.video.sporthdme"
+        required: true
+      version:
+        description: "New version, e.g. 0.1.85"
+        required: true
+      news:
+        description: "Optional news block (use \\n for newlines)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve addon id and version
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ADDON="${{ github.event.inputs.addon }}"
+            VERSION="${{ github.event.inputs.version }}"
+            NEWS="${{ github.event.inputs.news }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+            # Tag format: <addon-id>-<version>. Addon ids contain dots but no '-',
+            # so the LAST '-' separates id from version.
+            ADDON="${TAG%-*}"
+            VERSION="${TAG##*-}"
+            NEWS=""
+          fi
+          if [[ -z "$ADDON" || -z "$VERSION" ]]; then
+            echo "Could not determine addon or version" >&2
+            exit 1
+          fi
+          echo "addon=$ADDON" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          {
+            echo "news<<NEWS_EOF"
+            echo "$NEWS"
+            echo "NEWS_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Releasing $ADDON $VERSION"
+
+      - name: Run release script
+        shell: bash
+        env:
+          ADDON: ${{ steps.meta.outputs.addon }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          NEWS: ${{ steps.meta.outputs.news }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$NEWS" ]]; then
+            python3 tools/release.py --addon "$ADDON" --version "$VERSION" --news "$NEWS"
+          else
+            python3 tools/release.py --addon "$ADDON" --version "$VERSION"
+          fi
+
+      - name: Configure git
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and push
+        shell: bash
+        env:
+          ADDON: ${{ steps.meta.outputs.addon }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          git add "$ADDON/addon.xml" addons.xml addons.xml.md5 "_zips/$ADDON"
+          if git diff --staged --quiet; then
+            echo "No changes to commit (already up to date)."
+            exit 0
+          fi
+          git commit -m "Release $ADDON $VERSION"
+          git push origin HEAD:master
+
+      - name: Upload zip as Release asset
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: _zips/${{ steps.meta.outputs.addon }}/${{ steps.meta.outputs.addon }}-${{ steps.meta.outputs.version }}.zip
+          generate_release_notes: true
