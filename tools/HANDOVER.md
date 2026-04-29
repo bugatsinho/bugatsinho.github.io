@@ -28,6 +28,10 @@ In the previous sessions we:
 6. **Created a symlink** `kodi_addon_link` in the workspace pointing to the
    live Kodi addons folder (`~/Library/Application Support/Kodi/addons/plugin.video.sporthdme`)
    for rapid local development.
+7. **Gradual modernization (started)**: `default.py` now has unified `log_debug`,
+   `log_warning`, `log_error` helpers; bare `except:` replaced with `except Exception`
+   where appropriate; top-level `try/except` around `router()` logs and shows
+   `control.infoDialog` on unhandled errors.
 
 The user runs **Kodi 18, 19, 20, 21**. Do NOT remove `six`/Python 2 compat —
 Kodi 18 still ships Python 2.
@@ -133,10 +137,11 @@ bugatsinho.github.io/
 
 ## Recommended next steps (in order)
 
-1. **Gradual Modernization (Pending Task)**:
-   The user wants to modernize the codebase (logging helpers, error handling, structure) **WITHOUT breaking `six`/Python 2 compatibility for Kodi 18**.
-   - Start by reviewing `default.py` and identifying areas for cleanup (e.g., replacing bare `except:` with specific exceptions, adding a unified `log()` function instead of scattered `xbmc.log` calls).
-   - *Crucial*: Any changes must be tested locally via the `kodi_addon_link` symlink before committing.
+1. **Gradual Modernization (continue)**:
+   - First slice done: logging helpers, `except Exception`, top-level error handler in `default.py`.
+   - Next ideas (when you have time): same patterns in `resources/modules/*.py`; small
+     helper for `requests.get` timeout + ensure_text responses; avoid duplicate resolver logic.
+   - *Crucial*: test via `kodi_addon_link` before release.
 
 2. **Monitor Resolvers**:
    Keep an eye on the other resolvers in the `resolved` list. When they become active again, they might need similar reverse-engineering.

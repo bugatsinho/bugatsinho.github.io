@@ -43,6 +43,27 @@ headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
 
+def _log_line(text):
+    """Prefix addon name; safe str for xbmc.log on Py2/Py3."""
+    try:
+        line = u'[{0}] {1}'.format(NAME, text)
+        return six.ensure_str(line, encoding='utf-8', errors='replace')
+    except Exception:
+        return six.ensure_str(text, encoding='utf-8', errors='replace')
+
+
+def log_debug(msg):
+    xbmc.log(_log_line(msg), xbmc.LOGDEBUG)
+
+
+def log_warning(msg):
+    xbmc.log(_log_line(msg), xbmc.LOGWARNING)
+
+
+def log_error(msg):
+    xbmc.log(_log_line(msg), xbmc.LOGERROR)
+
+
 def Main_menu():
     # addDir('[B][COLOR gold]Channels 24/7[/COLOR][/B]', 'https://1.livesoccer.sx/program.php', 14, ICON, FANART, '')
     addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 'events', ICON, FANART, True)
@@ -67,7 +88,7 @@ def get_events(url):  # 5
     events = client.parseDOM(data, 'script')
     try:
         events = [i for i in events if '''matchDate''' in i][0]
-    except:
+    except Exception:
         control.infoDialog("[COLOR red]No Match Scheduled.[/COLOR]", NAME, ICON, 5000)
         return
 
@@ -119,14 +140,14 @@ def get_events(url):  # 5
         try:
             compare = match['startTimestamp']
             ftime = time_convert(compare)
-        except:
+        except Exception:
             try:
                 matchdt = match['matchDate']
                 tvtime = match['livetvtimestr']
                 compare = adjust_date_and_convert_to_timestamp_ms(matchdt, tvtime)
                 ftime = time_convert(compare)
                 # xbmc.log('SHOW FTIME: {}'.format(ftime))
-            except:
+            except Exception:
                 compare = int('999999999999')
                 ftime = '-'
 
@@ -216,7 +237,7 @@ def resolve2(name, url):
     
     resolved = ['//dabac', '//sansat', '//istorm', '//zvision', '//glisco', '//bedsport', '//coolrea', '//evfancy', '//s2watch', '//vuen', '//gopst']
     #new_streams = ['//dabac']
-    xbmc.log('RESOLVE-URL: {}'.format(url))
+    log_debug('RESOLVE-URL: {0}'.format(url))
     
     # NEW GLISCO/SANSAT BRANCH
     if '//glisco' in url or '//sansat' in url:
@@ -300,7 +321,7 @@ def resolve2(name, url):
         else:
             try:
                 frame = json.loads(r).get('url')
-            except:
+            except Exception:
                 frame = client.parseDOM(r, 'iframe', ret='src')[-1]
             # xbmc.log('FRAME: {}'.format(frame))
             referer = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(frame))
@@ -309,7 +330,7 @@ def resolve2(name, url):
                 data = re.findall(r'''script>(eval.+?\{\}\))\)''', data, re.DOTALL)[-1]
                 from resources.modules import jsunpack
                 data = six.ensure_text(jsunpack.unpack(str(data) + ')'), encoding='utf-8')
-            except:
+            except Exception:
                 pass
             #xbmc.log('DATAAAA: {}'.format(data))
 
@@ -329,7 +350,7 @@ def resolve2(name, url):
                         try:
                             data_page = data_page.replace('\/', '/')
                             flink = re.findall(r'''(https?:\/\/[^\s]+\.m3u8)''', data_page, re.DOTALL)[0]
-                        except:
+                        except Exception:
                             data_page = json.loads(data_page)
                             flink = data_page['props']['streamData']['streamurl']
                     else:
@@ -381,7 +402,7 @@ def resolve2(name, url):
                     ref_for_headers = frame or referer
                     try:
                         client.request(auth_url, referer=ref_for_headers)
-                    except:
+                    except Exception:
                         pass
 
                     #server_lookup για server_key
@@ -425,7 +446,7 @@ def resolve2(name, url):
                                 working = u
                                 break
                         except Exception as e:
-                            xbmc.log('probe fail: {} -> {}'.format(u, e), xbmc.LOGDEBUG)
+                            log_debug('probe fail: {0} -> {1}'.format(u, e))
                             continue
 
                     if not working:
@@ -450,7 +471,7 @@ def resolve2(name, url):
                 try:
                     data = data.replace('\/','/')
                     flink = re.findall(r'(https?:\/\/[^\s]+\.m3u8)', data, re.DOTALL)[0]
-                except:
+                except Exception:
                     try:
                         flink = re.findall(r'''source:\s*["'](.+?)['"]''', data, re.DOTALL)[0]
                     except IndexError:
@@ -608,14 +629,14 @@ def fetch_user_timezone():
         if locale_timezone['result']['value']:
             local_tzinfo = gettz(locale_timezone['result']['value'])
             if local_tzinfo:
-                xbmc.log('SHOW FINAL ΤΙΜΕΖΟΝΕ: {}'.format(local_tzinfo))
+                log_debug('SHOW FINAL ΤΙΜΕΖΟΝΕ: {0}'.format(local_tzinfo))
                 return local_tzinfo
             else:
-                xbmc.log("Failed to get tzinfo for timezone: {}".format(locale_timezone['result']['value']))
+                log_warning("Failed to get tzinfo for timezone: {0}".format(locale_timezone['result']['value']))
         else:
-            xbmc.log("No timezone value found in Kodi settings")
+            log_debug("No timezone value found in Kodi settings")
     except Exception as e:
-        xbmc.log("Error fetching timezone from Kodi settings: {}".format(e))
+        log_warning("Error fetching timezone from Kodi settings: {0}".format(e))
 
     return gettz()
 
@@ -629,7 +650,7 @@ def convDateUtil(timestring, newfrmt='default', in_zone='UTC'):
         in_time_with_timezone = in_time.replace(tzinfo=gettz(in_zone))
         local_time = in_time_with_timezone.astimezone(local_tzinfo)
         return local_time.strftime(newfrmt)
-    except:
+    except Exception:
         return timestring
 
 
@@ -646,7 +667,7 @@ def time_to_update(hours=6):
         content = f.read()
         last_update_timestamp = float(content.strip())
         f.close()
-    except:
+    except Exception:
         return True
 
     hours_in_seconds = int(hours) * 60 * 60
@@ -660,7 +681,7 @@ def update_last_update_time():
         f = control.openFile(LAST_UPDATE_FILE, 'w')
         f.write(str(time.time()))
         f.close()
-    except:
+    except Exception:
         print("Error updating last update time")
 
 
@@ -745,4 +766,16 @@ def router(paramstring):
 
 
 if __name__ == '__main__':
-    router(sys.argv[2][1:])
+    try:
+        router(sys.argv[2][1:])
+    except Exception as e:
+        log_error('router: {0}'.format(e))
+        try:
+            snippet = six.ensure_text(str(e), encoding='utf-8', errors='replace')
+            if len(snippet) > 180:
+                snippet = snippet[:180] + u'...'
+            control.infoDialog(
+                u'[COLOR red]{0}[/COLOR]'.format(snippet),
+                NAME, ICON, 5000)
+        except Exception:
+            pass
