@@ -20,3 +20,6 @@
 *.pyo
 *.pyc
 
+
+# Kodi symlink
+kodi_addon_link
