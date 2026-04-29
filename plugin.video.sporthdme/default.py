@@ -42,6 +42,12 @@ Alt_url = 'https://liveon.sx/program'  # 'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
 
+# Kodi 19+ prefers LOGINFO; Kodi 18 still has LOGNOTICE — same idea: visible in kodi.log
+# without turning on full "debug logging".
+_LOG_INFO = getattr(xbmc, 'LOGINFO', None)
+if _LOG_INFO is None:
+    _LOG_INFO = getattr(xbmc, 'LOGNOTICE', xbmc.LOGDEBUG)
+
 
 def _log_line(text):
     """Prefix addon name; safe str for xbmc.log on Py2/Py3."""
@@ -54,6 +60,11 @@ def _log_line(text):
 
 def log_debug(msg):
     xbmc.log(_log_line(msg), xbmc.LOGDEBUG)
+
+
+def log_info(msg):
+    """Like old ``xbmc.log(msg)`` one-arg — shows in normal kodi.log."""
+    xbmc.log(_log_line(msg), _LOG_INFO)
 
 
 def log_warning(msg):
@@ -237,7 +248,7 @@ def resolve2(name, url):
     
     resolved = ['//dabac', '//sansat', '//istorm', '//zvision', '//glisco', '//bedsport', '//coolrea', '//evfancy', '//s2watch', '//vuen', '//gopst']
     #new_streams = ['//dabac']
-    log_debug('RESOLVE-URL: {0}'.format(url))
+    log_info('RESOLVE-URL: {0}'.format(url))
     
     # NEW GLISCO/SANSAT BRANCH
     if '//glisco' in url or '//sansat' in url:
