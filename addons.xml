@@ -460,7 +460,7 @@
 		<twitter>https://twitter.com/Bugatsinho</twitter>
 		<news>
 		  - update Live_url to super.league.st
-		  - new resolver path for glisco/sansat (econfig decoder)
+		  - new resolver path for glisco/sansat (econfig decoder + cookie fix)
 		  - hide non-functional 24/7 Channels entry until upstream returns
 		</news>
 		<assets>
