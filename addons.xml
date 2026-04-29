@@ -441,7 +441,7 @@
 				<platform>all</platform>
 		</extension>
 	</addon>
-	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.85" provider-name="Bugatsinho">
+	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.85.1" provider-name="Bugatsinho">
 	  <requires>
 		<!--import addon="xbmc.python" version="2.1.0"/-->
 		<import addon="script.module.dateutil" />
@@ -459,9 +459,7 @@
 		<license>GNU GPL, version 2</license>
 		<twitter>https://twitter.com/Bugatsinho</twitter>
 		<news>
-		  - update Live_url to super.league.st
-		  - new resolver path for glisco/sansat (econfig decoder + cookie fix)
-		  - hide non-functional 24/7 Channels entry until upstream returns
+		  - fix: pass required hf1 cookie to glisco/sansat m3u8 requests
 		</news>
 		<assets>
 		  <icon>icon.png</icon>
