@@ -707,12 +707,11 @@ def gamatokids_top(url):  # 21
             pass
     views.selectView('movies', 'movie-view')
 
-
 def gamato_links(url, name, poster, description):  # 12
     # try:
         url = quote(url, ':/.')
         data = six.ensure_text(requests.get(url).text, encoding='utf-8', errors='replace')
-        html = client.parseDOM(data, 'div', attrs={'id': 'content'})[0]
+        html = client.parseDOM(data, 'main', attrs={'id': 'content'})[0]
         # xbmc.log('DATA: {}'.format(html))
         try:
             desc = re.findall(r'<p>(.+?)<a', html, re.DOTALL)[0]
@@ -727,6 +726,12 @@ def gamato_links(url, name, poster, description):  # 12
             fanart = FANART
 
         dlink = client.parseDOM(html, 'div', attrs={'class': 'entry-content'})[0]
+
+        # Strip everything from the byline onward to exclude YARPP and related links
+        byline_pos = dlink.find('<div class="byline">')
+        if byline_pos != -1:
+            dlink = dlink[:byline_pos]
+
         main_links = []
         trailer_links = []
         try:
@@ -750,6 +755,7 @@ def gamato_links(url, name, poster, description):  # 12
                 trailer_links.append(src)
             else:
                 main_links.append(src)
+
         if len(trailer_links) < 1:
             addDir('[B][COLOR lime]No Trailer[/COLOR][/B]', '', 100, iconimage, FANART, '')
         else:
@@ -934,13 +940,12 @@ def resolve(name, url, iconimage, description, return_url=False):
         html = requests.get(host).text
         host = client.parseDOM(html, 'iframe', ret='src')[0]
 
-    elif 'gmtv1' in host or 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host or 'gmtv' in host:
-        html = requests.get(host).text
-        try:
-            host = client.parseDOM(html, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
-        # xbmc.log('HOSTTTT: {}'.format(host))
-        except IndexError:
-            host = client.parseDOM(html, 'iframe', ret='src')[0]
+    elif 'gmtv1' in host or 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host or 'gmtv' in host or 'gtvdb' in host:
+            html = requests.get(host).text
+            try:
+                host = client.parseDOM(html, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
+            except IndexError:
+                host = client.parseDOM(html, 'iframe', ret='src')[0]
 
 
     else:
@@ -951,15 +956,19 @@ def resolve(name, url, iconimage, description, return_url=False):
     if not stream_url:
         if 'gamato' in host: #or 'gmtv1' in host
             html = requests.get(host).text
-            host = client.parseDOM(html, 'source', ret='src')[0]
-        else:
-            pass
-        if host.split('|')[0].endswith('.mp4?id=0') and 'clou' in host or 'gmtdb' in host or "gmtv1" in host:
-            stream_url = host + '||User-Agent=iPad&Referer={}'.format(GAMATO)
-            name = name
+            sources = client.parseDOM(html, 'source', ret='src')
+            if sources:
+                host = sources[0]
+            else:
+                host = client.parseDOM(html, 'a', ret='href', attrs={'target': '_blank'})[0]
+                if 'gtvdb' in host:
+                    html2 = requests.get(host).text
+                    host = client.parseDOM(html2, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
+        if '.mp4' in host and ('clou' in host or 'gmtdb' in host or 'gmtv1' in host):
+            stream_url = host + '|User-Agent=iPad&Referer={}'.format(GAMATO)
         elif host.endswith('.mp4') and 'vidce.net' in host:
             stream_url = host + '|User-Agent={}'.format(quote_plus(client.agent()))
-        elif host.endswith('.mp4'):
+        elif '.mp4' in host:
             stream_url = host + '|User-Agent=%s&Referer=%s' % (quote_plus(client.agent(), ':/'), GAMATO)
         # stream_url = requests.get(host, headers=hdr).url
         elif '/aparat.' in host:
