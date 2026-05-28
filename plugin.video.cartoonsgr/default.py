@@ -712,7 +712,7 @@ def gamato_links(url, name, poster, description):  # 12
     # try:
         url = quote(url, ':/.')
         data = six.ensure_text(requests.get(url).text, encoding='utf-8', errors='replace')
-        html = client.parseDOM(data, 'div', attrs={'id': 'content'})[0]
+        html = client.parseDOM(data, 'main', attrs={'id': 'content'})[0]
         # xbmc.log('DATA: {}'.format(html))
         try:
             desc = re.findall(r'<p>(.+?)<a', html, re.DOTALL)[0]
