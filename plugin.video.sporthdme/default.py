@@ -122,10 +122,10 @@ def get_events(url):  # 5
 
     # matches = re.findall('''null\,(\{"(?:matches|customNotFoundMessage).+?)\]\}\]n''', events, re.DOTALL)[0]
     # pattern = r'("matches"\s*\:\s*\[.+?])}]}]n"'
-    #pattern = r'"matches"\s*\:\s*(\[.+?])}]]}]n'
-    #matches = re.findall(pattern, events.replace(',false', ''), re.DOTALL)[0]
+    # pattern = r'"matches"\s*\:\s*(\[.+?])}]]}]n'
+    # matches = re.findall(pattern, events.replace(',false', ''), re.DOTALL)[0]
     # xbmc.log('EVENTSSS: {}'.format(matches))
-    #matches = json.loads(matches)
+    # matches = json.loads(matches)
 
     event_list = []
 
@@ -245,13 +245,14 @@ def resolve2(name, url):
     stream_url = ''
     ua_win = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
     ua = 'Mozilla/5.0 (iPad; CPU OS 15_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Mobile/15E148 Safari/604.1'
-    
-    resolved = ['//dabac', '//sansat', '//istorm', '//zvision', '//glisco', '//bedsport', '//coolrea', '//evfancy', '//s2watch', '//vuen', '//gopst']
-    #new_streams = ['//dabac']
+
+    resolved = ['//dabac', '//sansat', '//istorm', '//zvision', '//glisco', '//bedsport', '//coolrea', '//evfancy',
+                '//s2watch', '//vuen', '//gopst']
+    # new_streams = ['//dabac']
     log_info('RESOLVE-URL: {0}'.format(url))
-    
+
     # NEW GLISCO/SANSAT BRANCH
-    if '//glisco' in url or '//sansat' in url:
+    if '//glisco' in url or '//sansat' in url or 'vertex' in url or 'nexa' in url:
         Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
         referer = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(url))
         chan_id = url.split('id=')[-1]
@@ -259,7 +260,7 @@ def resolve2(name, url):
             client.request(referer + 'api/player.php?id=' + chan_id, referer=url)
         )
         frame = json.loads(api_resp)['url']
-        
+
         # We must use requests here to easily grab the Set-Cookie headers
         hdr = {
             'User-Agent': ua_win,
@@ -267,7 +268,7 @@ def resolve2(name, url):
         }
         resp = requests.get(frame, headers=hdr, timeout=10)
         html = six.ensure_text(resp.content)
-        
+
         # Extract cookies set by the iframe request (e.g. hf1=1)
         cookies = []
         for cookie in resp.cookies:
@@ -287,9 +288,9 @@ def resolve2(name, url):
         }
         if cookie_str:
             stream_headers['Cookie'] = cookie_str
-            
+
         stream_url = xbmc_curl_encode(flink, stream_headers)
-        
+
     elif any(i in url for i in resolved):
         Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
         referer = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(url))
@@ -297,21 +298,21 @@ def resolve2(name, url):
         if 'get_content.php?channel=' in r or 'api/player.php?id=' in r:
             id_ = re.findall(r'(\d+)$', url)[0]
             if 'get_content.php?channel=' in r:
-                frame = referer+"get_content.php"
+                frame = referer + "get_content.php"
                 hdr = {
-                        'referer': url,
-                        # 'sec-fetch-mode': 'cors',
-                        'user-agent': ua_win,
-                    }
-                params = {'channel': id_,}
+                    'referer': url,
+                    # 'sec-fetch-mode': 'cors',
+                    'user-agent': ua_win,
+                }
+                params = {'channel': id_, }
             elif 'api/player.php?id=' in r:
-                frame = referer+"api/player.php"
+                frame = referer + "api/player.php"
                 hdr = {
-                        'referer': url,
-                        # 'sec-fetch-mode': 'cors',
-                        'user-agent': ua_win,
-                    }
-                params = {'id': id_,}
+                    'referer': url,
+                    # 'sec-fetch-mode': 'cors',
+                    'user-agent': ua_win,
+                }
+                params = {'id': id_, }
             r = six.ensure_str(requests.get(frame, params=params, headers=hdr).content)
         if 'fid=' in r:
             regex = '''<script>fid=['"](.+?)['"].+?text/javascript.*?src=['"](.+?)['"]></script>'''
@@ -327,7 +328,7 @@ def resolve2(name, url):
                 link = re.findall(r'''file:.*['"](http.+?)['"]\,''', data, re.DOTALL)[0]
 
             flink = link.replace('[', '').replace(']', '').replace('"', '').replace(',', '').replace('\/', '/')
-            stream_headers = {'Referer': host.split('embed')[0], 'User-Agent':ua_win}
+            stream_headers = {'Referer': host.split('embed')[0], 'User-Agent': ua_win}
             stream_url = xbmc_curl_encode(flink, stream_headers)
         else:
             try:
@@ -343,7 +344,7 @@ def resolve2(name, url):
                 data = six.ensure_text(jsunpack.unpack(str(data) + ')'), encoding='utf-8')
             except Exception:
                 pass
-            #xbmc.log('DATAAAA: {}'.format(data))
+            # xbmc.log('DATAAAA: {}'.format(data))
 
             if '"h","t","t","p"' in data:
                 link = re.findall(r'''return\((\[.+?\])\.join''', data, re.DOTALL)[0]
@@ -367,7 +368,8 @@ def resolve2(name, url):
                     else:
                         xbmcgui.Dialog().textviewer('data', str(data))
                         hlsurl, pk, ea = \
-                            re.findall('.*hlsUrl\s*=\s*"(.*?&\w+=)".*?var\s+\w+\s*=\s*"([^"]+).*?>\s*ea\s*=\s*"([^"]+)', data,
+                            re.findall('.*hlsUrl\s*=\s*"(.*?&\w+=)".*?var\s+\w+\s*=\s*"([^"]+).*?>\s*ea\s*=\s*"([^"]+)',
+                                       data,
                                        re.DOTALL)[0]
                         pk = pk[:53] + pk[53 + 1:]
                         link = hlsurl.replace('" + ea + "', ea) + pk
@@ -378,7 +380,7 @@ def resolve2(name, url):
                     flink = re.findall(r'''src=\s*["'](.+?)['"]''', data, re.DOTALL)[0]
             elif 'new Clappr' in data:
                 flink = re.findall(r'''source\s*:\s*["']?(.+?)['"]?\,''', str(data), re.DOTALL)[0]
-                #xbmc.log('FLINKKK: {}'.format(flink))
+                # xbmc.log('FLINKKK: {}'.format(flink))
                 if flink == "m3u8Url" or flink == "m3u8":
                     html = six.ensure_str(data)
                     m = re.search(r'const\s+CHANNEL_KEY\s*=\s*["\']([\w-]+)["\']', html)
@@ -416,7 +418,7 @@ def resolve2(name, url):
                     except Exception:
                         pass
 
-                    #server_lookup για server_key
+                    # server_lookup για server_key
                     lookup_url = urljoin(origin, '/server_lookup.php?channel_id=' + quote_plus(channel_key))
                     body = six.ensure_str(client.request(lookup_url, referer=ref_for_headers))
 
@@ -462,7 +464,7 @@ def resolve2(name, url):
 
                     if not working:
                         working = candidates[0]
-                    #xbmc.log('FLINK (new Clappr): {}'.format(working))
+                    # xbmc.log('FLINK (new Clappr): {}'.format(working))
                     flink = working
 
 
@@ -480,7 +482,7 @@ def resolve2(name, url):
                 flink = 'https://{}/hls/{}/live.m3u8'.format(p2, p1)
             else:
                 try:
-                    data = data.replace('\/','/')
+                    data = data.replace('\/', '/')
                     flink = re.findall(r'(https?:\/\/[^\s]+\.m3u8)', data, re.DOTALL)[0]
                 except Exception:
                     try:
@@ -490,7 +492,8 @@ def resolve2(name, url):
                         ea = six.ensure_text(client.request(ea)).split('=')[1]
                         flink = re.findall('''videoplayer.src = "(.+?)";''', ea, re.DOTALL)[0]
                         flink = flink.replace('" + ea + "', ea)
-            stream_headers = {'Referer': referer+'/', 'Origin': referer, 'User-Agent':ua_win, 'Connection':'keep-alive'}
+            stream_headers = {'Referer': referer + '/', 'Origin': referer, 'User-Agent': ua_win,
+                              'Connection': 'keep-alive'}
             stream_url = xbmc_curl_encode(flink, stream_headers)
     elif '//dabac' in url:
         Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
@@ -499,7 +502,7 @@ def resolve2(name, url):
         id = url.split("id=")[-1]
         nurl = frame.format(id)
         data = six.ensure_text(client.request(nurl))
-        #xbmc.log("DATAAAAAA: {}".format(data))
+        # xbmc.log("DATAAAAAA: {}".format(data))
         url = json.loads(data)["url"]
         data = requests.get(url, headers=headers, timeout=10).text
         iframe = re.findall(r'<iframe[^>]+src="([^"]+?)\+encodeURIComponent\(document\.referrer\)', data, re.DOTALL)[-1]
@@ -511,7 +514,7 @@ def resolve2(name, url):
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8'
         }
         data = six.ensure_text(requests.get(iframe, headers=hdr, timeout=10).text)
-        #xbmc.log("DATAAAAAA2: {}".format(data))
+        # xbmc.log("DATAAAAAA2: {}".format(data))
         m = re.search(r'id="crf__"\s+value=[\'"]([^\'"]+)', data)
         if m:
             b64url = m.group(1)
@@ -528,7 +531,6 @@ def resolve2(name, url):
     liz.setProperty("IsPlayable", "true")
     liz.setPath(stream_url)
     xbmc.Player().play(stream_url, liz, False)
-
 
 
 ################################################################################
@@ -733,7 +735,8 @@ def addDir(name, url, mode, iconimage, description, isFolder=True, infoLabels=No
     url_encoded = quote_plus(url.encode('utf-8') if isinstance(url, six.text_type) else url)
     name_encoded = quote_plus(name.encode('utf-8') if isinstance(name, six.text_type) else name)
     iconimage_encoded = quote_plus(iconimage.encode('utf-8') if isinstance(iconimage, six.text_type) else iconimage)
-    description_encoded = quote_plus(description.encode('utf-8') if isinstance(description, six.text_type) else description)
+    description_encoded = quote_plus(
+        description.encode('utf-8') if isinstance(description, six.text_type) else description)
 
     u = sys.argv[0] + "?url=" + url_encoded + "&mode=" + str(
         mode) + "&name=" + name_encoded + "&iconimage=" + iconimage_encoded + "&description=" + description_encoded
