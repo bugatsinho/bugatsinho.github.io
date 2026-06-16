@@ -42,7 +42,7 @@
 		</extension>
 	</addon>
 
-	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.57" provider-name="Bugatsinho">
+	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.58" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.addon" version="16.1.000"/>
 		<import addon="script.module.six" />
@@ -71,8 +71,12 @@
 		<twitter>https://twitter.com/bugatsinho</twitter>
 		<repo>https://bugatsinho.github.io/repo/</repo>
 		<email>bugatsinho@protonmail.com</email>
-		<news>[B]v1.0.18[/B] 09/12/2020)
-	  - αλλαγή domain για gamato</news>
+		<news>
+		  [B]v1.0.58[/B] 16/06/2026
+		  - Updated DOM selector to match website changes
+		  - Updated logic to find provider video links
+		  - Updated parsing to find only actual VOD links
+		</news>
 		<assets>
 			<icon>icon.png</icon>
 			<fanart>fanart.jpg</fanart>
