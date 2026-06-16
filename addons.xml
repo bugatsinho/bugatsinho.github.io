@@ -42,7 +42,7 @@
 		</extension>
 	</addon>
 
-	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.58" provider-name="Bugatsinho">
+	<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.59" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.addon" version="16.1.000"/>
 		<import addon="script.module.six" />
@@ -72,10 +72,10 @@
 		<repo>https://bugatsinho.github.io/repo/</repo>
 		<email>bugatsinho@protonmail.com</email>
 		<news>
-		  [B]v1.0.58[/B] 16/06/2026
-		  - Updated DOM selector to match website changes
-		  - Updated logic to find provider video links
-		  - Updated parsing to find only actual VOD links
+		  [B]v1.0.59[/B] 16/06/2026
+		  - Fixed gmteam.best host not redirecting to embedded player
+		  - Fixed coverapi.store resolver (site switched to new player API)
+		  - Coverapi requests now send a browser User-Agent to avoid Cloudflare block
 		</news>
 		<assets>
 			<icon>icon.png</icon>

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import base64
 import json
 import requests
 import os
@@ -940,7 +941,7 @@ def resolve(name, url, iconimage, description, return_url=False):
         html = requests.get(host).text
         host = client.parseDOM(html, 'iframe', ret='src')[0]
 
-    elif 'gmtv1' in host or 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host or 'gmtv' in host or 'gtvdb' in host:
+    elif 'gmtv1' in host or 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host or 'gmtv' in host or 'gtvdb' in host or 'gmteam' in host:
             html = requests.get(host).text
             try:
                 host = client.parseDOM(html, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
@@ -998,48 +999,37 @@ def resolve(name, url, iconimage, description, return_url=False):
         #     # except BaseException:
         #     #     stream_url = evaluate(stream_url)
         elif 'coverapi' in host:
-            html = requests.get(host).text
-            # xbmc.log('ΠΟΣΤ_html: {}'.format(html))
-            postdata = re.findall(r'''['"]players['"], news_id: ['"](\d+)['"]}''', html, re.DOTALL)[0]
-            # xbmc.log('ΠΟΣΤ_html: {}'.format(postdata))
-            postdata = {'mod': 'players',
-                        'news_id': str(postdata)}
-            post_url = 'https://coverapi.store/engine/ajax/controller.php'
-            post_html = requests.post(post_url, data=postdata).text.replace('\\', '')
-            # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(post_html))
-            stream_url = re.findall(r'''file\s*:\s*['"](.+?)['"]''', post_html, re.DOTALL)[0]
-            # xbmc.log('ΠΟΣΤ_URL: {}'.format(stream_url))
-            if 'http' in stream_url:
-                stream_url = stream_url + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
+            # coverapi.store's old "Player 1" path proxies a vidsrc-style
+            # CAPTCHA-gated stream; "Player 2" is a self-hosted inline
+            # Playerjs that exposes a plain JSON playlist instead.
+            # Cloudflare blocks the default python-requests User-Agent here,
+            # so a browser-like UA is required.
+            coverapi_hdrs = {'User-Agent': client.agent()}
+            html = requests.get(host, headers=coverapi_hdrs).text
+            tabs = json.loads(re.findall(r"data-tabs='(\[.*?\])'", html, re.DOTALL)[0])
+            inline_tab = [t for t in tabs if t.get('type') == 'inline'][0]
+            inline_js = base64.b64decode(inline_tab['data']).decode('utf-8', errors='replace')
+            news_id = re.findall(r'''news_id['"]\s*:\s*['"](\d+)''', inline_js)[0]
+            playlist_url = 'https://coverapi.store/uploads/playlists_hls555/{}.txt'.format(news_id)
+            data = requests.get(playlist_url, headers=coverapi_hdrs).json()['playlist']
+
+            comments = []
+            streams = []
+            for dat in data:
+                if 'file' not in dat and 'playlist' in dat:
+                    dat = dat['playlist'][0]
+                comments.append(dat['comment'])
+                streams.append(dat['file'])
+
+            if len(comments) > 1:
+                dialog = xbmcgui.Dialog()
+                ret = dialog.select('[COLORgold][B]ΔΙΑΛΕΞΕ ΠΗΓΗ[/B][/COLOR]', comments)
+                if ret == -1:
+                    return
+                host = streams[ret]
             else:
-                playlist_url = 'https://coverapi.store/' + stream_url
-                data = requests.get(playlist_url).json()
-                # xbmc.log('ΠΟΣΤ_ΔΑΤΑ: {}'.format(data))
-                comments = []
-                streams = []
-
-                data = data['playlist']
-                for dat in data:
-                    url = dat['file']
-                    com = dat['comment']
-                    comments.append(com)
-                    streams.append(url)
-
-                if len(comments) > 1:
-                    dialog = xbmcgui.Dialog()
-                    ret = dialog.select('[COLORgold][B]ΔΙΑΛΕΞΕ ΠΗΓΗ[/B][/COLOR]', comments)
-                    if ret == -1:
-                        return
-                    elif ret > -1:
-                        host = streams[ret]
-                        # xbmc.log('@#@HDPRO:{}'.format(host))User-Agent=iPad&verifypeer=false
-                        stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
-                    else:
-                        return
-
-                else:
-                    host = streams[0]
-                    stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
+                host = streams[0]
+            stream_url = host + '|User-Agent=iPad&Referer={}&verifypeer=false'.format('https://coverapi.store/')
 
     else:
         name = name.split(' [B]|')[0]
