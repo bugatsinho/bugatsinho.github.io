@@ -278,7 +278,13 @@ def resolve2(name, url):
         from resources.modules import econfig as _econfig
         flink, _cfg = _econfig.extract_stream_from_html(html)
         if not flink:
-            raise Exception('econfig extraction failed for ' + url)
+            # fallback: some embeds (e.g. dinamic-embed.site) put the m3u8
+            # directly in a src="..." attribute instead of using econfig
+            m = re.search(r'src=["\']([^"\']+\.m3u8[^"\']*)["\']', html)
+            if m:
+                flink = m.group(1).replace('&amp;', '&')
+            else:
+                raise Exception('econfig extraction failed for ' + url)
         # Origin / Referer must match the iframe (fisherman.click / wilderness.click)
         frame_origin = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(frame))
         stream_headers = {
