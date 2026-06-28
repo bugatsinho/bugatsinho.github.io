@@ -261,30 +261,16 @@ def resolve2(name, url):
         )
         frame = json.loads(api_resp)['url']
 
-        # We must use requests here to easily grab the Set-Cookie headers
-        hdr = {
-            'User-Agent': ua_win,
-            'Referer': url
-        }
-        resp = requests.get(frame, headers=hdr, timeout=10)
-        html = six.ensure_text(resp.content)
-
-        # Extract cookies set by the iframe request (e.g. hf1=1)
-        cookies = []
-        for cookie in resp.cookies:
-            cookies.append('{}={}'.format(cookie.name, cookie.value))
-        cookie_str = '; '.join(cookies)
-
-        from resources.modules import econfig as _econfig
-        flink, _cfg = _econfig.extract_stream_from_html(html)
+        # dinamic-embed.site exposes a ?ppcfg=1 config API that returns
+        # the stream src directly as JSON — much simpler than parsing the page.
+        import time as _time
+        hdr = {'User-Agent': ua_win, 'Referer': url}
+        cfg_url = frame + ('&' if '?' in frame else '?') + 'ppcfg=1&_=' + str(int(_time.time() * 1000))
+        cfg = requests.get(cfg_url, headers=hdr, timeout=10).json()
+        flink = cfg.get('src') or cfg.get('srcBase')
         if not flink:
-            # fallback: some embeds (e.g. dinamic-embed.site) put the m3u8
-            # directly in a src="..." attribute instead of using econfig
-            m = re.search(r'src=["\']([^"\']+\.m3u8[^"\']*)["\']', html)
-            if m:
-                flink = m.group(1).replace('&amp;', '&')
-            else:
-                raise Exception('econfig extraction failed for ' + url)
+            raise Exception('ppcfg API returned no src for ' + url)
+        cookie_str = ''
         # Origin / Referer must match the iframe (fisherman.click / wilderness.click)
         frame_origin = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(frame))
         stream_headers = {

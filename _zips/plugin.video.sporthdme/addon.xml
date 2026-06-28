@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.87" provider-name="Bugatsinho">
+<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.88" provider-name="Bugatsinho">
   <requires>
     <!--import addon="xbmc.python" version="2.1.0"/-->
     <import addon="script.module.dateutil" />
@@ -17,8 +17,8 @@
     <license>GNU GPL, version 2</license>
     <twitter>https://twitter.com/Bugatsinho</twitter>
     <news>
-      [B]v0.1.87[/B] 28/06/2026
-      - Fixed nexa stream resolution: fallback to direct m3u8 src attribute when econfig pattern not found
+      [B]v0.1.88[/B] 28/06/2026
+      - Fixed nexa/vertex stream resolution: use ppcfg config API instead of parsing embed page
     </news>
 
     <assets>
