@@ -261,15 +261,26 @@ def resolve2(name, url):
         )
         frame = json.loads(api_resp)['url']
 
-        # dinamic-embed.site exposes a ?ppcfg=1 config API that returns
-        # the stream src directly as JSON — much simpler than parsing the page.
         import time as _time
         hdr = {'User-Agent': ua_win, 'Referer': url}
         cfg_url = frame + ('&' if '?' in frame else '?') + 'ppcfg=1&_=' + str(int(_time.time() * 1000))
-        cfg = requests.get(cfg_url, headers=hdr, timeout=10).json()
-        flink = cfg.get('src') or cfg.get('srcBase')
+        cfg_resp = requests.get(cfg_url, headers=hdr, timeout=10)
+        flink = None
+        try:
+            cfg = cfg_resp.json()
+            flink = cfg.get('src') or cfg.get('srcBase')
+        except Exception:
+            pass
         if not flink:
-            raise Exception('ppcfg API returned no src for ' + url)
+            # Fallback: parse the embed page HTML for the stream URL hidden in
+            # a character-array function (used by forgemindly.com and similar).
+            # Pattern: return( ["h","t","t","p","s",...].join("") + ...
+            embed_html = cfg_resp.text
+            arr_m = re.search(r'return\s*\(\s*(\[(?:"[^"]*",?\s*)+\])', embed_html)
+            if arr_m:
+                flink = ''.join(re.findall(r'"([^"]*)"', arr_m.group(1))).replace('\\/', '/')
+        if not flink:
+            raise Exception('could not extract stream src for ' + url)
         cookie_str = ''
         # Origin / Referer must match the iframe (fisherman.click / wilderness.click)
         frame_origin = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(frame))
