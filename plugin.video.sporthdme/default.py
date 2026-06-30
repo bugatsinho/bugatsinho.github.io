@@ -288,6 +288,7 @@ def resolve2(name, url):
             'Referer': frame_origin + '/',
             'Origin': frame_origin,
             'User-Agent': ua_win,
+            'verifypeer': 'false',
         }
         if cookie_str:
             stream_headers['Cookie'] = cookie_str
