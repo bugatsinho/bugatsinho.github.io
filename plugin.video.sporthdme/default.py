@@ -271,14 +271,22 @@ def resolve2(name, url):
             flink = cfg.get('src') or cfg.get('srcBase')
         except Exception:
             pass
+        embed_html = cfg_resp.text
         if not flink:
-            # Fallback: parse the embed page HTML for the stream URL hidden in
-            # a character-array function (used by forgemindly.com and similar).
+            # Fallback 1: stream URL hidden in a character-array function
+            # (used by forgemindly.com and similar).
             # Pattern: return( ["h","t","t","p","s",...].join("") + ...
-            embed_html = cfg_resp.text
             arr_m = re.search(r'return\s*\(\s*(\[(?:"[^"]*",?\s*)+\])', embed_html)
             if arr_m:
                 flink = ''.join(re.findall(r'"([^"]*)"', arr_m.group(1))).replace('\\/', '/')
+        if not flink:
+            # Fallback 2: window._econfig blob (talentedlost.click and the
+            # older fisherman.click / wilderness.click family).
+            try:
+                from resources.modules import econfig as _econfig
+                flink, _ = _econfig.extract_stream_from_html(embed_html)
+            except Exception:
+                flink = None
         if not flink:
             raise Exception('could not extract stream src for ' + url)
         cookie_str = ''

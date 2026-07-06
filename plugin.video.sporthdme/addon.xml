@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.88.2" provider-name="Bugatsinho">
+<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.88.3" provider-name="Bugatsinho">
   <requires>
     <!--import addon="xbmc.python" version="2.1.0"/-->
     <import addon="script.module.dateutil" />
@@ -17,8 +17,8 @@
     <license>GNU GPL, version 2</license>
     <twitter>https://twitter.com/Bugatsinho</twitter>
     <news>
-      [B]v0.1.88.2[/B] 30/06/2026
-      - Fixed SSL certificate error (error 60) on LibreELEC/Raspberry Pi/FireStick for nexa/vertex streams: added verifypeer=false
+      [B]v0.1.88.3[/B] 30/06/2026
+      - Added _econfig fallback for talentedlost.click and similar embed hosts (nexa.st/vertex.st now resolve across all their player variants)
     </news>
 
     <assets>
