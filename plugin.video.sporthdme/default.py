@@ -254,43 +254,82 @@ def resolve2(name, url):
     # NEW GLISCO/SANSAT BRANCH
     if '//glisco' in url or '//sansat' in url or 'vertex' in url or 'nexa' in url:
         Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
-        referer = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(url))
         chan_id = url.split('id=')[-1]
-        api_resp = six.ensure_text(
-            client.request(referer + 'api/player.php?id=' + chan_id, referer=url)
-        )
-        frame = json.loads(api_resp)['url']
 
-        import time as _time
-        hdr = {'User-Agent': ua_win, 'Referer': url}
-        cfg_url = frame + ('&' if '?' in frame else '?') + 'ppcfg=1&_=' + str(int(_time.time() * 1000))
-        cfg_resp = requests.get(cfg_url, headers=hdr, timeout=10)
-        flink = None
-        try:
-            cfg = cfg_resp.json()
-            flink = cfg.get('src') or cfg.get('srcBase')
-        except Exception:
-            pass
-        embed_html = cfg_resp.text
-        if not flink:
-            # Fallback 1: stream URL hidden in a character-array function
-            # (used by forgemindly.com and similar).
-            # Pattern: return( ["h","t","t","p","s",...].join("") + ...
+        def _extract_stream(embed_html):
+            # A channel's api/player.php can hand back several player types; try
+            # each extraction in turn. Returns (method, url); method is set even
+            # on failure so the log can say *why* a mirror produced no stream
+            # (e.g. econfig-blank = the host blanked the URL for Kodi's TLS).
+            # 1) ?ppcfg=1 JSON  (dinamic-embed.site, tursatrueper.xyz/pink.php)
+            try:
+                cfg = json.loads(embed_html)
+                fl = cfg.get('src') or cfg.get('srcBase')
+                if fl:
+                    return ('ppcfg', fl)
+            except Exception:
+                pass
+            # 2) character-array return([...].join(""))  (forgemindly.com)
             arr_m = re.search(r'return\s*\(\s*(\[(?:"[^"]*",?\s*)+\])', embed_html)
             if arr_m:
-                flink = ''.join(re.findall(r'"([^"]*)"', arr_m.group(1))).replace('\\/', '/')
-        if not flink:
-            # Fallback 2: window._econfig blob (talentedlost.click and the
-            # older fisherman.click / wilderness.click family).
+                fl = ''.join(re.findall(r'"([^"]*)"', arr_m.group(1))).replace('\\/', '/')
+                if fl:
+                    return ('char-array', fl)
+            # 3) window._econfig blob  (talentedlost.click / fisherman / wilderness)
             try:
                 from resources.modules import econfig as _econfig
-                flink, _ = _econfig.extract_stream_from_html(embed_html)
+                if _econfig.find_econfig(embed_html):
+                    fl, _ = _econfig.extract_stream_from_html(embed_html)
+                    # fl == '' means the blob decoded but the host blanked the
+                    # stream_url (TLS-fingerprint gating) -> report it distinctly.
+                    return ('econfig' if fl else 'econfig-blank', fl or None)
             except Exception:
-                flink = None
+                pass
+            return (None, None)
+
+        # The same channel is mirrored across sub-domains (nexa.st, s1/s2/s3.
+        # nexa.st, vertex.st ...) and each mirror routes to a *different* embed
+        # host. Some hosts blank the stream for Kodi's old TLS fingerprint, so
+        # when the caller's host yields nothing we retry the other mirrors.
+        import time as _time
+        uri0 = urlparse(url)
+        hosts = [uri0.netloc]
+        m = re.match(r'^(?:s\d+\.)?(nexa\.st|vertex\.st)$', uri0.netloc)
+        if m:
+            base = m.group(1)
+            for h in (base, 's2.' + base, 's1.' + base, 's3.' + base):
+                if h not in hosts:
+                    hosts.append(h)
+
+        flink = None
+        frame = None
+        for host in hosts:
+            try:
+                api_url = '{0}://{1}/api/player.php?id={2}'.format(uri0.scheme, host, chan_id)
+                api_ref = '{0}://{1}/'.format(uri0.scheme, host)
+                api_resp = six.ensure_text(client.request(api_url, referer=api_ref))
+                cand_frame = json.loads(api_resp)['url']
+                cfg_url = cand_frame + ('&' if '?' in cand_frame else '?') + 'ppcfg=1&_=' + str(int(_time.time() * 1000))
+                embed_html = six.ensure_str(
+                    client.request(cfg_url, referer=api_ref, headers={'User-Agent': ua_win})
+                )
+                method, cand = _extract_stream(embed_html)
+                frame_host = urlparse(cand_frame).netloc
+                if cand:
+                    flink = cand
+                    frame = cand_frame
+                    log_info('mirror {0} -> {1}: OK via {2}'.format(host, frame_host, method))
+                    break
+                log_info('mirror {0} -> {1}: no stream ({2})'.format(
+                    host, frame_host, method or 'unknown player'))
+            except Exception as _me:
+                log_info('mirror {0}: error {1!r}'.format(host, _me))
+                continue
         if not flink:
             raise Exception('could not extract stream src for ' + url)
+
         cookie_str = ''
-        # Origin / Referer must match the iframe (fisherman.click / wilderness.click)
+        # Origin / Referer must match the winning iframe host.
         frame_origin = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(frame))
         stream_headers = {
             'Referer': frame_origin + '/',

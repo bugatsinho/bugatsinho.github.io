@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.88.3" provider-name="Bugatsinho">
+<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.88.4" provider-name="Bugatsinho">
   <requires>
     <!--import addon="xbmc.python" version="2.1.0"/-->
     <import addon="script.module.dateutil" />
@@ -17,8 +17,9 @@
     <license>GNU GPL, version 2</license>
     <twitter>https://twitter.com/Bugatsinho</twitter>
     <news>
-      [B]v0.1.88.3[/B] 30/06/2026
-      - Added _econfig fallback for talentedlost.click and similar embed hosts (nexa.st/vertex.st now resolve across all their player variants)
+      [B]v0.1.88.4[/B] 20/07/2026
+      - nexa/vertex: auto-retry across mirror sub-domains (s1/s2/s3) when a channel's embed host blanks the stream, so channels that route to TLS-gated hosts still play
+      - unified ppcfg/char-array/econfig extraction with per-mirror diagnostic logging
     </news>
 
     <assets>
