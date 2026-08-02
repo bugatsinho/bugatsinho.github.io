@@ -15,6 +15,7 @@ import xbmcplugin
 import requests
 from resources.modules import control, client
 from resources.modules import site_embedlivesports
+from resources.modules import site_futbollibre
 import time
 from dateutil.parser import parse
 from dateutil.tz import gettz
@@ -22,7 +23,7 @@ from dateutil import parser, tz
 
 # Extra sports sites: one self-contained module each. To add a site, drop a
 # module exposing NAME/KEY/list_events()/resolve() and append it here.
-EXTRA_SITES = [site_embedlivesports]
+EXTRA_SITES = [site_embedlivesports, site_futbollibre]
 SITES = {s.KEY: s for s in EXTRA_SITES}
 
 _url = sys.argv[0]
