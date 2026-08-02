@@ -445,7 +445,7 @@
 				<platform>all</platform>
 		</extension>
 	</addon>
-	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.88.4" provider-name="Bugatsinho">
+	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89" provider-name="Bugatsinho">
 	  <requires>
 		<!--import addon="xbmc.python" version="2.1.0"/-->
 		<import addon="script.module.dateutil" />
@@ -463,9 +463,9 @@
 		<license>GNU GPL, version 2</license>
 		<twitter>https://twitter.com/Bugatsinho</twitter>
 		<news>
-		  [B]v0.1.88.4[/B] 20/07/2026
-		  - nexa/vertex: auto-retry across mirror sub-domains (s1/s2/s3) when a channel's embed host blanks the stream, so channels that route to TLS-gated hosts still play
-		  - unified ppcfg/char-array/econfig extraction with per-mirror diagnostic logging
+		  [B]v0.1.89[/B] 02/08/2026
+		  - New source: Eventos En Vivo (streamx-hd.com) — live sports agenda sorted by time, finished events hidden, country/league tag, local time, event poster, title colour by state (live/upcoming)
+		  - Manual (live1) + Automatica (live2) server per stream; IP-locked m3u8 resolved in-app
 		</news>
 		<assets>
 		  <icon>icon.png</icon>

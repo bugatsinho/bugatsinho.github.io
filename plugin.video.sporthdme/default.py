@@ -14,10 +14,16 @@ import xbmcgui
 import xbmcplugin
 import requests
 from resources.modules import control, client
+from resources.modules import site_embedlivesports
 import time
 from dateutil.parser import parse
 from dateutil.tz import gettz
 from dateutil import parser, tz
+
+# Extra sports sites: one self-contained module each. To add a site, drop a
+# module exposing NAME/KEY/list_events()/resolve() and append it here.
+EXTRA_SITES = [site_embedlivesports]
+SITES = {s.KEY: s for s in EXTRA_SITES}
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
@@ -78,6 +84,10 @@ def log_error(msg):
 def Main_menu():
     # addDir('[B][COLOR gold]Channels 24/7[/COLOR][/B]', 'https://1.livesoccer.sx/program.php', 14, ICON, FANART, '')
     addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 'events', ICON, FANART, True)
+    for _s in EXTRA_SITES:
+        addDir('[B][COLOR deepskyblue]{0}[/COLOR][/B]'.format(_s.NAME),
+               _s.KEY, 'site_events', ICON, FANART, True,
+               infoLabels={'title': _s.NAME, 'plot': getattr(_s, 'DESC', '')})
     # addDir('[B][COLOR gold]Alternative VIEW [/COLOR][/B]', '', '', ICON, FANART, '')
     # addDir('[B][COLOR gold]Alternative LIVE EVENTS[/COLOR][/B]', Alt_url, 15, ICON, FANART, '')
     # addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
@@ -797,11 +807,64 @@ def addDir(name, url, mode, iconimage, description, isFolder=True, infoLabels=No
     if infoLabels:
         liz.setInfo(type="Video", infoLabels=infoLabels)
     if not isFolder:
-        if mode == 'settings' or mode == 'version' or mode == 'clear' or mode == 'play_stream':
+        if mode == 'settings' or mode == 'version' or mode == 'clear' or mode == 'play_stream' or mode == 'site_play':
             isFolder = False
         else:
             liz.setProperty('IsPlayable', 'true')
     xbmcplugin.addDirectoryItem(_handle, url=u, listitem=liz, isFolder=isFolder)
+
+
+def site_events_menu(key):
+    site = SITES[key]
+    # title colour signals state: cyan = live, gold = upcoming, grey = finished.
+    colors = {'live': 'cyan', 'soon': 'gold', 'done': 'grey'}
+    for e in site.list_events():
+        t = time_convert(e['start_ms']) if e['start_ms'] else '-'
+        tag = e.get('code') or e.get('league') or ''   # country code, else league
+        cc = '[COLOR orange][{0}][/COLOR] '.format(tag) if tag else ''
+        label = '{0}[COLOR cyan]{1}[/COLOR] [COLOR {2}][B]{3}[/B][/COLOR]'.format(
+            cc, t, colors.get(e['status'], 'gold'), e['title'])
+        # carry the event's title + poster down the chain so the servers menu
+        # and the player show the match, not the generic SportHD art.
+        payload = json.dumps({'k': key, 's': e['servers'],
+                              't': e['title'], 'p': e['poster']})
+        addDir(label, payload, 'site_streams', e['poster'] or ICON, e['title'], True)
+    xbmcplugin.setContent(_handle, 'movies')
+    xbmcplugin.endOfDirectory(_handle)
+
+
+def site_streams_menu(payload):
+    d = json.loads(payload)
+    poster = d.get('p') or ICON
+    title = d.get('t', '')
+    for sname, surl in d['s']:
+        info = {'title': u'{0} | {1}'.format(title, sname), 'plot': title}
+        addDir('[B]{0}[/B]'.format(sname),
+               json.dumps({'k': d['k'], 'u': surl, 't': title, 'p': d.get('p', '')}),
+               'site_play', poster, title, isFolder=False, infoLabels=info)
+    xbmcplugin.setContent(_handle, 'videos')
+    xbmcplugin.endOfDirectory(_handle)
+
+
+def site_play(payload):
+    d = json.loads(payload)
+    site = SITES[d['k']]
+    title = d.get('t') or NAME
+    poster = d.get('p') or ICON
+    Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
+    flink = site.resolve(d['u'])
+    if not flink:
+        raise Exception('could not resolve stream for ' + d['u'])
+    origin = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(d['u']))
+    stream_headers = {'Referer': origin + '/', 'Origin': origin,
+                      'User-Agent': site.UA, 'verifypeer': 'false'}
+    stream_url = xbmc_curl_encode(flink, stream_headers)
+    liz = xbmcgui.ListItem(title)
+    liz.setArt({'icon': poster, 'thumb': poster, 'poster': poster, 'fanart': FANART})
+    liz.setInfo('video', {'title': title, 'plot': title})
+    liz.setProperty("IsPlayable", "true")
+    liz.setPath(stream_url)
+    xbmc.Player().play(stream_url, liz, False)
 
 
 def router(paramstring):
@@ -826,6 +889,12 @@ def router(paramstring):
                                ICON, 5000)
         elif params['mode'] == 'version':
             xbmc.executebuiltin('UpdateAddonRepos')
+        elif params['mode'] == 'site_events':
+            site_events_menu(params['url'])
+        elif params['mode'] == 'site_streams':
+            site_streams_menu(params['url'])
+        elif params['mode'] == 'site_play':
+            site_play(params['url'])
     else:
         Main_menu()
 
