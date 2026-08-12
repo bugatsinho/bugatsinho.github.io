@@ -445,7 +445,7 @@
 				<platform>all</platform>
 		</extension>
 	</addon>
-	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.2" provider-name="Bugatsinho">
+	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.3" provider-name="Bugatsinho">
 	  <requires>
 		<!--import addon="xbmc.python" version="2.1.0"/-->
 		<import addon="script.module.dateutil" />
@@ -463,7 +463,7 @@
 		<license>GNU GPL, version 2</license>
 		<twitter>https://twitter.com/Bugatsinho</twitter>
 		<news>
-		  Fix addon failing to start on Kodi 18 / Python 2 (invalid syntax from py3-only numeric literal in site_embedlivesports.py and site_futbollibre.py)
+		  Fix Eventos En Vivo / Futbol Libre crashing on Kodi 18 / Python 2 when event titles contain accented characters (Espana, Brasil): ascii codec errors on the unicode render path
 		</news>
 		<assets>
 		  <icon>icon.png</icon>

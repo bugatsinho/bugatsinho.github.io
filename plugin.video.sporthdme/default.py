@@ -733,7 +733,9 @@ def time_convert(timestamp):
     timestamp = int(str(timestamp)[:10])
     dt_object = datetime.fromtimestamp(timestamp)
     time_ = dt_object.strftime("%d-%b, %H:%M")
-    return time_
+    # strftime's %b is the locale month abbrev -> a byte str with non-ascii bytes
+    # on non-english locales; return unicode so it can't poison label .format().
+    return six.ensure_text(time_, encoding='utf-8', errors='replace')
 
 
 def time_to_update(hours=6):
@@ -803,7 +805,7 @@ def addDir(name, url, mode, iconimage, description, isFolder=True, infoLabels=No
     u = sys.argv[0] + "?url=" + url_encoded + "&mode=" + str(
         mode) + "&name=" + name_encoded + "&iconimage=" + iconimage_encoded + "&description=" + description_encoded
 
-    liz = xbmcgui.ListItem(name)
+    liz = xbmcgui.ListItem(six.ensure_str(name, encoding='utf-8', errors='replace'))
     liz.setArt({'icon': iconimage, 'thumb': iconimage, 'poster': iconimage, 'fanart': FANART})
     if infoLabels:
         liz.setInfo(type="Video", infoLabels=infoLabels)
@@ -820,11 +822,15 @@ def site_events_menu(key):
     # title colour signals state: cyan = live, gold = upcoming, grey = finished.
     colors = {'live': 'cyan', 'soon': 'gold', 'done': 'grey'}
     for e in site.list_events():
-        t = time_convert(e['start_ms']) if e['start_ms'] else '-'
-        tag = e.get('code') or e.get('league') or ''   # country code, else league
-        cc = '[COLOR orange][{0}][/COLOR] '.format(tag) if tag else ''
-        label = '{0}[COLOR cyan]{1}[/COLOR] [COLOR {2}][B]{3}[/B][/COLOR]'.format(
-            cc, t, colors.get(e['status'], 'gold'), e['title'])
+        t = time_convert(e['start_ms']) if e['start_ms'] else u'-'
+        # event titles carry accents/ñ (España, Brasil...) -> keep every piece
+        # unicode so the byte-str .format() can't fall back to the ascii codec.
+        tag = six.ensure_text(e.get('code') or e.get('league') or '',
+                              encoding='utf-8', errors='replace')  # country code, else league
+        title = six.ensure_text(e['title'], encoding='utf-8', errors='replace')
+        cc = u'[COLOR orange][{0}][/COLOR] '.format(tag) if tag else u''
+        label = u'{0}[COLOR cyan]{1}[/COLOR] [COLOR {2}][B]{3}[/B][/COLOR]'.format(
+            cc, t, colors.get(e['status'], 'gold'), title)
         # carry the event's title + poster down the chain so the servers menu
         # and the player show the match, not the generic SportHD art.
         payload = json.dumps({'k': key, 's': e['servers'],
@@ -860,7 +866,7 @@ def site_play(payload):
     stream_headers = {'Referer': origin + '/', 'Origin': origin,
                       'User-Agent': site.UA, 'verifypeer': 'false'}
     stream_url = xbmc_curl_encode(flink, stream_headers)
-    liz = xbmcgui.ListItem(title)
+    liz = xbmcgui.ListItem(six.ensure_str(title, encoding='utf-8', errors='replace'))
     liz.setArt({'icon': poster, 'thumb': poster, 'poster': poster, 'fanart': FANART})
     liz.setInfo('video', {'title': title, 'plot': title})
     liz.setProperty("IsPlayable", "true")
