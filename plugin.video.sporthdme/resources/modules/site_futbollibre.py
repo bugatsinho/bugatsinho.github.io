@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
     evs = parse_events(json.load(open('/tmp/fl_data.json')))
     assert evs and all(e['servers'] and e['title'] for e in evs), 'bad events'
-    assert all(e['start_ms'] > 1_600_000_000_000 for e in evs), 'bad start_ms'
+    assert all(e['start_ms'] > 1600000000000 for e in evs), 'bad start_ms'
     assert evs == sorted(evs, key=lambda e: e['start_ms']), 'not chronological'
     print('events:', len(evs), '| sample:', evs[0]['title'], '|', evs[0]['code'],
           '|', evs[0]['status'], '|', len(evs[0]['servers']), 'servers')

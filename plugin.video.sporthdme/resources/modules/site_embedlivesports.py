@@ -189,7 +189,7 @@ if __name__ == '__main__':
 
     evs = parse_events(json.load(open('/tmp/eventos.json')))
     assert evs and all(e['servers'] and e['title'] for e in evs), 'bad events'
-    assert all(e['start_ms'] > 1_600_000_000_000 for e in evs), 'bad start_ms'
+    assert all(e['start_ms'] > 1600000000000 for e in evs), 'bad start_ms'
     assert all(e['status'] != 'done' for e in evs), 'finished event leaked'
     assert evs == sorted(evs, key=lambda e: e['start_ms']), 'not chronological'
     print('events:', len(evs), '| first:', evs[0]['status'], evs[0]['start_ms'],
