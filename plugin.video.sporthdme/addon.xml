@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.3" provider-name="Bugatsinho">
+<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.4" provider-name="Bugatsinho">
   <requires>
     <!--import addon="xbmc.python" version="2.1.0"/-->
     <import addon="script.module.dateutil" />
@@ -17,7 +17,7 @@
     <license>GNU GPL, version 2</license>
     <twitter>https://twitter.com/Bugatsinho</twitter>
     <news>
-      Fix Eventos En Vivo / Futbol Libre crashing on Kodi 18 / Python 2 when event titles contain accented characters (Espana, Brasil): ascii codec errors on the unicode render path
+      Fix Eventos En Vivo still crashing on accented event/server titles (e.g. Senal, Auto suffix) plus latent Python 2 unicode/ascii-codec issues found in a full encoding audit: server-name labels, the built-in LIVE EVENTS time label, and channel/language labels
     </news>
 
     <assets>

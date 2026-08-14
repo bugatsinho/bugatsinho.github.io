@@ -180,7 +180,7 @@ def get_events(url):  # 5
             is_live = True
 
         m_color = "lime" if is_live else "gold"
-        ftime = '[COLOR cyan]{}[/COLOR]'.format(ftime)
+        ftime = u'[COLOR cyan]{}[/COLOR]'.format(ftime)
         name = u'{0} [COLOR {1}]{2}[/COLOR] - [I]{3}[/I]'.format(ftime, m_color, event, lname)
         event_list.append([name, compare, channels, icon])
 
@@ -215,14 +215,16 @@ def get_stream(name, url):  # 4
             datos = get_links_for_channel(event)
             # xbmc.log('SHOW DATOS: {}'.format(datos))
             for chan, link, lang in datos:
-                chan = '[COLOR gold]{}[/COLOR] - {}'.format(chan, lang)
+                chan = six.ensure_text(chan, encoding='utf-8', errors='replace')
+                lang = six.ensure_text(lang, encoding='utf-8', errors='replace')
+                chan = u'[COLOR gold]{}[/COLOR] - {}'.format(chan, lang)
                 sstreams.append((link, chan))
 
         else:
             link = event.get('links', [])
-            lang = event.get('language', '')
+            lang = six.ensure_text(event.get('language', ''), encoding='utf-8', errors='replace')
             chan = six.ensure_text(event.get('name', ''), encoding='utf-8', errors='replace')
-            chan = '[COLOR gold]{}[/COLOR] - {}'.format(chan, lang)
+            chan = u'[COLOR gold]{}[/COLOR] - {}'.format(chan, lang)
             for url_ in link:
                 sstreams.append((url_, chan))
 
@@ -588,7 +590,7 @@ def resolve2(name, url):
         stream_url = url
 
     # xbmc.log('STREAM: {}'.format(stream_url))
-    liz = xbmcgui.ListItem(name)
+    liz = xbmcgui.ListItem(six.ensure_str(name, encoding='utf-8', errors='replace'))
     liz.setArt({'icon': ICON, 'thumb': ICON, 'poster': ICON, 'fanart': FANART})
     liz.setProperty("IsPlayable", "true")
     liz.setPath(stream_url)
@@ -845,8 +847,11 @@ def site_streams_menu(payload):
     poster = d.get('p') or ICON
     title = d.get('t', '')
     for sname, surl in d['s']:
+        # server names carry accents too (e.g. "Señal 1") -- byte-str .format()
+        # on a unicode arg raises UnicodeEncodeError in py2, so keep it unicode.
+        sname = six.ensure_text(sname, encoding='utf-8', errors='replace')
         info = {'title': u'{0} | {1}'.format(title, sname), 'plot': title}
-        addDir('[B]{0}[/B]'.format(sname),
+        addDir(u'[B]{0}[/B]'.format(sname),
                json.dumps({'k': d['k'], 'u': surl, 't': title, 'p': d.get('p', '')}),
                'site_play', poster, title, isFolder=False, infoLabels=info)
     xbmcplugin.setContent(_handle, 'videos')

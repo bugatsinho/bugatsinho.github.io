@@ -99,7 +99,7 @@ def parse_events(eventos):
                         continue
                     nm = s.get('name') or 'Server'
                     servers.append([nm, u])
-                    servers.append([nm + ' · Auto', u.replace('live1.php', 'live2.php')])
+                    servers.append([nm + u' · Auto', u.replace('live1.php', 'live2.php')])
                 if not servers:
                     continue
                 start_ms = _start_ms(ev.get('time', ''), ev.get('timezone', 'UTC'))
