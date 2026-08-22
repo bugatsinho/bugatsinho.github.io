@@ -1,0 +1,10 @@
++ [B][COLOR lime]1.0.0[/B][/COLOR] [COLOR gold](22-08-2026)[/COLOR]
+- RLSBB Reborn -- full Python 3 rewrite, Kodi 20+ (Nexus and later) only
+- protected.to captcha-gate resolver, multi-round chains
+- Season packs open as a proper episode list, not broken playback
+- Dead links filtered out automatically
+- MDBList integration: Watchlist, Up Next, Recently Watched, Lists, ratings
+- Trakt scrobbling support
+- Multiple site domains + DNS-over-HTTPS (works even if your ISP blocks it)
+- Remembers your preferred view per section
+- Quick debrid service login (All-Debrid, Premiumize, TorBox, Real-Debrid)

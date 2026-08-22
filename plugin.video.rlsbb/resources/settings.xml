@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="General">
+        <setting type="lsep" label="[B][COLOR white]Domains[/COLOR][/B]" />
+        <setting id="domain.main" type="select" label="Main domain"
+                 values="rlsbb.in|rlsbb.to|rlsbb.cc|rlsbb.com|rlsbb.ru" default="rlsbb.in"/>
+        <setting id="domain.mirror" type="select" label="Mirror domain (used if main is blocked)"
+                 values="rlsbb.to|rlsbb.in|rlsbb.cc|rlsbb.com|rlsbb.ru" default="rlsbb.to"/>
+    </category>
+    <category label="Resolver">
+        <setting id="open_resolveurl_settings" type="action" label="ResolveUrl Settings" option="close" action="RunPlugin(plugin://plugin.video.rlsbb/?mode=resolver_settings)" />
+        <setting type="sep" />
+        <setting type="lsep" label="[B][COLOR white]Premium Services Authorization[/COLOR][/B]" />
+        <setting id="ad_auth" type="action" label="All-Debrid Auth" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_ad)" />
+        <setting id="ad_reset" type="action" label="All-Debrid Reset" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_ad)" />
+        <setting type="sep" />
+        <setting id="pm_auth" type="action" label="Premiumize Auth" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_pm)" />
+        <setting id="pm_reset" type="action" label="Premiumize Reset" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_pm)" />
+        <setting type="sep" />
+        <setting id="tb_auth" type="action" label="TorBox Auth" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_tb)" />
+        <setting id="tb_reset" type="action" label="TorBox Reset" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_tb)" />
+        <setting type="sep" />
+        <setting id="rd_auth" type="action" label="Real-Debrid Auth" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=auth_rd)" />
+        <setting id="rd_reset" type="action" label="Real-Debrid Reset" option="close" action="RunPlugin(plugin://script.module.resolveurl/?mode=reset_rd)" />
+    </category>
+    <category label="View-Mode">
+        <setting type="lsep" label="[B][COLOR white]Set View[/COLOR][/B] (saved automatically)[CR]-- pick the view you want from the side/context menu first, THEN right-click / long-press OK on any item and choose 'Set as Default View'" />
+        <setting id="view_movies_display" type="text" label="Movies" default="" enable="false"/>
+        <setting id="view_episodes_display" type="text" label="Episodes" default="" enable="false"/>
+        <setting id="view_files_display" type="text" label="Links" default="" enable="false"/>
+        <setting type="sep" />
+        <setting id="view_reset" type="action" label="Reset View-Types" option="close" action="RunPlugin(plugin://plugin.video.rlsbb/?mode=view_reset)" />
+    </category>
+    <category label="Trakt">
+        <setting id="trakt.scrobble" type="bool" label="Enable Trakt scrobbling via script.trakt (if installed)" default="true"/>
+        <setting id="tmdb.apikey" type="text" label="TMDB API key (for TV show id lookup)" default=""/>
+        <setting type="lsep" label="[B][COLOR white]Trakt Account[/COLOR][/B]" />
+        <setting id="trakt_auth" type="action" label="Authenticate with Trakt" option="close" action="RunScript(script.trakt, action=auth_info)" />
+        <setting type="lsep" label="[B][COLOR white]Extra Trakt Add-ons[/COLOR][/B] (see the Trakt menu on the addon home screen for install status)" />
+        <setting id="install_script_trakt" type="action" label="Install script.trakt (scrobbler)" option="close" action="RunPlugin(plugin://plugin.video.rlsbb/?mode=trakt_install&amp;url=script.trakt)" />
+        <setting id="install_context_rate" type="action" label="Install 'Rate on Trakt' context menu" option="close" action="RunPlugin(plugin://plugin.video.rlsbb/?mode=trakt_install&amp;url=context.trakt.rate)" />
+        <setting id="install_context_watched" type="action" label="Install 'Mark Watched on Trakt' context menu" option="close" action="RunPlugin(plugin://plugin.video.rlsbb/?mode=trakt_install&amp;url=context.trakt.watched)" />
+        <setting id="install_context_watchlist" type="action" label="Install 'Add to Trakt Watchlist' context menu" option="close" action="RunPlugin(plugin://plugin.video.rlsbb/?mode=trakt_install&amp;url=context.trakt.addtowatchlist)" />
+        <setting id="install_context_menu" type="action" label="Install Trakt context menu integration" option="close" action="RunPlugin(plugin://plugin.video.rlsbb/?mode=trakt_install&amp;url=context.trakt.contextmenu)" />
+    </category>
+    <category label="MDBList">
+        <setting type="lsep" label="[B][COLOR white]MDBList[/COLOR][/B] -- syncs your Trakt watchlist via mdblist.com (free, no Trakt VIP needed)[CR]-- connect Trakt to your MDBList account on mdblist.com first" />
+        <setting id="mdblist_auth" type="action" label="Authenticate with MDBList" option="close" action="RunPlugin(plugin://plugin.video.rlsbb/?mode=mdblist_auth)" />
+    </category>
+    <category label="Tools">
+        <setting id="cache_size_display" type="text" label="Cache Size" default="" enable="false"/>
+        <setting id="cache_clear" type="action" label="Clear Cache" option="close" action="RunPlugin(plugin://plugin.video.rlsbb/?mode=cache_clear)" />
+        <setting type="sep" />
+        <setting id="tools_view_reset" type="action" label="Reset View-Types" option="close" action="RunPlugin(plugin://plugin.video.rlsbb/?mode=view_reset)" />
+        <setting type="sep" />
+        <setting id="force_update" type="action" label="Force Update" option="close" action="RunPlugin(plugin://plugin.video.rlsbb/?mode=force_update_repos)" />
+    </category>
+</settings>

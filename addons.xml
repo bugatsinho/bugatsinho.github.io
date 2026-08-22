@@ -113,6 +113,45 @@
 		</assets>
 	  </extension>
 	</addon>
+	<addon id="plugin.video.rlsbb" version="1.0.0" name="[COLOR orange][B]RLSBB[/B][/COLOR]" provider-name="Bugatsinho">
+	  <requires>
+		<import addon="xbmc.python" version="3.0.1"/>
+		<import addon="script.module.requests" version="2.19.1"/>
+		<import addon="script.module.resolveurl" version="5.1.206"/>
+		<import addon="script.trakt" optional="true"/>
+		<import addon="script.module.pyqrcode" version="1.2.1"/>
+	  </requires>
+	  <extension point="xbmc.python.pluginsource" library="default.py">
+		<provides>video</provides>
+	  </extension>
+	  <extension point="xbmc.service" library="service.py" start="startup"/>
+	  <extension point="xbmc.addon.metadata">
+		<summary>[COLOR orange][B]RLSBB[/B][/COLOR] Reborn -- Python 3 only, Kodi 20+</summary>
+		<description>Stream scene release movies and TV shows from ReleaseBB.
+		  [COLOR red][B][I]YOU will need a premium Rapidgator/Nitroflare account configured in ResolveUrl to play most links[/B][/I][/COLOR]
+		  [COLOR gold][B][I]FREE links are also available on many posts[/B][/I][/COLOR]</description>
+		<platform>all</platform>
+		<disclaimer lang="en">All the movies on this add-on are hosted on third party sites and uploaded by other people. We are not responsible for any content hosted on third-party sites. If you have any legal issues please contact the appropriate content owners/hosters.</disclaimer>
+		<website>https://bugatsinho.github.io/</website>
+		<twitter>https://twitter.com/bugatsinho</twitter>
+		<repo>https://bugatsinho.github.io/repo/</repo>
+		<email>bugatsinho@protonmail.com</email>
+		<news>[B][COLOR lime]v1.0.0[/COLOR][/B]
+- RLSBB Reborn -- full Python 3 rewrite, Kodi 20+ (Nexus and later) only
+- protected.to captcha-gate resolver, multi-round chains
+- Season packs open as a proper episode list, not broken playback
+- Dead links filtered out automatically
+- MDBList integration: Watchlist, Up Next, Recently Watched, Lists, ratings
+- Trakt scrobbling support
+- Multiple site domains + DNS-over-HTTPS (works even if your ISP blocks it)
+- Remembers your preferred view per section
+- Quick debrid service login (All-Debrid, Premiumize, TorBox, Real-Debrid)</news>
+		<assets>
+			<icon>icon.png</icon>
+			<fanart>fanart.jpg</fanart>
+		</assets>
+	  </extension>
+	</addon>
 	<addon id="plugin.video.iNovelas" name="iNovelas" version="0.1.10" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.python" version="2.1.0"/>

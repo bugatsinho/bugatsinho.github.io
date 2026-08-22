@@ -1,0 +1,150 @@
+# Kodi Media Center language file
+# Addon Name: ReleaseBB
+# Addon id: plugin.video.releaseBB
+# Addon Provider: Bugatsinho
+
+#This is a comment
+
+msgid ""
+msgstr ""
+
+msgctxt "#32000"
+msgid "[COLOR orange][B]Release BB [COLOR blue]Movies [/COLOR][/B]"
+msgstr ""
+
+msgctxt "#32001"
+msgid "[COLOR orange][B]Release BB [COLOR blue]Tv Shows [/COLOR][/B]"
+msgstr ""
+
+msgctxt "#32002"
+msgid "[COLOR orange][B]Release BB [COLOR yellow]Search[/COLOR][/B]"
+msgstr ""
+
+msgctxt "#32003"
+msgid "[COLOR orange][B]Release BB [COLOR yellow]Downloads[/COLOR][/B]"
+msgstr ""
+
+msgctxt "#32004"
+msgid "[COLOR cyan][B]Settings-Tools[/B][/COLOR]"
+msgstr ""
+
+msgctxt "#32005"
+msgid "[COLOR cyan][B]Set View-Types[/B][/COLOR]"
+msgstr ""
+
+msgctxt "#32006"
+msgid "[COLOR gold][B][I]Github-Help[/B][/I][/COLOR]"
+msgstr ""
+
+msgctxt "#32007"
+msgid "Release BB Settings"
+msgstr ""
+
+msgctxt "#32008"
+msgid "Clear Cache"
+msgstr ""
+
+msgctxt "#32009"
+msgid "Set View-Type"
+msgstr ""
+
+msgctxt "#32010"
+msgid "[COLOR orange][B][I]Next Page>>>[/B][/I][/COLOR]"
+msgstr ""
+
+msgctxt "#32011"
+msgid "[COLOR red][B]Ooops![/B][/COLOR]\n[COLOR lime][B]Something wrong!![/B][/COLOR]"
+msgstr ""
+
+msgctxt "#32012"
+msgid "[COLOR red]Please[/COLOR] [COLOR white]Try other link![/COLOR]"
+msgstr ""
+
+msgctxt "#32013"
+msgid "Download"
+msgstr ""
+
+msgctxt "#32014"
+msgid "[B][COLOR orange]New Search[/COLOR][/B]"
+msgstr ""
+
+msgctxt "#32015"
+msgid "Delete Search Item"
+msgstr ""
+
+msgctxt "#32016"
+msgid "Delete All Queries"
+msgstr ""
+
+msgctxt "#32017"
+msgid "Menus"
+msgstr ""
+
+msgctxt "#32018"
+msgid "Movies & Shows"
+msgstr ""
+
+msgctxt "#32019"
+msgid "Links"
+msgstr ""
+
+msgctxt "#32020"
+msgid "CLICK HERE TO SAVE VIEW"
+msgstr ""
+
+msgctxt "#32021"
+msgid "'Triggered a request for addon updates'"
+msgstr ""
+
+msgctxt "#32022"
+msgid "[COLOR red][B]Sorry there was a problem![/B][/COLOR]\n[COLOR lime][B]Please try again!![/B][/COLOR]
+msgstr ""
+
+msgctxt "#32023"
+msgid "Downloading features are disabled by default"
+msgstr ""
+
+msgctxt "#32024"
+msgid "Set up your download folders in order to enable them"
+msgstr ""
+
+
+msgctxt "#32030"
+msgid "Auto-View  Settings"
+msgstr ""
+
+msgctxt "#32031"
+msgid "Enable Automatic View"
+msgstr ""
+
+msgctxt "#32032"
+msgid "Menu View"
+msgstr ""
+
+msgctxt "#32033"
+msgid "Movies View"
+msgstr ""
+
+msgctxt "#32034"
+msgid ""
+msgstr ""
+
+msgctxt "#32035"
+msgid ""
+msgstr ""
+
+msgctxt "#32036"
+msgid ""
+msgstr ""
+
+msgctxt "#32037"
+msgid ""
+msgstr ""
+
+msgctxt "#32038"
+msgid "[COLOR gold][B]Recommended Movies[/B][/COLOR]"
+msgstr ""
+
+msgctxt "#32039"
+msgid "Delete Search item"
+msgstr ""
