@@ -524,6 +524,13 @@ def category(section):
     prefix = '/category/{0}/'.format(section)
     if section == 'movies':
         control.addDir('Recommended Movies', '', 'recommended_movies', iconimage=_icon('movies.png'))
+    # the sidebar only lists SUBcategories (TOP, TV Packs, ...) -- the section's own
+    # root, every post regardless of subcategory, was being skipped entirely as a
+    # "self-link" instead of offered as its own entry. Always show it, first, so
+    # there's a way to just browse "All Movies"/"All TV Shows" without picking one.
+    section_name = next((name for name, sec, _ in _CATEGORIES if sec == section), section)
+    control.addDir('All {0}'.format(section_name), 'https://{0}/category/{1}/'.format(domain, section),
+                    list_mode, iconimage=section_icon)
     seen = set()
     for label, href in zip(labels, links):
         path = urlparse(href).path
@@ -533,12 +540,6 @@ def category(section):
             continue
         seen.add(href)
         control.addDir(metadata.clean_title(label), href, list_mode, iconimage=section_icon)
-
-    if not seen:
-        # no sub-categories parsed -- fall back to the section root itself
-        control.addDir('All {0}'.format(section.replace('-', ' ').title()),
-                        'https://{0}/category/{1}/'.format(domain, section), list_mode,
-                        iconimage=section_icon)
     # these are category FOLDER names, not real posts -- always List, no matter what
     # the user picked for the (unrelated) download-links listing inside a post, which
     # shares this same 'files' content type/view-memory key otherwise
