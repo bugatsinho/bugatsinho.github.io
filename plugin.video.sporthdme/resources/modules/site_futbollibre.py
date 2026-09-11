@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Fútbol Libre (futbollibretv.net.pe) source for plugin.video.sporthdme.
+Fútbol Libre (futbollibretv.space) source for plugin.video.sporthdme.
 
-Same NAME/KEY/DESC/list_events()/resolve() contract as the other extra sites,
-different structure:
+Same NAME/KEY/DESC/list_events()/resolve() contract as the other extra sites.
+Structure (Astro-based):
 
-  agenda-data.php        -> Strapi-style {data:[{attributes:{...}}]} agenda
-  embed_iframe (?r=b64)  -> decodes to futbollibre.ch/canales.php?stream=X
-  canales.php            -> Clappr page with a PLAIN playbackURL = "...m3u8?token="
-
-Times (diary_hour) are America/Lima per the site.
+  /api/agenda            -> {events:[{id,title,time,sport,embeds:[{name,iframe}]}]}
+  embed iframe           -> base64 or direct URL to player page
+  player page            -> Clappr with playbackURL = "...m3u8?token="
 """
 
 import re
@@ -23,13 +21,12 @@ from dateutil.tz import gettz
 NAME = 'Futbol Libre'
 KEY = 'fllibre'
 DESC = ('[B]Futbol Libre[/B]\n\n'
-        'Agenda de futbol en directo (futbollibretv), ordenada por hora, con '
+        'Agenda de futbol en directo (futbollibretv.space), ordenada por hora, con '
         'varios canales por evento. Los eventos finalizados se ocultan.\n\n'
         '[I]Live football agenda, sorted by time, several channels per event. '
         'Finished events are hidden. Commentary in Latin American Spanish.[/I]')
-BASE = 'https://futbollibretv.net.pe'
-AGENDA = BASE + '/agenda-data.php'
-IMG = 'https://img.futbollibrehd.com.pe'   # Strapi media host for /uploads/*
+BASE = 'https://futbollibretv.space'
+AGENDA = BASE + '/api/agenda'
 TZ = 'America/Lima'
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/120.0 Safari/537.36')
@@ -58,6 +55,18 @@ def _start_ms(date_diary, diary_hour):
         return 0
 
 
+def _start_ms_from_time(time_str):
+    """Parse 'HH:MM' into today's start_ms in Lima timezone."""
+    if not time_str:
+        return 0
+    try:
+        today = datetime.now().strftime('%Y-%m-%d')
+        dt = _dtparse('%s %s' % (today, time_str)).replace(tzinfo=gettz(TZ) or gettz())
+        return int(dt.timestamp() * 1000)
+    except Exception:
+        return 0
+
+
 def _status(start_ms, duration_min=120):
     if not start_ms:
         return 'soon'
@@ -70,34 +79,29 @@ def _status(start_ms, duration_min=120):
 
 
 def parse_events(payload):
-    """Flatten agenda-data.php into normalized event dicts (finished dropped)."""
+    """Parse /api/agenda into normalized event dicts (finished dropped)."""
     out = []
-    for item in payload.get('data', []):
-        a = item.get('attributes', {})
-        title = ' '.join((a.get('diary_description') or '').split()).strip()
+    for item in payload.get('events', []):
+        title = (item.get('title') or '').strip()
         servers = []
-        for emb in ((a.get('embeds') or {}).get('data') or []):
-            ea = emb.get('attributes', {})
-            url = _decode_embed(ea.get('embed_iframe', ''))
-            if url:
-                servers.append([ea.get('embed_name') or 'Canal', url])
+        for emb in (item.get('embeds') or []):
+            url = _decode_embed(emb.get('iframe', '')) or emb.get('iframe', '')
+            if url and url.startswith('http'):
+                servers.append([emb.get('name') or 'Canal', url])
         if not (title and servers):
             continue
-        start_ms = _start_ms(a.get('date_diary', ''), a.get('diary_hour', ''))
+        # Parse time "HH:MM" into start_ms
+        time_str = item.get('time', '')
+        start_ms = _start_ms_from_time(time_str)
         status = _status(start_ms)
         if status == 'done':
             continue
-        country_attr = (((a.get('country') or {}).get('data') or {})
-                        .get('attributes') or {})
-        img_url = ((((country_attr.get('image') or {}).get('data') or {})
-                    .get('attributes') or {}).get('url', ''))
-        poster = (IMG + img_url) if img_url.startswith('/') else img_url
         out.append({
             'title': title,
-            'code': country_attr.get('name', ''),
+            'code': item.get('sport', ''),
             'league': '',
             'start_ms': start_ms,
-            'poster': poster,        # country / sport icon from the Strapi media host
+            'poster': item.get('flag', ''),
             'status': status,
             'servers': servers,
         })
@@ -105,10 +109,18 @@ def parse_events(payload):
     return out
 
 
-def extract_m3u8(canales_html):
-    """canales.php exposes a plain: var playbackURL = "https://....m3u8?token=..."."""
-    m = re.search(r'playbackURL\s*=\s*["\']([^"\']+\.m3u8[^"\']*)["\']', canales_html)
-    return m.group(1) if m else None
+def extract_m3u8(html):
+    """Extract m3u8 URL from Clappr player page."""
+    # Clappr may use playbackURL or other patterns
+    patterns = [
+        r'playbackURL\s*=\s*["\']([^"\']+\.m3u8[^"\']*)["\']',
+        r'["\']?source["\']?\s*:\s*["\']([^"\']+\.m3u8[^"\']*)["\']',
+    ]
+    for pattern in patterns:
+        m = re.search(pattern, html)
+        if m:
+            return m.group(1)
+    return None
 
 
 # ---- network -------------------------------------------------------------
@@ -124,8 +136,12 @@ def list_events():
 
 
 def resolve(server_url):
-    """server_url is the decoded canales.php URL; return the m3u8."""
-    return extract_m3u8(_get(server_url, referer=BASE + '/'))
+    """server_url is iframe URL (base64 or plaintext); return the m3u8."""
+    # Decode if base64
+    url = _decode_embed(server_url) or server_url
+    if not url.startswith('http'):
+        return None
+    return extract_m3u8(_get(url, referer=BASE + '/'))
 
 
 # ---- self-check ----------------------------------------------------------

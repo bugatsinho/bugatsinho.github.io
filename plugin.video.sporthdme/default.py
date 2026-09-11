@@ -870,13 +870,26 @@ def site_play(payload):
     origin = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(d['u']))
     stream_headers = {'Referer': origin + '/', 'Origin': origin,
                       'User-Agent': site.UA, 'verifypeer': 'false'}
-    stream_url = xbmc_curl_encode(flink, stream_headers)
+    header_str = urlencode(stream_headers)
     liz = xbmcgui.ListItem(six.ensure_str(title, encoding='utf-8', errors='replace'))
     liz.setArt({'icon': poster, 'thumb': poster, 'poster': poster, 'fanart': FANART})
     liz.setInfo('video', {'title': title, 'plot': title})
     liz.setProperty("IsPlayable", "true")
-    liz.setPath(stream_url)
-    xbmc.Player().play(stream_url, liz, False)
+    liz.setContentLookup(False)
+    liz.setMimeType('application/vnd.apple.mpegurl')
+    # live m3u8 via inputstream.ffmpegdirect: the plain FFmpeg HLS demuxer
+    # leaves a read-ahead thread that isn't cancelled on CloseFile() for
+    # live (non-EOF) streams, so Kodi blocks ~28s per pending segment
+    # request before it can close/switch. ffmpegdirect tears the stream
+    # down immediately instead.
+    liz.setProperty('inputstream', 'inputstream.ffmpegdirect')
+    liz.setProperty('inputstream.ffmpegdirect.is_realtime_stream', 'true')
+    liz.setProperty('inputstream.ffmpegdirect.stream_mode', 'live')
+    liz.setProperty('inputstream.ffmpegdirect.manifest_type', 'hls')
+    liz.setProperty('inputstream.ffmpegdirect.default_url', flink)
+    liz.setProperty('inputstream.ffmpegdirect.stream_headers', header_str)
+    liz.setPath(flink)
+    xbmc.Player().play(flink, liz, False)
 
 
 def router(paramstring):

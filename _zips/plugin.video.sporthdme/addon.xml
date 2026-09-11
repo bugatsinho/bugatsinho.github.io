@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.4" provider-name="Bugatsinho">
+<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.5" provider-name="Bugatsinho">
   <requires>
     <!--import addon="xbmc.python" version="2.1.0"/-->
     <import addon="script.module.dateutil" />
     <import addon="script.module.six" />
     <import addon="script.module.requests" version="2.19.1"/>
+    <import addon="inputstream.ffmpegdirect" version="21.3.8"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
@@ -17,7 +18,8 @@
     <license>GNU GPL, version 2</license>
     <twitter>https://twitter.com/Bugatsinho</twitter>
     <news>
-      Fix Eventos En Vivo still crashing on accented event/server titles (e.g. Senal, Auto suffix) plus latent Python 2 unicode/ascii-codec issues found in a full encoding audit: server-name labels, the built-in LIVE EVENTS time label, and channel/language labels
+      - Fix Futbol Libre: site changed structure (now /api/agenda), scraper updated
+      - Fix HLS live streams hanging on close/switch: use inputstream.ffmpegdirect instead of native player
     </news>
 
     <assets>
