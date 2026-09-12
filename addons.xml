@@ -478,7 +478,7 @@
 				<platform>all</platform>
 		</extension>
 	</addon>
-	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.5" provider-name="Bugatsinho">
+	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.6" provider-name="Bugatsinho">
 	  <requires>
 		<!--import addon="xbmc.python" version="2.1.0"/-->
 		<import addon="script.module.dateutil" />
@@ -496,8 +496,7 @@
 		<license>GNU GPL, version 2</license>
 		<twitter>https://twitter.com/Bugatsinho</twitter>
 		<news>
-		  - Fix Futbol Libre: site changed structure (now /api/agenda), scraper updated
-		  - Fix HLS live streams hanging on close/switch: use inputstream.ffmpegdirect instead of native player
+		  - Fix busy spinner freezing mid-playback: drop unreliable img.agenda18.com flag icons from Futbol Libre events (28s CCurlFile timeouts were blocking Kodi's DialogBusy)
 		</news>
 		<assets>
 		  <icon>icon.png</icon>

@@ -101,7 +101,10 @@ def parse_events(payload):
             'code': item.get('sport', ''),
             'league': '',
             'start_ms': start_ms,
-            'poster': item.get('flag', ''),
+            # img.agenda18.com flag icons are unreliable (28s CCurlFile
+            # timeouts -> Kodi shows a busy spinner mid-playback while it
+            # waits); skip them, callers fall back to the local ICON.
+            'poster': '',
             'status': status,
             'servers': servers,
         })
