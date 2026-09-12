@@ -864,13 +864,26 @@ def site_play(payload):
     title = d.get('t') or NAME
     poster = d.get('p') or ICON
     Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
-    flink = site.resolve(d['u'])
-    if not flink:
+    result = site.resolve(d['u'])
+    if not result:
         raise Exception('could not resolve stream for ' + d['u'])
-    origin = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(d['u']))
-    stream_headers = {'Referer': origin + '/', 'Origin': origin,
-                      'User-Agent': site.UA, 'verifypeer': 'false'}
-    header_str = urlencode(stream_headers)
+    # resolve() normally returns just the m3u8 string; sites that chain
+    # through intermediate hosts (e.g. futbollibre's tarjetarojita.xyz
+    # wrapper) return (m3u8, final_page_url) since the CDN token's own
+    # host, not the originally-clicked link, is what the player needs
+    # for Referer/Origin.
+    flink, referer_url = result if isinstance(result, tuple) else (result, d['u'])
+    origin = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(referer_url))
+    stream_headers = {'Referer': origin + '/', 'Origin': origin, 'User-Agent': site.UA}
+    # installed inputstream.ffmpegdirect (21.3.8) does not whitelist a
+    # stream_headers listitem property -- its addon.xml listitemprops=
+    # "...default_url|is_realtime_stream|..." has no headers entry, so
+    # Kodi silently drops that property before the addon ever sees it
+    # and FFmpeg opens the URL with no User-Agent, which this CDN 403s.
+    # Embed the headers in the URL itself via Kodi's "url|key=val&..."
+    # pipe convention instead -- recognized by Kodi's ffmpeg build
+    # regardless of which inputstream addon is driving it.
+    stream_url = xbmc_curl_encode(flink, stream_headers)
     liz = xbmcgui.ListItem(six.ensure_str(title, encoding='utf-8', errors='replace'))
     liz.setArt({'icon': poster, 'thumb': poster, 'poster': poster, 'fanart': FANART})
     liz.setInfo('video', {'title': title, 'plot': title})
@@ -881,15 +894,28 @@ def site_play(payload):
     # leaves a read-ahead thread that isn't cancelled on CloseFile() for
     # live (non-EOF) streams, so Kodi blocks ~28s per pending segment
     # request before it can close/switch. ffmpegdirect tears the stream
-    # down immediately instead.
-    liz.setProperty('inputstream', 'inputstream.ffmpegdirect')
-    liz.setProperty('inputstream.ffmpegdirect.is_realtime_stream', 'true')
-    liz.setProperty('inputstream.ffmpegdirect.stream_mode', 'live')
-    liz.setProperty('inputstream.ffmpegdirect.manifest_type', 'hls')
-    liz.setProperty('inputstream.ffmpegdirect.default_url', flink)
-    liz.setProperty('inputstream.ffmpegdirect.stream_headers', header_str)
-    liz.setPath(flink)
-    xbmc.Player().play(flink, liz, False)
+    # down immediately instead. It doesn't exist for Kodi 18/Leia at all
+    # (dropped from addon.xml <requires> for that reason -- a hard
+    # dependency there would make the *whole* addon uninstallable on
+    # Leia), so check for it at runtime and fall back to the plain
+    # player -- with the old close-hang -- when it's missing.
+    if xbmc.getCondVisibility('System.HasAddon(inputstream.ffmpegdirect)'):
+        liz.setProperty('inputstream', 'inputstream.ffmpegdirect')
+        liz.setProperty('inputstream.ffmpegdirect.is_realtime_stream', 'true')
+        liz.setProperty('inputstream.ffmpegdirect.stream_mode', 'live')
+        liz.setProperty('inputstream.ffmpegdirect.manifest_type', 'hls')
+        # open_mode=curl routes I/O through Kodi's own CCurlFile instead
+        # of raw FFmpeg AVFormat. Some CDNs (seen on a futbollibre
+        # alt-server chained through tarjetarojita.xyz) silently
+        # blackhole FFmpeg's bundled TLS client for ~30s while an
+        # ordinary curl/requests call against the exact same URL and
+        # headers succeeds in well under a second -- a TLS/client-
+        # fingerprint block aimed at ffmpeg, not the headers.
+        # CCurlFile's TLS stack isn't flagged the same way.
+        liz.setProperty('inputstream.ffmpegdirect.open_mode', 'curl')
+        liz.setProperty('inputstream.ffmpegdirect.default_url', stream_url)
+    liz.setPath(stream_url)
+    xbmc.Player().play(stream_url, liz, False)
 
 
 def router(paramstring):

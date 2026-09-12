@@ -15,8 +15,11 @@ import json
 import base64
 from datetime import datetime
 
+from six.moves.urllib.parse import unquote
 from dateutil.parser import parse as _dtparse
 from dateutil.tz import gettz
+
+from resources.modules import econfig as _econfig
 
 NAME = 'Futbol Libre'
 KEY = 'fllibre'
@@ -138,13 +141,42 @@ def list_events():
     return parse_events(json.loads(_get(AGENDA, referer=BASE + '/agenda')))
 
 
-def resolve(server_url):
-    """server_url is iframe URL (base64 or plaintext); return the m3u8."""
-    # Decode if base64
+def resolve(server_url, _depth=0):
+    """server_url is iframe URL (base64, ?get= redirector, or plaintext
+    player page); return the m3u8.
+
+    Some servers (e.g. tarjetarojita.xyz) chain 2-3 hops before the real
+    player: a ?get=<url> wrapper -> a page with a nested <iframe src=...>
+    -> the actual player, which exposes either a plain playbackURL or an
+    obfuscated window._econfig blob (same encoding as the glisco/sansat
+    chain elsewhere in this addon, see econfig.py). Follow the chain
+    instead of hardcoding one shape per host.
+    """
+    if _depth > 4:
+        return None
     url = _decode_embed(server_url) or server_url
     if not url.startswith('http'):
         return None
-    return extract_m3u8(_get(url, referer=BASE + '/'))
+
+    m = re.search(r'[?&]get=(https?[^&]+)', url)
+    if m:
+        return resolve(unquote(m.group(1)), _depth + 1)
+
+    html = _get(url, referer=BASE + '/')
+
+    m3u8 = extract_m3u8(html)
+    if m3u8:
+        return m3u8
+
+    m3u8, _cfg = _econfig.extract_stream_from_html(html)
+    if m3u8:
+        return m3u8
+
+    iframe_m = re.search(r'<iframe[^>]+src=["\']([^"\']+)["\']', html)
+    if iframe_m:
+        return resolve(iframe_m.group(1), _depth + 1)
+
+    return None
 
 
 # ---- self-check ----------------------------------------------------------

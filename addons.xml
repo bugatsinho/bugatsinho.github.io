@@ -478,7 +478,7 @@
 				<platform>all</platform>
 		</extension>
 	</addon>
-	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.6" provider-name="Bugatsinho">
+	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.7" provider-name="Bugatsinho">
 	  <requires>
 		<!--import addon="xbmc.python" version="2.1.0"/-->
 		<import addon="script.module.dateutil" />
@@ -496,7 +496,9 @@
 		<license>GNU GPL, version 2</license>
 		<twitter>https://twitter.com/Bugatsinho</twitter>
 		<news>
-		  - Fix busy spinner freezing mid-playback: drop unreliable img.agenda18.com flag icons from Futbol Libre events (28s CCurlFile timeouts were blocking Kodi's DialogBusy)
+		  - Fix Futbol Libre servers stuck on 'could not resolve stream' (tarjetarojita.xyz and similar multi-hop wrappers): resolve() now follows ?get= redirects and nested iframes, tries the existing _econfig decoder plus plain playbackURL, and returns the real page origin for correct Referer/Origin headers
+		  - Fix playback still failing after resolve: some CDNs blackhole FFmpeg's TLS client (works via curl/browser, hangs 30s via Kodi's ffmpeg) - route inputstream.ffmpegdirect through open_mode=curl instead
+		  - inputstream.ffmpegdirect is now used only when present at runtime (System.HasAddon check), not as a hard addon.xml dependency - it doesn't exist for Kodi 18/Leia, so requiring it would have blocked the whole addon from installing there
 		</news>
 		<assets>
 		  <icon>icon.png</icon>
