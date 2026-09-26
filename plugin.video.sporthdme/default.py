@@ -24,11 +24,9 @@ from dateutil import parser, tz
 
 # Extra sports sites: one self-contained module each. To add a site, drop a
 # module exposing NAME/KEY/list_events()/resolve() and append it here.
-EXTRA_SITES = [site_embedlivesports, site_futbollibre]
-# LIVE EVENTS menu entry: super.league.st died (Cloudflare 523, Sep 2026), so it
-# is served by the tvsport.guide schedule instead (same site_events flow).
-LIVE_SITE = site_tvsport
-SITES = {s.KEY: s for s in EXTRA_SITES + [LIVE_SITE]}
+# tvsport stays as a backup schedule now that league.st is back for LIVE EVENTS.
+EXTRA_SITES = [site_embedlivesports, site_futbollibre, site_tvsport]
+SITES = {s.KEY: s for s in EXTRA_SITES}
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
@@ -48,7 +46,8 @@ vers = VERSION
 ART = ADDON_PATH + "/resources/icons/"
 
 BASEURL = 'https://one.sporthd.me/'  # 'https://sporthd.live/'  #'https://sportl.ivesoccer.sx/'
-Live_url = 'https://super.league.st'  # was super.league.do; domain rotated 2026
+Live_url = 'https://league.st'  # super.league.st died Sep 2026; bare league.st is back
+Live_fallback_url = 'https://tvsport.guide/proxy_index.php'  # same matches schema, JSON
 Alt_url = 'https://liveon.sx/program'  # 'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
@@ -88,8 +87,7 @@ def log_error(msg):
 
 def Main_menu():
     # addDir('[B][COLOR gold]Channels 24/7[/COLOR][/B]', 'https://1.livesoccer.sx/program.php', 14, ICON, FANART, '')
-    addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', LIVE_SITE.KEY, 'site_events', ICON, FANART, True,
-           infoLabels={'title': 'LIVE EVENTS', 'plot': getattr(LIVE_SITE, 'DESC', '')})
+    addDir('[B][COLOR white]LIVE EVENTS[/COLOR][/B]', Live_url, 'events', ICON, FANART, True)
     for _s in EXTRA_SITES:
         addDir('[B][COLOR deepskyblue]{0}[/COLOR][/B]'.format(_s.NAME),
                _s.KEY, 'site_events', ICON, FANART, True,
@@ -105,36 +103,38 @@ def Main_menu():
     xbmcplugin.endOfDirectory(_handle)
 
 
-def get_events(url):  # 5
-    # data = client.request(url)
-    data = requests.get(url)
-    data = data.text
+def _matches_from_page(url):
+    data = requests.get(url, timeout=20).text
     data = six.ensure_text(data, encoding='utf-8', errors='ignore')
     data = re.sub('\t', '', data).replace('&nbsp', '')
 
     events = client.parseDOM(data, 'script')
+    events = [i for i in events if '''matchDate''' in i][0]
+
+    new_matches = re.findall(r'window\.matches\s*=\s*JSON\.parse\(`(\[.+?\])`\)', events, re.DOTALL)
+    if new_matches:
+        return json.loads(new_matches[0])
+    events = events[:-1].replace('self.__next_f.push(', '').replace('\\', '')
+    old_pattern = r'"matches"\s*\:\s*(\[.+?])}]]}]n'
+    return json.loads(re.findall(old_pattern, events.replace(',false', ''), re.DOTALL)[0])
+
+
+def get_events(url):  # 5
+    matches = None
     try:
-        events = [i for i in events if '''matchDate''' in i][0]
-    except Exception:
+        matches = _matches_from_page(url)
+    except Exception as e:
+        log_info('events page {0} failed: {1!r}'.format(url, e))
+    if not matches:
+        # fallback: same schema served as plain JSON by tvsport.guide
+        try:
+            matches = requests.get(Live_fallback_url, headers={'User-Agent': client.agent()},
+                                   timeout=20).json().get('matches')
+        except Exception as e:
+            log_info('events fallback {0} failed: {1!r}'.format(Live_fallback_url, e))
+    if not matches:
         control.infoDialog("[COLOR red]No Match Scheduled.[/COLOR]", NAME, ICON, 5000)
         return
-
-    new_pattern = r'window\.matches\s*=\s*JSON\.parse\(`(\[.+?\])`\)'
-
-    new_matches = re.findall(new_pattern, events, re.DOTALL)
-
-    if new_matches:
-        matches_json = new_matches[0]
-        matches = json.loads(matches_json)
-    else:
-        events = events[:-1].replace('self.__next_f.push(', '').replace('\\', '')
-        old_pattern = r'"matches"\s*\:\s*(\[.+?])}]]}]n'
-        old_matches = re.findall(old_pattern, events.replace(',false', ''), re.DOTALL)[0]
-        if old_matches:
-            matches = json.loads(old_matches)
-        else:
-            control.infoDialog("[COLOR red]No matches data found.[/COLOR]", NAME, ICON, 5000)
-            return
 
     # matches = re.findall('''null\,(\{"(?:matches|customNotFoundMessage).+?)\]\}\]n''', events, re.DOTALL)[0]
     # pattern = r'("matches"\s*\:\s*\[.+?])}]}]n"'
@@ -270,7 +270,7 @@ def resolve2(name, url):
     log_info('RESOLVE-URL: {0}'.format(url))
 
     # NEW GLISCO/SANSAT BRANCH
-    if '//glisco' in url or '//sansat' in url or 'vertex' in url or 'nexa' in url:
+    if '//glisco' in url or '//sansat' in url or 'vertex' in url or 'nexa' in url or 'kora.st' in url:
         Dialog.notification(NAME, "[COLOR skyblue]Attempting To Resolve Link Now[/COLOR]", ICON, 2000, False)
         chan_id = url.split('id=')[-1]
 
@@ -303,6 +303,17 @@ def resolve2(name, url):
                     return ('econfig' if fl else 'econfig-blank', fl or None)
             except Exception:
                 pass
+            # 4) window.PP_CLAPPR_CONFIG in the plain page  (play.matchli.st
+            #    clappr-classic.php answers 403 to ?ppcfg=1)
+            pp = re.search(r'window\.PP_CLAPPR_CONFIG\s*=\s*(\{.*?\});\s*</script>', embed_html, re.DOTALL)
+            if pp:
+                try:
+                    cfg = json.loads(pp.group(1))
+                    fl = cfg.get('src') or cfg.get('srcBase')
+                    if fl:
+                        return ('pp-clappr-config', fl)
+                except Exception:
+                    pass
             return (None, None)
 
         # The same channel is mirrored across sub-domains (nexa.st, s1/s2/s3.
@@ -312,7 +323,7 @@ def resolve2(name, url):
         import time as _time
         uri0 = urlparse(url)
         hosts = [uri0.netloc]
-        m = re.match(r'^(?:s\d+\.)?(nexa\.st|vertex\.st)$', uri0.netloc)
+        m = re.match(r'^(?:s\d+\.)?(nexa\.st|vertex\.st|kora\.st)$', uri0.netloc)
         if m:
             base = m.group(1)
             for h in (base, 's2.' + base, 's1.' + base, 's3.' + base):
@@ -328,10 +339,18 @@ def resolve2(name, url):
                 api_resp = six.ensure_text(client.request(api_url, referer=api_ref))
                 cand_frame = json.loads(api_resp)['url']
                 cfg_url = cand_frame + ('&' if '?' in cand_frame else '?') + 'ppcfg=1&_=' + str(int(_time.time() * 1000))
-                embed_html = six.ensure_str(
-                    client.request(cfg_url, referer=api_ref, headers={'User-Agent': ua_win})
-                )
+                try:
+                    embed_html = six.ensure_str(
+                        client.request(cfg_url, referer=api_ref, headers={'User-Agent': ua_win}) or '')
+                except Exception:
+                    embed_html = ''  # e.g. 403 on ?ppcfg=1 -> plain page below
                 method, cand = _extract_stream(embed_html)
+                if not cand:  # ?ppcfg=1 refused -> plain frame page
+                    try:
+                        method, cand = _extract_stream(six.ensure_str(
+                            client.request(cand_frame, referer=api_ref, headers={'User-Agent': ua_win})))
+                    except Exception:
+                        pass
                 frame_host = urlparse(cand_frame).netloc
                 if cand:
                     flink = cand

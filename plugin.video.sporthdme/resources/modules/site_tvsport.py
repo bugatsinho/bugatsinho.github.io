@@ -28,8 +28,7 @@ KEY = 'tvsport'
 DESC = ('[B]TVSport Guide[/B]\n\n'
         'Live sports agenda (tvsport.guide), sorted by time, with several '
         'channels per event. Finished events are hidden. Times shown in your '
-        'local timezone.\n\n'
-        '[I]Temporary schedule while the site is on a backup server.[/I]')
+        'local timezone.')
 TAG_LAST = True  # menu label: "time title [league]" instead of "[league] time title"
 BASE = 'https://tvsport.guide'
 SCHEDULE = BASE + '/schedule.txt'

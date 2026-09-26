@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.8" provider-name="Bugatsinho">
+<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.89.9" provider-name="Bugatsinho">
   <requires>
     <!--import addon="xbmc.python" version="2.1.0"/-->
     <import addon="script.module.dateutil" />
@@ -17,9 +17,9 @@
     <license>GNU GPL, version 2</license>
     <twitter>https://twitter.com/Bugatsinho</twitter>
     <news>
-      [B]v0.1.89.8[/B] 25/09/2026
-      - LIVE EVENTS: super.league.st is down, now served by the tvsport.guide schedule (watchfa.st streams)
-      - Event list: time and title first, league at the end
+      [B]v0.1.89.9[/B] 26/09/2026
+      - LIVE EVENTS back on league.st (tvsport.guide JSON as automatic fallback)
+      - Resolver: kora.st mirror + play.matchli.st clappr-classic (PP_CLAPPR_CONFIG) support
     </news>
 
     <assets>
