@@ -16,7 +16,6 @@ import requests
 from resources.modules import control, client
 from resources.modules import site_embedlivesports
 from resources.modules import site_futbollibre
-from resources.modules import site_tvsport
 import time
 from dateutil.parser import parse
 from dateutil.tz import gettz
@@ -24,8 +23,9 @@ from dateutil import parser, tz
 
 # Extra sports sites: one self-contained module each. To add a site, drop a
 # module exposing NAME/KEY/list_events()/resolve() and append it here.
-# tvsport stays as a backup schedule now that league.st is back for LIVE EVENTS.
-EXTRA_SITES = [site_embedlivesports, site_futbollibre, site_tvsport]
+# tvsport.guide is no longer a menu entry: it is the fallback schedule for
+# LIVE EVENTS and Eventos En Vivo (see Live_fallback_url).
+EXTRA_SITES = [site_embedlivesports, site_futbollibre]
 SITES = {s.KEY: s for s in EXTRA_SITES}
 
 _url = sys.argv[0]
@@ -47,7 +47,7 @@ ART = ADDON_PATH + "/resources/icons/"
 
 BASEURL = 'https://one.sporthd.me/'  # 'https://sporthd.live/'  #'https://sportl.ivesoccer.sx/'
 Live_url = 'https://league.st'  # super.league.st died Sep 2026; bare league.st is back
-Live_fallback_url = 'https://tvsport.guide/proxy_index.php'  # same matches schema, JSON
+Live_fallback_url = 'https://tvsport.guide/proxy.php?source=index'  # same matches schema, JSON
 Alt_url = 'https://liveon.sx/program'  # 'https://1.livesoccer.sx/program'
 headers = {'User-Agent': client.agent(),
            'Referer': BASEURL}
@@ -121,10 +121,11 @@ def _matches_from_page(url):
 
 def get_events(url):  # 5
     matches = None
-    try:
-        matches = _matches_from_page(url)
-    except Exception as e:
-        log_info('events page {0} failed: {1!r}'.format(url, e))
+    if url != Live_fallback_url:
+        try:
+            matches = _matches_from_page(url)
+        except Exception as e:
+            log_info('events page {0} failed: {1!r}'.format(url, e))
     if not matches:
         # fallback: same schema served as plain JSON by tvsport.guide
         try:
@@ -847,7 +848,17 @@ def site_events_menu(key):
     site = SITES[key]
     # title colour signals state: cyan = live, gold = upcoming, grey = finished.
     colors = {'live': 'cyan', 'soon': 'gold', 'done': 'grey'}
-    for e in site.list_events():
+    try:
+        events = site.list_events()
+    except Exception as e:
+        log_info('site {0} failed: {1!r}'.format(key, e))
+        events = []
+    if not events and key == site_embedlivesports.KEY:
+        # streamx-hd down / empty agenda: show the tvsport.guide schedule instead
+        get_events(Live_fallback_url)
+        xbmcplugin.endOfDirectory(_handle)
+        return
+    for e in events:
         t = time_convert(e['start_ms']) if e['start_ms'] else u'-'
         # event titles carry accents/ñ (España, Brasil...) -> keep every piece
         # unicode so the byte-str .format() can't fall back to the ascii codec.
