@@ -854,10 +854,13 @@ def site_events_menu(key):
         log_info('site {0} failed: {1!r}'.format(key, e))
         events = []
     if not events and key == site_embedlivesports.KEY:
-        # streamx-hd down / empty agenda: show the tvsport.guide schedule instead
-        get_events(Live_fallback_url)
-        xbmcplugin.endOfDirectory(_handle)
-        return
+        # streamx-hd down / empty agenda: futbollibrefullhd.org agenda instead,
+        # resolved by the Futbol Libre module (same embed family)
+        try:
+            events = site_futbollibre.list_diaries()
+        except Exception as e:
+            log_info('emls fallback failed: {0!r}'.format(e))
+        key = site_futbollibre.KEY
     for e in events:
         t = time_convert(e['start_ms']) if e['start_ms'] else u'-'
         # event titles carry accents/ñ (España, Brasil...) -> keep every piece

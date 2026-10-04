@@ -15,7 +15,7 @@ import json
 import base64
 from datetime import datetime
 
-from six.moves.urllib.parse import unquote
+from six.moves.urllib.parse import unquote, urljoin
 from dateutil.parser import parse as _dtparse
 from dateutil.tz import gettz
 
@@ -30,6 +30,10 @@ DESC = ('[B]Futbol Libre[/B]\n\n'
         'Finished events are hidden. Commentary in Latin American Spanish.[/I]')
 BASE = 'https://futbollibretv.space'
 AGENDA = BASE + '/api/agenda'
+# futbollibrefullhd.org agenda (same embed family); used as the Eventos En
+# Vivo fallback by default.py, not as its own menu entry.
+DIARIES = 'https://api.wqxag.com/diaries.json'
+DIARIES_REFERER = 'https://futbollibrefullhd.org/'
 TZ = 'America/Lima'
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/120.0 Safari/537.36')
@@ -115,6 +119,30 @@ def parse_events(payload):
     return out
 
 
+def parse_diaries(payload):
+    """Parse diaries.json (Strapi: data[].attributes) into event dicts."""
+    out = []
+    for item in payload.get('data', []):
+        a = item.get('attributes') or item
+        title = ' '.join((a.get('diary_description') or '').split())
+        servers = []
+        for emb in (a.get('embeds') or {}).get('data', []):
+            ea = emb.get('attributes') or emb
+            url = _decode_embed(ea.get('embed_iframe', ''))
+            if url:
+                servers.append([ea.get('embed_name') or 'Canal', url])
+        if not (title and servers):
+            continue
+        start_ms = _start_ms(a.get('date_diary', ''), a.get('diary_hour', ''))
+        status = _status(start_ms)
+        if status == 'done':
+            continue
+        out.append({'title': title, 'code': '', 'league': '', 'start_ms': start_ms,
+                    'poster': '', 'status': status, 'servers': servers})
+    out.sort(key=lambda e: e['start_ms'])
+    return out
+
+
 def extract_m3u8(html):
     """Extract m3u8 URL from Clappr player page."""
     # Clappr may use playbackURL or other patterns
@@ -139,6 +167,10 @@ def _get(url, referer=None):
 
 def list_events():
     return parse_events(json.loads(_get(AGENDA, referer=BASE + '/agenda')))
+
+
+def list_diaries():
+    return parse_diaries(json.loads(_get(DIARIES, referer=DIARIES_REFERER)))
 
 
 def resolve(server_url, _depth=0):
@@ -174,7 +206,8 @@ def resolve(server_url, _depth=0):
 
     iframe_m = re.search(r'<iframe[^>]+src=["\']([^"\']+)["\']', html)
     if iframe_m:
-        return resolve(iframe_m.group(1), _depth + 1)
+        # tvf90.com uses a relative src (/6.php?stream=...)
+        return resolve(urljoin(url, iframe_m.group(1)), _depth + 1)
 
     return None
 
