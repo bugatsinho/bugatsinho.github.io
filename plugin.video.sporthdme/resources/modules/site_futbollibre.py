@@ -175,7 +175,7 @@ def list_diaries():
 
 def resolve(server_url, _depth=0):
     """server_url is iframe URL (base64, ?get= redirector, or plaintext
-    player page); return the m3u8.
+    player page); return (m3u8, player_page_url).
 
     Some servers (e.g. tarjetarojita.xyz) chain 2-3 hops before the real
     player: a ?get=<url> wrapper -> a page with a nested <iframe src=...>
@@ -196,13 +196,15 @@ def resolve(server_url, _depth=0):
 
     html = _get(url, referer=BASE + '/')
 
+    # return the player page too: its host is the Referer/Origin the CDN
+    # wants (quotarevival.net segments 403 with the tarjetarojita origin)
     m3u8 = extract_m3u8(html)
     if m3u8:
-        return m3u8
+        return m3u8, url
 
     m3u8, _cfg = _econfig.extract_stream_from_html(html)
     if m3u8:
-        return m3u8
+        return m3u8, url
 
     iframe_m = re.search(r'<iframe[^>]+src=["\']([^"\']+)["\']', html)
     if iframe_m:

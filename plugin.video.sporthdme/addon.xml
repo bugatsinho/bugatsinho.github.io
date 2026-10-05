@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.90.1" provider-name="Bugatsinho">
+<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.91" provider-name="Bugatsinho">
   <requires>
     <!--import addon="xbmc.python" version="2.1.0"/-->
     <import addon="script.module.dateutil" />
@@ -17,9 +17,9 @@
     <license>GNU GPL, version 2</license>
     <twitter>https://twitter.com/Bugatsinho</twitter>
     <news>
-      [B]v0.1.90.1[/B] 04/10/2026
-      - Eventos En Vivo: falls back to the futbollibrefullhd.org agenda when streamx-hd is down or empty
-      - Futbol Libre resolver: follows relative player iframes (tvf90.com)
+      [B]v0.1.91[/B] 04/10/2026
+      - New: Futbol Libre MOV (futbol-libre.mov) with triple menu: Latino, USA, Football Live + Search
+      - Futbol Libre / tarjetarojita: streams play again (correct Referer/Origin for the player CDN)
     </news>
 
     <assets>

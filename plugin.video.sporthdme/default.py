@@ -16,6 +16,7 @@ import requests
 from resources.modules import control, client
 from resources.modules import site_embedlivesports
 from resources.modules import site_futbollibre
+from resources.modules import site_futbolmov
 import time
 from dateutil.parser import parse
 from dateutil.tz import gettz
@@ -27,6 +28,8 @@ from dateutil import parser, tz
 # LIVE EVENTS and Eventos En Vivo (see Live_fallback_url).
 EXTRA_SITES = [site_embedlivesports, site_futbollibre]
 SITES = {s.KEY: s for s in EXTRA_SITES}
+# futbol-libre.mov: one main-menu entry -> its three lists (fmov_menu)
+SITES.update((s.KEY, s) for s in site_futbolmov.SUBSITES)
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
@@ -92,6 +95,9 @@ def Main_menu():
         addDir('[B][COLOR deepskyblue]{0}[/COLOR][/B]'.format(_s.NAME),
                _s.KEY, 'site_events', ICON, FANART, True,
                infoLabels={'title': _s.NAME, 'plot': getattr(_s, 'DESC', '')})
+    addDir('[B][COLOR deepskyblue]{0}[/COLOR][/B]'.format(site_futbolmov.NAME),
+           'fmov', 'fmov_menu', ICON, FANART, True,
+           infoLabels={'title': site_futbolmov.NAME, 'plot': site_futbolmov.DESC})
     # addDir('[B][COLOR gold]Alternative VIEW [/COLOR][/B]', '', '', ICON, FANART, '')
     # addDir('[B][COLOR gold]Alternative LIVE EVENTS[/COLOR][/B]', Alt_url, 15, ICON, FANART, '')
     # addDir('[B][COLOR white]SPORTS[/COLOR][/B]', '', 3, ICON, FANART, '')
@@ -846,8 +852,6 @@ def addDir(name, url, mode, iconimage, description, isFolder=True, infoLabels=No
 
 def site_events_menu(key):
     site = SITES[key]
-    # title colour signals state: cyan = live, gold = upcoming, grey = finished.
-    colors = {'live': 'cyan', 'soon': 'gold', 'done': 'grey'}
     try:
         events = site.list_events()
     except Exception as e:
@@ -862,24 +866,67 @@ def site_events_menu(key):
             log_info('emls fallback failed: {0!r}'.format(e))
         key = site_futbollibre.KEY
     for e in events:
-        t = time_convert(e['start_ms']) if e['start_ms'] else u'-'
-        # event titles carry accents/ñ (España, Brasil...) -> keep every piece
-        # unicode so the byte-str .format() can't fall back to the ascii codec.
-        tag = six.ensure_text(e.get('code') or e.get('league') or '',
-                              encoding='utf-8', errors='replace')  # country code, else league
-        title = six.ensure_text(e['title'], encoding='utf-8', errors='replace')
-        cc = u'[COLOR orange][{0}][/COLOR] '.format(tag) if tag else u''
-        if getattr(site, 'TAG_LAST', False):  # time + title first, league/sport tag at the end
-            label = u'[COLOR cyan]{0}[/COLOR] [COLOR {1}][B]{2}[/B][/COLOR]{3}'.format(
-                t, colors.get(e['status'], 'gold'), title, u' ' + cc.rstrip() if cc else u'')
-        else:
-            label = u'{0}[COLOR cyan]{1}[/COLOR] [COLOR {2}][B]{3}[/B][/COLOR]'.format(
-                cc, t, colors.get(e['status'], 'gold'), title)
-        # carry the event's title + poster down the chain so the servers menu
-        # and the player show the match, not the generic SportHD art.
-        payload = json.dumps({'k': key, 's': e['servers'],
-                              't': e['title'], 'p': e['poster']})
-        addDir(label, payload, 'site_streams', e['poster'] or ICON, e['title'], True)
+        _add_site_event(key, site, e)
+    xbmcplugin.setContent(_handle, 'movies')
+    xbmcplugin.endOfDirectory(_handle)
+
+
+def _add_site_event(key, site, e):
+    # title colour signals state: cyan = live, gold = upcoming, grey = finished.
+    colors = {'live': 'cyan', 'soon': 'gold', 'done': 'grey'}
+    t = time_convert(e['start_ms']) if e['start_ms'] else u'-'
+    # event titles carry accents/ñ (España, Brasil...) -> keep every piece
+    # unicode so the byte-str .format() can't fall back to the ascii codec.
+    tag = six.ensure_text(e.get('code') or e.get('league') or '',
+                          encoding='utf-8', errors='replace')  # country code, else league
+    title = six.ensure_text(e['title'], encoding='utf-8', errors='replace')
+    cc = u'[COLOR orange][{0}][/COLOR] '.format(tag) if tag else u''
+    if getattr(site, 'TAG_LAST', False):  # time + title first, league/sport tag at the end
+        label = u'[COLOR cyan]{0}[/COLOR] [COLOR {1}][B]{2}[/B][/COLOR]{3}'.format(
+            t, colors.get(e['status'], 'gold'), title, u' ' + cc.rstrip() if cc else u'')
+    else:
+        label = u'{0}[COLOR cyan]{1}[/COLOR] [COLOR {2}][B]{3}[/B][/COLOR]'.format(
+            cc, t, colors.get(e['status'], 'gold'), title)
+    # carry the event's title + poster down the chain so the servers menu
+    # and the player show the match, not the generic SportHD art.
+    payload = json.dumps({'k': key, 's': e['servers'],
+                          't': e['title'], 'p': e['poster']})
+    addDir(label, payload, 'site_streams', e['poster'] or ICON, e['title'], True)
+
+
+def fmov_menu():
+    for s in site_futbolmov.SUBSITES:
+        addDir(u'[B][COLOR deepskyblue]{0}[/COLOR][/B]'.format(s.NAME), s.KEY,
+               'site_events', ICON, FANART, True,
+               infoLabels={'title': s.NAME, 'plot': s.DESC})
+    addDir('[B][COLOR gold]Search[/COLOR][/B]', 'fmov', 'fmov_search', ICON, FANART, True,
+           infoLabels={'title': 'Search', 'plot': 'Search all three lists (team, league...).'})
+    xbmcplugin.endOfDirectory(_handle)
+
+
+def fmov_search():
+    kb = xbmc.Keyboard('', 'Search')
+    kb.doModal()
+    query = six.ensure_text(kb.getText(), encoding='utf-8', errors='replace').strip().lower() \
+        if kb.isConfirmed() else u''
+    if not query:
+        xbmcplugin.endOfDirectory(_handle, succeeded=False)
+        return
+    found = 0
+    for site in site_futbolmov.SUBSITES:
+        try:
+            events = site.list_events()
+        except Exception as e:
+            log_info('fmov search {0} failed: {1!r}'.format(site.KEY, e))
+            continue
+        for e in events:
+            hay = six.ensure_text(u'{0} {1}'.format(e['title'], e.get('league') or ''),
+                                  encoding='utf-8', errors='replace').lower()
+            if query in hay:
+                _add_site_event(site.KEY, site, e)
+                found += 1
+    if not found:
+        control.infoDialog(u'[COLOR red]No results[/COLOR]', NAME, ICON, 4000)
     xbmcplugin.setContent(_handle, 'movies')
     xbmcplugin.endOfDirectory(_handle)
 
@@ -954,7 +1001,14 @@ def site_play(payload):
         # headers succeeds in well under a second -- a TLS/client-
         # fingerprint block aimed at ffmpeg, not the headers.
         # CCurlFile's TLS stack isn't flagged the same way.
-        liz.setProperty('inputstream.ffmpegdirect.open_mode', 'curl')
+        # ...but curl mode only sends our headers with the playlist request:
+        # FFmpeg's HLS demuxer then fetches the segments itself without
+        # Referer/Origin, so CDNs that check them on every segment (the
+        # quotarevival.net player behind tarjetarojita: 403) never start.
+        # A resolver that returns its player page means "this CDN wants
+        # these headers" -> let FFmpeg open it, it passes them to segments.
+        liz.setProperty('inputstream.ffmpegdirect.open_mode',
+                        'ffmpeg' if isinstance(result, tuple) else 'curl')
         liz.setProperty('inputstream.ffmpegdirect.default_url', stream_url)
     liz.setPath(stream_url)
     xbmc.Player().play(stream_url, liz, False)
@@ -982,6 +1036,10 @@ def router(paramstring):
                                ICON, 5000)
         elif params['mode'] == 'version':
             xbmc.executebuiltin('UpdateAddonRepos')
+        elif params['mode'] == 'fmov_menu':
+            fmov_menu()
+        elif params['mode'] == 'fmov_search':
+            fmov_search()
         elif params['mode'] == 'site_events':
             site_events_menu(params['url'])
         elif params['mode'] == 'site_streams':
