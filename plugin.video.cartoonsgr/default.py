@@ -746,6 +746,18 @@ def gamato_links(url, name, poster, description):  # 12
         except:
             hrefs = []
 
+        # Label each link by the text the site puts right after the anchor
+        # (e.g. "LINK1</a> <strong>με υποτιτλους</strong>" vs "μεταγλωτισμένο"),
+        # so the two sources are distinguishable. Absent on most pages.
+        label_map = {}
+        for m in re.finditer(r'<a [^>]*href="([^"]+)"[^>]*>.*?</a>(.*?)(?=<a |<br|</p)', dlink, re.DOTALL):
+            trail = re.sub('<[^>]+>', '', m.group(2))
+            trail = six.ensure_text(trail).replace('&#8211;', '').strip().lower()
+            if u'υποτι' in trail or u'υποτί' in trail:
+                label_map[m.group(1)] = '[COLOR cyan]SUBS[/COLOR]'
+            elif u'μεταγλ' in trail:
+                label_map[m.group(1)] = '[COLOR orange]MET[/COLOR]'
+
         for href in hrefs:
             if "youtube" in href or "trailer" in href.lower():
                 trailer_links.append(href)
@@ -762,8 +774,10 @@ def gamato_links(url, name, poster, description):  # 12
         else:
             addDir('[B][COLOR lime]Trailer[/COLOR][/B]', trailer_links[0], 100, iconimage, fanart, str(desc))
         for link in main_links:
+            tag = label_map.get(link, '')
             link = unquote_plus(link)
-            addDir(name, link, 100, poster, fanart, str(desc))
+            label = u'{0} [B]|[/B] {1}'.format(name, tag) if tag else name
+            addDir(label, link, 100, poster, fanart, str(desc))
 
     # except BaseException:
     #     return
@@ -941,12 +955,19 @@ def resolve(name, url, iconimage, description, return_url=False):
         html = requests.get(host).text
         host = client.parseDOM(html, 'iframe', ret='src')[0]
 
-    elif 'gmtv1' in host or 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host or 'gmtv' in host or 'gtvdb' in host or 'gmteam' in host:
+    elif ('gmtv1' in host or 'gmtdb' in host or 'gmtbase' in host or 'gmtcloud' in host
+          or 'gmtv' in host or 'gtv' in host or 'gmteam' in host
+          or re.search(r'/\d+-\d+/?$', urlparse(host).path)):
+            # gamato mirror player pages (gmtv*/gtv*/gmteam + any future mirror
+            # sharing the /N-NNNNN/ path scheme): extract the mp4 <source>, else iframe.
             html = requests.get(host).text
             try:
                 host = client.parseDOM(html, 'source', ret='src', attrs={'type': 'video/mp4'})[0]
             except IndexError:
-                host = client.parseDOM(html, 'iframe', ret='src')[0]
+                try:
+                    host = client.parseDOM(html, 'source', ret='src')[0]
+                except IndexError:
+                    host = client.parseDOM(html, 'iframe', ret='src')[0]
 
 
     else:

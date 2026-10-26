@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.59" provider-name="Bugatsinho">
+<addon id="plugin.video.cartoonsgr" name="CartoonsGR" version="1.0.60" provider-name="Bugatsinho">
   <requires>
     <import addon="xbmc.addon" version="17.0.000"/>
     <import addon="script.module.six" />
@@ -28,10 +28,9 @@
     <repo>https://bugatsinho.github.io/repo/</repo>
     <email>bugatsinho@protonmail.com</email>
     <news>
-      [B]v1.0.59[/B] 16/06/2026
-      - Fixed gmteam.best host not redirecting to embedded player
-      - Fixed coverapi.store resolver (site switched to new player API)
-      - Coverapi requests now send a browser User-Agent to avoid Cloudflare block
+      [B]v1.0.60[/B] 25/10/2026
+      - Fix gamatotv links not playing: resolver handles gtv4/gtv5+ mirror domains and any future mirror via URL path pattern
+      - Show SUBS / MET tag on links when the site marks subtitled vs dubbed sources
     </news>
     <assets>
         <icon>icon.png</icon>
