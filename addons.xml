@@ -477,7 +477,7 @@
 				<platform>all</platform>
 		</extension>
 	</addon>
-	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.91" provider-name="Bugatsinho">
+	<addon id="plugin.video.sporthdme" name="SportHD" version="0.1.92" provider-name="Bugatsinho">
 	  <requires>
 		<!--import addon="xbmc.python" version="2.1.0"/-->
 		<import addon="script.module.dateutil" />
@@ -495,9 +495,7 @@
 		<license>GNU GPL, version 2</license>
 		<twitter>https://twitter.com/Bugatsinho</twitter>
 		<news>
-		  [B]v0.1.91[/B] 04/10/2026
-		  - New: Futbol Libre MOV (futbol-libre.mov) with triple menu: Latino, USA, Football Live + Search
-		  - Futbol Libre / tarjetarojita: streams play again (correct Referer/Origin for the player CDN)
+		  Update Windows user-agent to Chrome 156 for stream resolution (nexa/vertex/kora + resolved hosts)
 		</news>
 		<assets>
 		  <icon>icon.png</icon>
