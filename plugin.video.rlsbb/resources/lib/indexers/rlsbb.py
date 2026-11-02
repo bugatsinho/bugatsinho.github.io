@@ -95,8 +95,11 @@ def _trakt_username_suffix():
 
 
 def main_menu():
+    eztv_on = control.setting('eztv_menu') == 'true'
     for name, section, icon in _CATEGORIES:
         control.addDir(name, section, 'category', iconimage=_icon(icon))
+        if eztv_on and section == 'tv-shows':
+            control.addDir('EZTV TV Shows', '', 'eztv', iconimage=_icon('tvshows.png'))
     control.addDir('Search', '', 'search_menu', iconimage=_icon('search.png'))
     control.addDir('Trakt{0}'.format(_trakt_username_suffix()), '', 'trakt_menu',
                     iconimage=_icon('trakt.png'))

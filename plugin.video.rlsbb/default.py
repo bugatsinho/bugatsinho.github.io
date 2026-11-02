@@ -2,6 +2,7 @@
 import xbmc
 
 from resources.lib.indexers import rlsbb
+from resources.lib.indexers import eztv
 from resources.lib.modules import cache, control, init
 
 params = init.params
@@ -130,6 +131,21 @@ elif mode == 'tools_menu':
 
 elif mode == 'tools_view_info':
     rlsbb.tools_view_info(params['url'])
+
+elif mode == 'eztv':
+    eztv.menu()
+
+elif mode == 'eztv_latest':
+    eztv.latest(params.get('url', ''))
+
+elif mode == 'eztv_search':
+    eztv.search()
+
+elif mode == 'eztv_play':
+    eztv.play(params['url'])
+
+elif mode == 'eztv_refresh_domains':
+    eztv.refresh_domains()
 
 elif mode == 'settings':
     control.Settings()

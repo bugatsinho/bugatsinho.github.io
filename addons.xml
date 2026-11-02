@@ -112,7 +112,7 @@
 		</assets>
 	  </extension>
 	</addon>
-	<addon id="plugin.video.rlsbb" version="1.0.1" name="[COLOR orange][B]RLSBB[/B][/COLOR]" provider-name="Bugatsinho">
+	<addon id="plugin.video.rlsbb" version="1.1.0" name="[COLOR orange][B]RLSBB[/B][/COLOR]" provider-name="Bugatsinho">
 	  <requires>
 		<import addon="xbmc.python" version="3.0.1"/>
 		<import addon="script.module.requests" version="2.19.1"/>
@@ -136,8 +136,8 @@
 		<repo>https://bugatsinho.github.io/repo/</repo>
 		<email>bugatsinho@protonmail.com</email>
 		<news>
-		  [B][COLOR lime]v1.0.1[/COLOR][/B]
-		  - Movies/TV Shows menu now shows "All Movies"/"All TV Shows" at the top, browse everything without picking a subcategory first
+		  [B]v1.1.0[/B]
+		  - New optional EZTV menu (enable in Settings > EZTV): Latest + Search via EZTV API, debrid playback, MDBList/Trakt scrobble, auto domain refresh from eztvstatus.org
 		</news>
 		<assets>
 			<icon>icon.png</icon>
